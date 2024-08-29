@@ -1,0 +1,22 @@
+FROM python:3.10
+
+# Create a non-root user
+RUN useradd -m caatuser
+
+# Set the user to 'caatuser'
+USER caatuser
+
+# Set the working directory
+WORKDIR /home/caatuser
+
+# Ensure the 'caatuser' has permission to write to the directory
+RUN chown caatuser:caatuser /home/caatuser
+
+# Add caatuser path to the environment
+ENV PATH="/home/caatuser/.local/bin:${PATH}"
+
+# Copy requirements file
+COPY --chown=caatuser:caatuser requirements.txt requirements.txt
+
+RUN pip install --user -r requirements.txt
+RUN rm requirements.txt

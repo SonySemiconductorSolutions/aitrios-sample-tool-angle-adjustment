@@ -1,0 +1,56 @@
+// = Angle Adjustment Tool (AAT)
+:docinfo: shared
+:doctype: book
+:data-uri:
+:title: About AAT
+:toc: left
+:toclevels: 2
+:sectanchors:
+:sectlinks:
+:sectnums:
+:multipage-level: 2
+:icons: font
+:encoding: utf-8
+
+== Angle Adjustment Tool (AAT)
+
+* AAT is a web-based application designed to streamline the adjustment
+and verification of camera angle of devices connected to AITRIOS.
+
+=== Entities using the AAT
+
+AAT involves following entities:
+
+* Contractor - The one who adjusts the camera angle in the actual facilities.
+* Admin - The one who verifies the camera angle.
+
+=== Components
+
+AAT involves following components:
+
+* Backend Server: A common backend server to serve contractor and admin API requests.
+* Admin App: Desktop web application for admin to verify the angle of view and either approve or reject the review request.
+* Contractor App: Mobile web application for contractor to adjust the camera angle and submit the angle of view for review.
+
+=== System requirements (Local Development)
+
+==== Hardware requirements
+
+* 16GB RAM or more
+
+==== Software requirements
+
+* Ubuntu 20.04 or higher
+* Node.js (v20.x)
+* Python 3.10.x
+* Docker CLI
+
+=== Setup
+
+==== Setup Application - Locally
+
+To setup application locally, refer menu: `Development`
+
+==== Setup Application - Cloud
+
+To setup application in Azure cloud, refer menu: `App Setup Guide (Azure Cloud)`

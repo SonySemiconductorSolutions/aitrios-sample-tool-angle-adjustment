@@ -1,0 +1,62 @@
+
+== FAQ
+
+Q: What prerequisites are needed to deploy AAT application using setup scripts?::
+A: Before deploying AAT application using setup scripts, ensure you have the following prerequisites:
+    * An active Azure subscription with sufficient permissions to create resources.
+    * Azure CLI installed on your local machine for executing the shell script.
+    * Familiarity with basic Azure concepts such as resource groups, virtual networks, App Service, Database.
+
+Q: Can I customize the ARM template for my specific needs?::
+A: Yes, it is possible to customize the ARM Template. Please make changes to `tools/cloud-setup/scripts/azure/arm-template-caat.json` with care.
+
+Q: How can I delete the cloud instance that I created using scripts?::
+A: There is no scripts provided to delete the cloud instance via scripts. However, please visit Azure Portal and delete the resource group to delete all created resources.
+
+Q: Can I apply other security configuration measures to AAT application?::
+A: Yes, you can apply other security configuration measures such as Microsoft Defender, Application Gateway. Please note that the provided cloud scripts does not support such operation. Make changes manually in the Azure Portal or create custom scripts.
+
+Q: How can I troubleshoot common errors during deployment?::
+A: If you encounter errors during deployment:
+    * Check the Azure CLI output or deployment logs for specific error messages.
+    * Ensure all required parameters are correctly provided and formatted.
+    * Verify Azure service status and availability in your region.
+    * Review Azure documentation or community forums for troubleshooting guidance related to specific errors.
+
+
+Q: How do I reset Admin Password ?::
+A: Using caat-helper, the Admin password can be reset by providing the Login ID. +
+
+Use the following command, to list the admin and their Login ID
+
+[source,shell]
+----
+(.venv) $ caat-helper db list-admin
+----
+
+Use the following command to reset the password
+
+[source,shell]
+----
+(.venv) $ caat-helper db reset-pass --login-id {admin-login-id} --password {new-pasword-value}
+----
+
+Q: How do I clear data from the database to start fresh or in case of wrong details entered?::
+A: Using caat-helper, all the data from the database can be deleted at once. +
+At present, caat-helper doesn't support clearing the selective data.
+
+Use the following command, to clear the database.
+
+[source,shell]
+----
+(.venv) $ caat-helper db clear
+----
+
+Q: How do I whitelist the Host Machine IP Address for Database for performing Database operations post setup ?::
+A: Using `allow-host-ip-db.sh` script, Host Machine IP Address can be whitelisted. +
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ bash allow-host-ip-db.sh
+----

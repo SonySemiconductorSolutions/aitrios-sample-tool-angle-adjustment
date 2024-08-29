@@ -1,0 +1,47 @@
+@startuml Contractor get facility devices
+title Contractor get facility devices
+
+: Start;
+: Check contractor authorization token;
+if (Contractor token is provided?) then (yes)
+    if (Contractor token is expired?) then (yes)
+        : Send HTTP status 401 Token has expired;
+        kill
+    endif
+    if (Facility ID is not valid?) then (yes)
+        : Send HTTP status 401 Facility ID is not valid;
+        kill
+    endif
+    if (Start time is not valid?) then (yes)
+        : Send HTTP status 401 Token is not yet valid;
+        kill
+    endif
+    if (Token exp is not valid?) then (yes)
+        : Send HTTP status 401 exp is not valid;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401 Invalid authorization header format;
+    kill
+endif
+: Validate parameters;
+note right
+    Taken from the contractor token
+    1. facility_id (mandatory) 
+    2. customer_id (mandatory)
+end note
+: Get the facility object by facility and the customer ID;
+if (Does not exists?) then (yes)
+    : Send HTTP status 404, Facility not found;
+    kill
+endif
+: Get the devices associated with the facility;
+if (No devices?) then (yes)
+    : Send HTTP status 404, No devices found;
+    kill
+endif
+: Get the latest review of each device from DB;
+: Get device data information from DB;
+: Send HTTP status 200, with the device and review information;
+stop
+@enduml

@@ -1,0 +1,28 @@
+@startuml Admin list customers
+title Admin list customers
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired) then (yes)
+        :Send HTTP status 401,
+        Auth token is invalid or token expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+: Validate parameters;
+note right
+    Auth token (mandatory)
+end note
+: Query for the customer details by the admin ID;
+: Send HTTP status 200, List of customers;
+note right
+    Returns
+        1. Customer ID
+        2. Customer name
+        3. Create-at date
+end note
+stop
+@enduml

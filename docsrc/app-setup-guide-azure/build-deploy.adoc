@@ -1,0 +1,38 @@
+
+== Build and Deploy
+
+=== Source Code build and Deploy
+
+* Once the cloud environment is successfully created, build and deploy the source code.
+* Source code will be built as docker images, docker images are pushed to docker registry in Azure cloud.
+* `source-build.sh` script will build all the source code and push the docker images to the Azure Container registry.
+* Run the Build Deploy Script with the following command. Build and deploy may take around 10 minutes.
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ bash source-build.sh
+----
+
+Upon successful build and deployment of docker images, following images must be seen in Container Registry.
+Please verify by visiting Azure Portal.
+
+**Container Registry:** crcameratool2024
+
+|====
+|Repositories | Description
+
+|caat-backend-service
+|Image containing source files of Backend Server
+
+|caat-webadmin
+|Image containing build files of Web Admin App
+
+|caat-webapp
+|Image containing build files of Web Contractor App
+
+|====
+
+* At this point, all services are deployed.
+* Although URLs are accessible, please note that apps cannot be used as Data in the Database is still empty.
+* Populating the Data into Database in explained in next chapter.

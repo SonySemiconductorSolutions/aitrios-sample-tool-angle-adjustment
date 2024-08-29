@@ -1,0 +1,16 @@
+.vscode
+Pipfile.lock
+*.html
+*.pdf
+*.csv
+
+**/build/**
+**/*.egg-info/**
+caat-workspace
+*-output/
+
+*.venv
+**/output-docs/**
+**/__pycache__/**
+
+**/caatdbdata/**

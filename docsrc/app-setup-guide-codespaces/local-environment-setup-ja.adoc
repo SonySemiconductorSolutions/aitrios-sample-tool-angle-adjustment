@@ -1,0 +1,54 @@
+
+== 環境設定
+
+このページでは、GitHub CodespacesへのAATアプリケーションの設定について説明します。
+
+- Codespacesに関しては、 link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces の概要^] を参照してください。
+- GitHub Codespacesの使用料はユーザーの負担となります。詳細は: link:https://docs.github.com/ja/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces[GitHub Codespaces の請求について^]を参照してください。
+- Codespacesの設定では4-Core、 16GB RAM、 32 GB ストレージを選択してください。詳細はlink:https://docs.github.com/ja/codespaces/getting-started/quickstart[GitHub Codespaces のクイックスタート^] もしくは link:https://docs.github.com/ja/codespaces/developing-in-a-codespace/creating-a-codespace-for-a-repository[リポジトリの codespace を作成する^]を参照してください。
+
+- GitHub Codespacesはデフォルトでは30分でタイムアウトします。アクセスを続行するためには、そのまま実行し続けてください。詳細は : link:https://docs.github.com/ja/codespaces/setting-your-user-preferences/setting-your-timeout-period-for-github-codespaces[GitHub Codespaces のタイムアウト期間を設定する^] を参照してください。
+- GitHub Codespacesはブラウザでの使用が推奨されています。
+
+[注記]
+====
+このCodespacesセットアップは、設置するカメラの合計台数が10台以下の場合にのみ適しています。
+カメラが10台以上の場合はAzureでのクラウドセットアップが推奨されています。
+====
+
+=== 前提条件
+
+* 次の手順に進む前に、必ず以下のソフトウェアをGitHub Codespacesへインストールしておいてください。
+
+- link:https://docs.docker.com/engine/install/ubuntu/[Docker CLI^]
+- Python 3.10.x
+
+=== ローカル環境セットアップ
+
+本ドキュメントで実行するすべてのコマンドは `tools/local-setup-codespaces`を作業ディレクトリとして想定しています。
+
+==== 環境ファイル
+
+*  _.env_ ファイル内に以下の環境変数を更新してください。
+* PLACEHOLDER_*値を _.env_ ファイル内の実際の値に置き換えます。
+* 値の例を含む _.env.example_ ファイルを参照してください。
+* F以下の表で、値の例と共に使用される環境変数について説明します。
+
+[cols="1,2,2,1"]
+|===
+|変数 |使用法 |有効な文字セット | 値の例
+
+|APP_SECRET_KEY
+|英数字のみを含む32文字の強力なキーです。本キーはJWTのサインおよび認証情報の暗号化・復号化に使用されます。+
+| `A-Z`, `a-z`, `0-9` +
+以下のコマンドを実行して作成します: +
+`openssl rand -base64 24` +
+| "hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
+
+|DATABASE_PASSWORD
+|DBサーバー管理者用の強力なパスワードです
+| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%`, `@` +
+推奨される文字の長さ: 8-128文字  +
+| "V3ry5tr0ndbServerPa55"
+
+|===

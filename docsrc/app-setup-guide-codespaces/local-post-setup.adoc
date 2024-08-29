@@ -1,0 +1,164 @@
+
+[[post-setup]]
+== Post Setup
+
+* Before running any `caat-helper` commands, make sure to:
+** <<activate-virtual-environment, Activate virtual environment>>
+** <<set-environment-variables, Execute set environment variable script>>
+
+=== Verify AAT Setup
+
+* Execute following script to verify the links are live.
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash verify-modules.sh
+----
+
+* At this point, all modules are live and are working fine.
+
+=== Get Application URLs
+
+==== Admin App URL and Contractor App URL
+
+* Execute the following command to display the Admin App URL and Contractor App URLs
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash print-local-app-url.sh
+----
+
+Make note of the displayed URLs in the terminal. Refer following section to know about the usage.
+
+==== QR Code Generation for Contractor App and Facilities
+
+* Once the data is populated to the DB, to use the contractor App, generate the QR Codes.
+* Contractor App can be opened by scanning QR Code only.
+
+* Following command can be used to generate the QR codes for Contractor App and available facilities. +
+This command generates QR Codes for all the facilities at once in the 'QRCodes' directory.
+
+* Replace the Contractor App URL from previous command output in the following command.
+
+[source,shell]
+----
+# # from tools/local-setup-codespaces
+(.venv) $ caat-helper qr generate -u {PLACEHOLDER_CONTRACTOR_APP_URL}
+----
+
+==== App User Guide
+
+* Usage instructions for Admin App - refer menu: `Admin User Guide`
+
+* Usage instructions for Contractor App - refer menu: `Contractor User Guide`
+
+
+[NOTE]
+====
+When the URLs are opened in browser, user would see a prompt (first time only) to confirm the port access. Please click `Continue` button to proceed.
+
+image::images/codespaces-port-access-confirmation.png[Codespaces Port Access Confirmation]
+====
+
+This would conclude the setting up of AAT application in GitHub Codespaces. +
+
+Please start using the application.
+
+[NOTE]
+====
+As App URLs Port is made public, the link can be shared with contractor to access.
+====
+
+=== Add Selective Data to Database
+
+* When initial cloud setup is complete and data is added, a situation may arise, when more number of devices or facilities or new customer needs to be added to the already existing Database.
+* Selective data such as such as facilities, devices, customers can be added to the database with the help of caat-helper.
+
+[NOTE]
+====
+* Updating the existing data is not supported in `caat-helper`.
+* E.g., Initial data is added. Admin 1 is associated to Customer 1. +
+Next time, Admin 2 is added and user would like to assign to Customer 1. +
+This is not supported.
+====
+
+==== Add the data through excel
+
+* Add the data to the respective sheets (facility, customer, device) in the excel file used initially to populate database and execute the following command.
+
+* Before running any `caat-helper` commands, make sure to:
+    ** <<activate-virtual-environment, Activate virtual environment>>
+    ** <<set-environment-variables, Execute set environment variable script>>
+
+[source,shell]
+----
+$ (.venv) caat-helper db populate --excel-path '/path/to/excel'
+----
+
+=== Reset Admin Password
+
+
+* To reset admin password, caat-helper provides command line function.
+* Use the following command, to list the admin and their Login ID
+
+* Before running any `caat-helper` commands, make sure to:
+    ** <<activate-virtual-environment, Activate virtual environment>>
+    ** <<set-environment-variables, Execute set environment variable script>>
+
+[source,shell]
+----
+(.venv) $ caat-helper db list-admin
+----
+
+Use the following command to reset the password
+
+[source,shell]
+----
+(.venv) $ caat-helper db reset-pass --login-id {admin-login-id} --password {new-pasword-value}
+----
+
+=== Clear Data from DB
+
+* Before running any `caat-helper` commands, make sure to:
+    ** <<activate-virtual-environment, Activate virtual environment>>
+    ** <<set-environment-variables, Execute set environment variable script>>
+
+
+[NOTE]
+====
+*Please use this with caution*
+
+* Using caat-helper, all the data from the database can be deleted at once. +
+At present, caat-helper doesn't support clearing the selective data.
+
+* Use the following command, to clear the database.
+
+[source,shell]
+----
+(.venv) $ caat-helper db clear
+----
+====
+
+=== Stop/Restart the AAT Local Instance
+
+==== Stop the AAT Instance
+* Execute following commands to stop the local instance.
+* This will halt the services.
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash caat-local-stop.sh
+----
+
+==== Restart the AAT Instance
+* Execute following commands to restart the local instance.
+* This will start all the services again with same URLs.
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash caat-local-start.sh
+----

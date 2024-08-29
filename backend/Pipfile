@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+python-dotenv = "==1.0.0"
+flask = "==3.0.0"
+flask-pydantic = "==0.12.0"
+prisma = "==0.11.0"
+flask-login = "==0.6.3"
+pyjwt = "==2.8.0"
+msal = "==1.28.0"
+retry = "==0.9.2"
+flask-cors = "==4.0.0"
+gunicorn = "==21.2.0"
+
+[dev-packages]
+black = "==24.4.2"
+pylint = "==3.2.2"
+isort = "==5.13.2"
+qrcode = {extras = ["pil"], version = "==7.4.2"}
+
+[requires]
+python_version = "3.10"
+python_full_version = "3.10.13"

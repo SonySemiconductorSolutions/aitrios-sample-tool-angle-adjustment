@@ -1,0 +1,158 @@
+
+== DB Operations
+
+* CAAT Helper(`caat-helper`) is a python package. It provides command line interface to interact with the CAAT Database.
+* CAAT Helper can do following:
+  ** Read excel data (Admin and customer details) to be populated into DB
+  ** Reset Admin Password
+  ** Clean the DB
+  ** Generate QR Code for Contractor App URL
+
+CAAT Helper can be used to populate DB in local (during development) and DB in cloud (during production/actual setup).
+
+[[whitelist-host-machine-ip]]
+=== Whitelisting host machine IP
+
+* During cloud setup (previous section), host machine IP is whitelisted in the Virtual Network
+* In case, if setup procedure is stopped for some reason and resumed next day or resumed in other machine, there is a chance that the host machine IP is changed.
+* To add host machine IP to access the Database, execute following command:
+
+[NOTE]
+====
+Whitelist the host machine IP, before running caat-helper commands.
+====
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ bash allow-host-ip-db.sh
+----
+
+=== Installation
+Run following commands to create virtual environment and install `caat-helper` package.
+
+==== Create virtual environment
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ python3 -m venv .venv
+----
+
+[[activate-virtual-environment]]
+==== Activate virtual environment
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ source .venv/bin/activate
+----
+
+==== Install `caat-helper` package
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+# Upgrade pip
+$ pip install -U pip
+
+# Install CAAT helper package
+$ pip install ../../caat-helper/
+----
+
+[[set-environment-variables]]
+=== Setting of Env variables
+
+* Following environment variables are required to execute the commands.
+
+  - DATABASE_URL (SQLServer Database Connection String).
+  - APP_SECRET_KEY (Encryption KEY to sign URL token and to encrypt Customer credentials)
+
+* Execute following command to set the Environment Variables
+
+[NOTE]
+====
+Make sure to execute set environment variable script, before running caat-helper commands.
+====
+
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ source set-env-var.sh
+----
+
+
+=== Generate prisma client (only once)
+
+Run following commands to generate prisma client.
+
+WARNING: Please make sure to execute this command first before any other caat-helper commands and only once.
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+(.venv) $ caat-helper-init
+----
+
+=== Generate excel file
+
+* Generate excel template and excel sample files.
+
+* Run following command to generate excel files in current working directory:
+
+[source,shell]
+----
+(.venv) $ caat-helper db export-template
+----
+
+* The above export command outputs 2 files.
+  ** `SIerData_template.xlsx`: An Excel template file to fill the data.
+  ** `SIerData_template.xlsx`: An Excel sample file with sample data in the excel for reference only.
+
+=== Prepare excel file
+
+* Once the excel template is generated to fill the sheets with valid data.
+
+[NOTE]
+====
+* Excel file may need to be downloaded to host machine if using Codespaces.
+* Edit the excel file in host machine and upload back to Codespaces once the data is ready.
+====
+
+* Refer following section to understand what each sheet contains and the purpose.
+
+include::excel-readme.adoc[Excel Instructions]
+
+=== Populate Data to DB
+
+* Once the generated template is filled with necessary details, run following command to populate the data to DB.
+
+* Particularly in the sheet: `customer` Customer credentials like auth_url, base_url, client_id, client_secret can be added/updated later in the Admin Application UI.
+
+==== Populate using Excel
+
+[source,shell]
+----
+# e.g.,
+# caat-helper db populate --excel-path SIer-Data.xlsx
+(.venv) $ caat-helper db populate --excel-path '/path/to/excel'
+----
+
+=== View DB data using Prisma Studio
+
+* To view/confirm the data that is populated in the Database, run following command:
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+(.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.prisma
+----
+
+* The above command execution opens/prompts to open the studio viewer in web browser, please allow.
+* Once prisma studio is opened, the following models can be seen:
+
+image::images/prisma-db-model-list.png[Prisma Model List]
+
+* Click any model to view the data.
+* To close the studio instance, run `ctrl+c` in the terminal where above command was executed.

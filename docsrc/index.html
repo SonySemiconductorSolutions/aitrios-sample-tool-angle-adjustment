@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAT Docs</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #fff;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 65px;
+        z-index: 10000;
+      }
+
+      .navbar-appname {
+        position: absolute;
+        left: 20px;
+        color: #333;
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+
+      .navbar-links {
+        display: none;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .navbar-links.show {
+        display: flex;
+      }
+
+      .navbar-links li {
+        margin: 0 12px;
+      }
+
+      .navbar-links a {
+        color: #333;
+        text-decoration: none;
+        font-size: 0.85em;
+        padding: 5px 0;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+      }
+
+      .navbar-links a:hover {
+        color: #5c85ff;
+        border-bottom: 2px solid #5c85ff;
+      }
+
+      .navbar-links a.active {
+        color: #2659ff;
+        border-bottom: 2px solid #2659ff;
+      }
+
+      .menu-button {
+        display: none;
+        font-size: 1.5em;
+        background: none;
+        border: none;
+        margin-left: auto;
+        margin-right: 20px;
+        cursor: pointer;
+      }
+
+      .iframe-content {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 65px);
+        top: 65px;
+        border: none;
+        overflow: auto;
+      }
+
+      .backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 5000;
+      }
+
+      .loading-container {
+        display: none;
+        position: fixed;
+        color: #999;
+        font-size: 24px;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 2000;
+      }
+
+      .loading-container.show {
+        display: flex;
+      }
+
+      .language-toggle {
+        color: #333;
+        font-size: 0.85em;
+        border-radius: 4px;
+        padding: 5px 10px;
+        background-color: #e5e4e2;
+        position: absolute;
+        right: 20px;
+        cursor: pointer;
+        border: none;
+        width: 100px;
+      }
+
+      @media screen and (max-width: 1280px) {
+        .menu-button {
+          display: block;
+        }
+
+        .language-toggle {
+          right: 60px;
+        }
+
+        .navbar-links {
+          display: none;
+          flex-direction: column;
+          width: 100%;
+          background-color: #f5f5f5;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          position: absolute;
+          top: 65px;
+          left: 0;
+        }
+
+        .navbar-links li {
+          margin: 8px 0;
+          text-align: center;
+        }
+
+        .backdrop.show {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="navbar-appname">AAT Docs</div>
+      <ul class="navbar-links" id="navbar-links-ja">
+        <li><a href="CAAT-home-ja.html" class="active">ホーム</a></li>
+        <li><a href="CAAT-development-setup-ja.html">開発</a></li>
+        <li><a href="CAAT-Admin-App-User-Guide-ja.html">管理者ユーザーガイド</a></li>
+        <li><a href="CAAT-Contractor-App-User-Guide-ja.html">コントラクターユーザーガイド</a></li>
+        <li><a href="CAAT-App-Setup-Guide-Azure-Cloud-ja.html">アプリセットアップガイド (Azureクラウド)</a></li>
+        <li><a href="CAAT-App-Setup-Guide-Codespaces-ja.html">Codespaces でアプリを実行する方法</a></li>
+        <li><a href="CAAT-api-spec.html">API仕様</a></li>
+      </ul>
+      <ul class="navbar-links" id="navbar-links-en">
+        <li><a href="CAAT-home-en.html">Home</a></li>
+        <li><a href="CAAT-development-setup-en.html">Development</a></li>
+        <li><a href="CAAT-Admin-App-User-Guide-en.html">Admin User Guide</a></li>
+        <li><a href="CAAT-Contractor-App-User-Guide-en.html">Contractor User Guide</a></li>
+        <li><a href="CAAT-App-Setup-Guide-Azure-Cloud-en.html">App Setup Guide (Azure Cloud)</a></li>
+        <li><a href="CAAT-App-Setup-Guide-Codespaces-en.html">How to run the app on Codespaces</a></li>
+        <li><a href="CAAT-api-spec.html">API Spec</a></li>
+      </ul>
+      <select id="language-toggle" class="language-toggle">
+        <option value="ja" selected>日本語</option>
+        <option value="en">English</option>
+      </select>
+      <button class="menu-button" id="menu-button">&#9776;</button>
+    </nav>
+    <div id="backdrop" class="backdrop"></div>
+    <div id="loading" class="loading-container">
+      <p>Loading...</p>
+    </div>
+    <iframe id="iframe-content" class="iframe-content"></iframe>
+
+    <script>
+      // Constants
+      const landingPage = 'CAAT-home-ja.html';
+
+      // DOM elements
+      const navbarLinksJa = document.getElementById('navbar-links-ja');
+      const navbarLinksEn = document.getElementById('navbar-links-en');
+      const languageToggle = document.getElementById('language-toggle');
+      const menuButton = document.getElementById('menu-button');
+      const backdrop = document.getElementById('backdrop');
+      const iframeContent = document.getElementById('iframe-content');
+      const loading = document.getElementById('loading');
+      const mediaQuery = window.matchMedia('(max-width: 1280px)');
+
+      // Function to toggle language-specific navbar links
+      function toggleLanguageLinks(lang) {
+        if (lang === 'en') {
+          navbarLinksEn.classList.add('show');
+          navbarLinksJa.classList.remove('show');
+        } else if (lang === 'ja') {
+          navbarLinksJa.classList.add('show');
+          navbarLinksEn.classList.remove('show');
+        }
+      }
+
+      // Function to close menu and hide backdrop
+      function closeMenuAndHideBackdrop() {
+        navbarLinksJa.classList.remove('show');
+        navbarLinksEn.classList.remove('show');
+        backdrop.classList.remove('show');
+      }
+
+      // Function to handle screen size change
+      function handleScreenSizeChange(mq) {
+        if (mq.matches) {
+          // Reset navbar links visibility on smaller screens
+          closeMenuAndHideBackdrop();
+        } else {
+          // Show navbar links based on selected language on larger screens
+          toggleLanguageLinks(languageToggle.value);
+        }
+      }
+
+      // Function to load iframe content
+      async function loadIframeContent(href) {
+        loading.classList.add('show');
+        iframeContent.src = href;
+        iframeContent.onload = () => {
+          loading.classList.remove('show');
+        };
+      }
+
+      // Function to handle navbar link click
+      function handleNavbarLinkClick(e) {
+        e.preventDefault();
+        document.querySelectorAll('.navbar-links a').forEach(link => link.classList.remove('active'));
+
+        // Fetch and load content into iframe
+        loadIframeContent(e.currentTarget.href);
+        e.currentTarget.classList.add('active');
+
+        // Close menu on smaller screens
+        if (mediaQuery.matches) closeMenuAndHideBackdrop();
+      }
+
+      // Function to handle language toggle change
+      function handleLanguageToggleChange() {
+        const selectedLang = languageToggle.value;
+        if (mediaQuery.matches) {
+          // Hide navbar links on language change for smaller screens
+          closeMenuAndHideBackdrop();
+        } else {
+          // Toggle language-specific navbar links on larger screens
+          toggleLanguageLinks(selectedLang);
+        }
+        const prevHref = iframeContent.src.split('/').pop();
+        const newHref = selectedLang === 'en'
+          ? prevHref.replace('ja.html', 'en.html')
+          : prevHref.replace('en.html', 'ja.html');
+
+        // Fetch and load content in div based on language selection
+        loadIframeContent(newHref);
+
+        // Set corresponding link as active and remove other active classes
+        document.querySelectorAll('.navbar-links a').forEach(link => link.classList.remove('active'));
+        const newLink = selectedLang === 'en'
+          ? navbarLinksEn.querySelector(`a[href='${newHref}']`)
+          : navbarLinksJa.querySelector(`a[href='${newHref}']`);
+        if (newLink) newLink.classList.add('active');
+      }
+
+      // Function to handle menu button click
+      function handleMenuButtonClick() {
+        const currentLang = languageToggle.value;
+        // Toggle visibility of language-specific navbar links and backdrop
+        if (currentLang === 'en') {
+          navbarLinksEn.classList.toggle('show');
+          navbarLinksJa.classList.remove('show');
+        } else if (currentLang === 'ja') {
+          navbarLinksJa.classList.toggle('show');
+          navbarLinksEn.classList.remove('show');
+        }
+        backdrop.classList.toggle('show');
+      }
+
+      // Event listeners
+      mediaQuery.addEventListener('change', handleScreenSizeChange);
+      document.querySelectorAll('.navbar-links a').forEach(link => {
+        link.addEventListener('click', handleNavbarLinkClick);
+      });
+      languageToggle.addEventListener('change', handleLanguageToggleChange);
+      menuButton.addEventListener('click', handleMenuButtonClick);
+      backdrop.addEventListener('click', closeMenuAndHideBackdrop);
+
+      // Load initial content
+      handleScreenSizeChange(mediaQuery);
+      loadIframeContent(landingPage);
+    </script>
+  </body>
+</html>

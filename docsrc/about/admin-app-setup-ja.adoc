@@ -1,0 +1,107 @@
+== 管理者アプリ (web-admin)
+
+=== 要件
+
+* node >= 18.19
+* npm
+
+=== クイックスタート
+
+[注記]
+====
+以下のコマンドは `web-admin`をカレントディレクトリとして想定しています。
+====
+
+==== 環境の準備
+
+以下のようにサンプル環境のコピーを作成します:
+
+[source,shell]
+----
+# from web-admin
+$ cp .env.example .env
+----
+
+* 環境変数 (`.env`)を設定します
+* VITE_API_URL値をホストされているサーバーURLに置き換えます。例 VITE_API_URL:
+
+[source,shell]
+----
+# from web-admin
+# if localhost
+VITE_API_URL=http://localhost:8000
+# or
+VITE_API_URL=http://127.0.0.1:8000
+# if IP
+VITE_API_URL=http://172.16.5.4:8000
+# if GitHub codespaces
+VITE_API_URL=https://effective-space-garbanzo-7jwgv746j9q3rqqr-8000.app.github.dev
+----
+
+==== 開発サーバーの開始
+
+===== npmの使用
+
+[arabic, start=1]
+. 依存関係のインストール
+
+[source,shell]
+----
+# from web-admin
+$ npm install
+----
+
+[arabic, start=2]
+. アプリのビルド・機能
+
+[source,shell]
+----
+# from web-admin
+$ npm run dev
+----
+
+===== dockerの使用
+
+[arabic, start=1]
+. Dockerイメージのビルド
+
+[source,shell]
+----
+# from web-admin
+$ docker build -f Dockerfile -t caat-webadmin:latest .
+----
+
+[arabic, start=2]
+. dockerコンテナを実行する
+
+[source,shell]
+----
+# from web-admin
+$ docker run -p 3001:3000 caat-webadmin:latest
+----
+
+=== リンティングとフォーマット
+
+==== リンティング
+
+* コードスタイルの一貫性を維持するため、そしてJavaScript・TypeScriptコードの潜在的な問題を把握するためにESLintを使用します。
+
+* ESLintを実行してリンティングエラーを確認するため、以下のコマンドを使用します:
+
+[source,shell]
+----
+# from web-admin
+$ npm run lint
+----
+
+==== フォーマット
+
+* コードのフォーマット及びスタイルの一貫性を確保するため、Prettierを使用します。
+
+* コードが適切にフォーマットされていることを確認するため、以下のコマンドを使用します:
+
+[source,shell]
+----
+# from web-admin
+$ npm run format
+----

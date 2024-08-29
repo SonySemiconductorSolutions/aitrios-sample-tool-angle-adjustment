@@ -1,0 +1,65 @@
+
+== よくある質問
+
+Q: ローカルセットアップ スクリプトを使用してAATアプリケーションをデプロイする場合どんな前提条件が必要ですか?::
+A: ローカルセットアップ スクリプトを使用してAATアプリケーションをデプロイする前に、以下の前提条件を満たしていることを確認してください:
+    * GitHub Codespacesを使用するGitHubアカウントを持っていること。
+    * DockerがGitHub Codespacesにインストールされていること。
+
+Q: スクリプトを使用して、作成したローカルセットアップインスタンスを削除する場合はどうすればいいですか?::
+A: 以下のコマンドを実行してローカルインスタンスを停止し、すべてのDockerイメージを削除します。
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash caat-local-stop.sh
+$ docker system prune -a
+----
+
+Q: デプロイ中に発生した一般的なエラーのトラブルシューティングはどうすればいいですか?::
+A: デプロイ中にエラーが発生した場合:
+    * 特定のエラーメッセージのスクリプトのアウトプット、およびデプロイメントログを確認します。
+    * `tools/local-setup-codespaces/.env`ファイル内のすべての必要なパラメーターが正しく提供され、フォーマットされていることを確認してください。
+    * 以下のコマンドを実行して、すべてのサービスのログを表示し、エラーがないかを確認します。
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ docker compose logs
+----
+
+[[faq-port-forward]]
+Q: `local-setup.sh` または `caat-local-start.sh` を使用してアプリを開始する際にポート転送にエラーがありました。どうすればいいですか?::
+A: 手順は以下の通りです:
+    * 単純にCodespacesを再起動することで一時的な問題が解決する場合もあります。一度Codespacesの停止および再起動を試してみてください。
+    * PORTSタブから手動でポートを転送し、ポートの可視性を公開に設定します。 参考: link:https://docs.github.com/ja/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace#sharing-a-port[ポートの共有^]
+    * 転送ポート: 8000 (バックエンド)、 3000 (コントラクターアプリ)、 3001 (管理者アプリ)
+
+
+Q: 管理者パスワードをリセットするにはどうすればいいですか?::
+A: caat-helperを使用して、ログインIDから管理者パスワードをリセットすることができます。 +
+
+以下のコマンドを使用して、管理者とそのログインIDを一覧にします。
+
+[source,shell]
+----
+(.venv) $ caat-helper db list-admin
+----
+
+以下のコマンドを使用してパスワードをリセットします。
+
+[source,shell]
+----
+(.venv) $ caat-helper db reset-pass --login-id {admin-login-id} --password {new-pasword-value}
+----
+
+Q: 間違った詳細が入力された場合や新規開始するため、データベースからデータを消去するにはどうすればいいですか?::
+A: caat-helperを使用して、データベースからすべてのデータを一度に削除できます。 +
+現在caat-helperは選択したデータの削除はサポートしていません。
+
+以下のコマンドを使用して、データベースを消去します。
+
+[source,shell]
+----
+(.venv) $ caat-helper db clear
+----

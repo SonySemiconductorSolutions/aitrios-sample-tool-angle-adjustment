@@ -1,0 +1,58 @@
+@startuml Admin getting the device status
+title Admin getting the device status
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired) then (yes)
+        :Send HTTP status 401,
+        Auth token is invalid or token expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+: validate parameters;
+note right
+    customer_id (mandatory)
+    facility_name
+    prefecture
+    municipality
+end note
+if (Parameters are not valid?) then (yes)
+    : Send HTTP status 400 error;
+    kill
+endif
+
+if (Customer is not associated with the admin?) then (yes)
+    : Send HTTP status 403, Permission denied;
+    kill
+endif
+
+if (Console credentials are empty in DB?) then (yes)
+    : Send HTTP status 500, Console credentials are invalid;
+    note right
+        If the Console credentials are empty in the DB by default.
+    end note
+    kill
+endif
+: Decrypt the console credentials;
+: Get the list of devices associated with the customer;
+: Validate the console credentials of the customer;
+if (Could not retreieve auth token from AITRIOS?) then (yes)
+    : Send HTTP error 403, "Invalid Auth token URL / Client ID / Client secret / Application ID provided";
+    kill
+endif
+: Retreive the list of device information from AITRIOS;
+if (Could not get the device status from AITRIOS) then (yes)
+    : Send HTTP status 500, Unexpected error occured;
+    kill
+endif
+: Send HTTP status 200 with the list of device connection state;
+note right
+    Returns
+        Device ID
+        Connection state
+end note
+stop
+@enduml

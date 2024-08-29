@@ -1,0 +1,88 @@
+/*
+------------------------------------------------------------------------
+Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+------------------------------------------------------------------------
+*/
+.stepTitle {
+  flex-grow: 1;
+  display: flex;
+  font-size: 11px;
+  padding: 0 0.25rem;
+  text-align: center;
+  line-height: 1.5em;
+  align-items: center;
+  white-space: pre-wrap;
+  justify-content: center;
+}
+
+.stepName {
+  font-size: 12px;
+}
+
+.gray {
+  color: darkgray;
+}
+
+.step {
+  width: 25%;
+  display: flex;
+  position: relative;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.step:not(:last-child)::after {
+  bottom: 0;
+  z-index: 1;
+  content: "";
+  height: 1px;
+  display: block;
+  position: absolute;
+  width: calc(100% - 12px);
+  background-color: darkgray;
+  transform: translateX(calc(50% + 6px));
+}
+
+.step.stepChecked::after {
+  background-color: yellow;
+}
+
+.stepBarCircle {
+  width: 12px;
+  height: 12px;
+  position: relative;
+  border-radius: 50%;
+  display: inline-block;
+  transform: translateY(50%);
+  border: 0.7px solid darkgray;
+}
+
+.yellowBorder {
+  border-color: yellow;
+}
+
+.checked {
+  background-color: yellow;
+}
+
+.stepBarCheckIcon {
+  top: 1px;
+  left: 1px;
+  color: black;
+  position: absolute;
+  width: 10px !important;
+  height: 10px !important;
+}

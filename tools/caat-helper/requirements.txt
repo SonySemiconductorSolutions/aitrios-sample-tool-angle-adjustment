@@ -1,0 +1,25 @@
+# To Read excel file
+pandas==2.2.1
+openpyxl==3.1.2
+
+# To connect to SQL Server
+prisma==0.13.1
+
+# To generate Password hash
+werkzeug==3.0.1
+
+# To generate QR code
+qrcode == 7.4.2
+pillow == 10.3.0
+
+# For encrypt/decrypt
+cryptography == 42.0.5
+
+# For APIs
+requests == 2.32.1
+
+# JWT Token
+pyjwt == 2.8.0
+
+# Print table data
+tabulate==0.9.0

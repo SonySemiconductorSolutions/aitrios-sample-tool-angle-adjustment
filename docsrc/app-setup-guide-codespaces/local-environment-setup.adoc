@@ -1,0 +1,54 @@
+
+== Environment Setup
+
+This page provides instructions to setup the AAT Application in GitHub Codespaces.
+
+- Visit the link:https://docs.github.com/en/codespaces/overview[GitHub Codespaces overview^] to know more about Codespaces.
+- GitHub Codespaces usage will be charged to the user. Please see: link:https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces[About billing for GitHub Codespaces^]
+- Choose 4-Core, 16GB RAM, 32 GB Storage as Codespaces configuration. See link:https://docs.github.com/en/codespaces/getting-started/quickstart[Quickstart for GitHub Codespaces^] or link:https://docs.github.com/en/codespaces/developing-in-a-codespace/creating-a-codespace-for-a-repository[Creating a codespace for a repository^]
+
+- GitHub Codespaces by default has a timeout of 30 minutes. Please make sure to keep it up and running for continued access. Please see : link:https://docs.github.com/en/codespaces/setting-your-user-preferences/setting-your-timeout-period-for-github-codespaces[Setting your timeout period for GitHub Codespaces^] for more details.
+- It is recommended to use the GitHub Codespaces in the Browser.
+
+[NOTE]
+====
+This Codespaces setup is suitable if the total number of Cameras to Setup are less than 10.
+For more number of Cameras, Cloud Setup with Azure is recommended.
+====
+
+=== Prerequisites
+
+* Make sure to install following softwares in GitHub Codespaces before proceeding to next steps.
+
+- link:https://docs.docker.com/engine/install/ubuntu/[Docker CLI^]
+- Python 3.10.x
+
+=== Local Environment Setup
+
+All the commands executed in this document assumes `tools/local-setup-codespaces` as working directory.
+
+==== Environment File
+
+* Update following Environment Variables in _.env_ file
+* Replace the PLACEHOLDER_* values with actual values in _.env_ file
+* Please refer _.env.example_ file which has the example values
+* Following table describes the Environment variables used with the example values.
+
+[cols="1,2,2,1"]
+|===
+|Variable |Usage |Valid Character Set | Example Values
+
+|APP_SECRET_KEY
+|A Strong key with 32 characters containing ONLY AlphaNumeric Characters. This key is used to sign the JWT and encrypt/decrypt the credentials. +
+| `A-Z`, `a-z`, `0-9` +
+Run following command to generate: +
+`openssl rand -base64 24` +
+| "hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
+
+|DATABASE_PASSWORD
+|A Strong Password for the DB Server Admin.
+| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%`, `@` +
+Recommended Length: 8-128 Characters  +
+| "V3ry5tr0ndbServerPa55"
+
+|===

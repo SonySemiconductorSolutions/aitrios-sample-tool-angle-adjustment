@@ -1,0 +1,57 @@
+@startuml Contractor gets images
+title Contractor get the sample and live camera image
+
+: Start;
+: Check contractor authorization token;
+if (Contractor token is provided?) then (yes)
+    if (Contractor token is expired?) then (yes)
+        : Send HTTP status 401 Token has expired;
+        kill
+    endif
+    if (Facility ID is not valid?) then (yes)
+        : Send HTTP status 401 Facility ID is not valid;
+        kill
+    endif
+    if (Start time is not valid?) then (yes)
+        : Send HTTP status 401 Token is not yet valid;
+        kill
+    endif
+    if (Token exp is not valid?) then (yes)
+        : Send HTTP status 401 exp is not valid;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401 Invalid authorization header format;
+    kill
+endif
+: Validate parameters;
+note right
+    Taken from the contractor token
+    1. facility_id (mandatory)
+    2. image_type (mandatory)
+end note
+
+: Get facility by facility ID from DB;
+if (Facility not found) then (yes)
+    : Send HTTP status 404, Facility not found;
+    kill
+endif
+
+if (Image Type) then (CAMERA)
+    : Get the console credentials from DB;
+    if (Console credentials are empty?) then (yes)
+        : Send HTTP status 500, Console credentials are invalid;
+        kill
+    endif
+    : Get the camera image from AITRIOS console;
+    if (Issue with fetching the device image) then (yes)
+        : Send HTTP status 500, Could not fetch the device image;
+        kill
+    endif
+else (SAMPLE_IMAGE)
+    : Get the sample image from the device type object;
+    : Get the review with the rejected status;
+endif
+: Send HTTP status 200, Return image and rejected comment;
+stop
+@enduml

@@ -1,0 +1,46 @@
+@startuml Contractor gets device status
+title Contractor Gets Device Status
+
+: Start;
+: Check contractor authorization token;
+if (Contractor token is provided?) then (yes)
+    if (Contractor token is expired?) then (yes)
+        : Send HTTP status 401 Token has expired;
+        kill
+    endif
+    if (Facility ID is not valid?) then (yes)
+        : Send HTTP status 401 Facility ID is not valid;
+        kill
+    endif
+    if (Start time is not valid?) then (yes)
+        : Send HTTP status 401 Token is not yet valid;
+        kill
+    endif
+    if (Token exp is not valid?) then (yes)
+        : Send HTTP status 401 exp is not valid;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401 Invalid authorization header format;
+    kill
+endif
+: Validate parameters;
+note right
+1. device_id (mandatory)
+end note
+
+: Get device object by Device ID;
+if (Device does not exists?) then (yes)
+    : Send HTTP status 404, Device not found;
+    kill
+endif
+
+: Get latest review by device ID;
+
+if (Review found?) then (yes)
+    : Send HTTP status 200, Response with Review status and review comment;
+else (no)
+    : Send HTTP status 200, Response with Confirmed status with empty review comment;
+endif
+stop
+@enduml
