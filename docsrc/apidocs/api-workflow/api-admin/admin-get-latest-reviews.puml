@@ -1,0 +1,46 @@
+@startuml latest-review
+title Get Latest Reviews
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired) then (yes)
+        :Send HTTP status 401,
+        Auth token is invalid or token expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+: Validate parameters;
+note right
+    Takes the following query parameters
+        1. prefecture
+        2. municipality
+        3. facility_name
+        4. customer ID (mandatory)
+end note
+if (Parameters are not valid?) then (yes)
+    : Send HTTP status 400 error;
+    kill
+endif
+: Get customer from DB;
+if (Customer doesn't exists?) then (yes)
+    : Send 404 HTTP status with not found error;
+    kill
+endif
+: Validate if the customer is associated with the admin;
+if (Customer is not associated with the admin?) then (yes)
+    : Send 403 HTTP status with resource authorization error;
+    kill
+endif
+: Query the database with the given input;
+note right
+    1. Gets all the devices matching the customer ID.
+    2. Filter by facility name, municipality and prefecture if provided.
+    3. Retrieves the latest review for each device.
+end note
+: Get current and late review count for all the latest reviews;
+: Send the reviews and count information as the response;
+stop
+@enduml

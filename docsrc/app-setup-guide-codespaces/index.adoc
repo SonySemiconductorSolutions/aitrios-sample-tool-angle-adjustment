@@ -1,0 +1,23 @@
+= Angle Adjustment Tool (AAT)
+:docinfo: shared
+:doctype: book
+:data-uri:
+:title: Angle Adjustment Tool (AAT) Local Setup
+:toc: left
+:toclevels: 3
+:sectanchors:
+:sectlinks:
+:sectnums:
+:multipage-level: 2
+:icons: font
+:encoding: utf-8
+
+
+Welcome to the AAT documentation on local setup using GitHub Codespaces.
+
+include::local-introduction.adoc[]
+include::local-environment-setup.adoc[]
+include::local-build-run.adoc[]
+include::local-db-operations.adoc[]
+include::local-post-setup.adoc[]
+include::local-faq.adoc[]

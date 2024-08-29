@@ -1,0 +1,202 @@
+
+==== Excel file Data Details
+
+===== Sheet1: admin
+
+The `admin` sheet contains following columns.
+
+[%noheader, cols="1,2,2"]
+|===
+|**Column Name** ^| _login_id_ ^| _admin_password_
+
+|**Description**
+| **Mandatory field** +
+The unique ID (this column should contain unique values) from which admin can use it for login in Admin app. Verify login_id has AlphaNumeric Characters only without space.
+| **Mandatory field** +
+The admin password to login to the admin app. Verify password has: +
+1. Length more than 8 characters. +
+2. Contains letter from any of 3 categories +
+    a. Lowercase (a-z) +
+    b. Uppercase (A-Z) +
+    c. Digits (0-9) +
+    d. Special Characters (`_`, `-`, `!`, `$`, `#`, `%`, `@`) +
+3. No space allowed. +
+
+|**Sample Values**
+|test-caat-dev
+|ajatmd11Arug500TAeCne
+|===
+
+
+[NOTE]
+====
+* These Admin _login_id_ and _admin_password_ will be the credentials to login to Admin App.
+* Admin are created to manage customers.
+* One admin can manage multiple customers.
+* Multiple admins cannot manage single customer.
+====
+
+
+===== Sheet2: facility_type
+
+The `facility_type` sheet contains following columns.
+
+[%noheader, cols="2"]
+|===
+| **Column** ^| _name_
+|**Description** | **Mandatory field** +
+Contains the facility type name. Name can be in English or Japanese.
+| **Sample Values** | Parking_Type1
+|===
+
+[NOTE]
+====
+* Facility Type table is to declare the types of facilities that customer may have.
+* E.g., Parking_Type1, Convenience Store, Garage, Supermarket are few different facility types.
+====
+
+===== Sheet3: customer
+
+The `customer` sheet contains following columns.
+
+[%noheader, cols="8"]
+|===
+| **Column** ^| _customer_name_ ^| _admin_login_id_ ^| _auth_url_ ^| _base_url_ ^| _client_id_ ^| client_secret ^| application_id
+
+| **Description**
+| **Mandatory field** +
+Customer name is supported in English and Japanese. Japanese Character '。' is not supported.
+| **Mandatory field** +
+Verify admin _login_id_ is present in `admin` data
+| **Optional field** Add a valid auth URL
+| **Optional field** Add a valid base URL
+| **Optional field** Add a valid client ID
+| **Optional field** Add a valid client secret
+| **Optional field** Verify application ID is in valid format
+
+| **Sample Values**
+| 顧客A
+| test-caat-dev
+| Example: +
+AITRIOS Developer Edition: +
+`https://auth.aitrios.sony-semicon.com/oauth2/default/v1/token` (Portal Endpoint) +
+AITRIOS Enterprise Edition: +
+`https://login.microsoftonline.com/TENANT_ID` (Change the TENANT_ID section)
+| Example: +
+https://console.aitrios.sony-semicon.com/api/v1
+| aum12d4cp2jbcfl12112
+| df457d4cp2jbcfl12154
+| Empty for developer edition and `Application ID` in case of enterprise edition
+
+|===
+
+
+[NOTE]
+====
+* Customers are managed by SIer/Admin.
+* Each customer can be managed ONLY by a single Admin.
+* Usually, each customer will have one AITRIOS Project, AITRIOS Console subscription.
+* Customer may buy Developer edition or Enterprise edition of AITRIOS.
+* Obtain the console credentials from the AITRIOS portal (Developer edition) or AITRIOS representative (Enterprise edition).
+* Console credentials are required to fetch the angle of view from the camera  while contractor is setting the camera at customer premise.
+* After adding the customer using caat-helper, updating the `admin_login_id` to that customer is not supported in caat-helper.
+* Optional fields in customer sheet can also be populated in Admin App (once the Database is populated).
+====
+
+
+===== Sheet4: device_type
+
+The `device_type` sheet contains following columns.
+
+[%noheader, cols="3"]
+|===
+| **Column** ^| _name_ ^| _sample_image_path_
+| **Description** | **Mandatory field** +
+Contains the device type name. Name can be in English or Japanese. | **Mandatory field** +
+Path to the sample image. +
+Make sure the images are present in the machine that run `caat-helper`.
+Mention the absolute path to the image.
+| **Sample Values**| GarageDevice | /path/to/sample-images/garage.jpeg
+|===
+
+[NOTE]
+====
+* Device Type table is to declare the types of devices that will be installed at customer' facilities(premise)
+* E.g., Device to be installed at the shop entry/exit, one near the cashier counter, one right in the middle of the shop.
+* Sample images are the images that will be displayed in contractor app as reference image  while contractor adjusts the camera angle.
+* It is recommended to keep sample image resolution lower (around 640x480). Also, it is recommended to keep image size low, so that it is fetched quickly on contractor app.
+====
+
+
+===== Sheet5: facility
+
+The `facility` sheet contains following columns.
+
+[%noheader, cols="8"]
+|===
+| **Column** | _facility_name_ | _prefecture_ | _municipality_ | _effective_start_jst_ | _effective_end_jst_ | _customer_name_ | _facility_type_
+| **Description**   | **Mandatory field** +
+Add a valid facility name. Name can be in English or Japanese. | **Mandatory field** +
+Add the prefecture where the facility is located | **Mandatory field** +
+Add municipality to link to the facility | **Mandatory field** +
+Add start time and verify effective start time is a valid date and in the **future** | **Mandatory field** +
+Add end time and verify effective end time is a valid date and greater than effective start time | **Mandatory field** +
+Add customer name to link to the facility and verify the customer name exists in the `customer` sheet | **Mandatory field** +
+Mention the facility type and verify it is present in the facility_type sheet
+| **Sample Values** | パーキング1 | 神奈川県  | 厚木市 | 2024-06-28T09:00:00+00:00 | 2024-12-14T09:00:00+00:00 | 顧客A |Parking_Type1
+|===
+
+* Regarding prefecture column, it should contain any value from following table.
+
+[%noheader, cols="5"]
+|===
+^| 北海道 ^| 埼玉県 ^| 岐阜県 ^| 鳥取県 ^| 佐賀県
+^| 青森県 ^| 千葉県 ^| 静岡県 ^| 島根県 ^| 長崎県
+^| 岩手県 ^| 東京都 ^| 愛知県 ^| 岡山県 ^| 熊本県
+^| 宮城県 ^| 神奈川県 ^| 三重県 ^| 広島県 ^| 大分県
+^| 秋田県 ^| 新潟県 ^| 滋賀県 ^| 山口県 ^| 宮崎県
+^| 山形県 ^| 富山県 ^| 京都府 ^| 徳島県 ^| 鹿児島県
+^| 福島県 ^| 石川県 ^| 大阪府 ^| 香川県 ^| 沖縄県
+^| 茨城県 ^| 福井県 ^| 兵庫県 ^| 愛媛県 ^|
+^| 栃木県 ^| 山梨県 ^| 奈良県 ^| 高知県 ^|
+^| 群馬県 ^| 長野県 ^| 和歌山県 ^| 福岡県 ^|
+|===
+
+
+[NOTE]
+====
+* Facility belongs to a customer.
+* Each customer can have as many facilities as needed.
+* Facility table consists the details regarding the facility at which the cameras will be installed.
+* Facility will have attributes like, location details - Prefecture, Municipality
+* After adding the facility using caat-helper, updating the `customer_name` or `facility_type` to that facility is not supported in caat-helper.
+====
+
+===== Sheet6: device
+
+The `device` sheet contains following columns.
+
+[%noheader, cols="6"]
+|===
+| **Column** | _device_name_ | _device_id_ | _customer_name_ | _facility_name_ | _device_type_name_
+| **Description** | **Mandatory field** +
+Add a valid device name. Name can be in English or Japanese. | **Mandatory field** +
+Add a valid device_id | **Mandatory field** +
+Add customer name to link to the device and verify the customer name exists in the `customer` sheet | **Mandatory field** +
+Add facility name to link to the facility and verify the facility name is present in the facility sheet | **Mandatory field** +
+Add device type name to link to the device type and verify device type name is present in the device type sheet
+| **Sample Values** | DEVICE_SZP123S_0001 | Aid-00010004-0000-2000-0000-000000000000 | 顧客A | パーキング1 | GarageDevice
+|===
+
+[NOTE]
+====
+* _device_name_ can be anything of user choice.
+* _device_id_ must match with the ID that is enrolled in AITRIOS Console.
+* It is assumed that the device is enrolled to AITRIOS before using the AAT application (by Contractor/Admin).
+* Device is linked to facility where it will be installed.
+* After adding the device using caat-helper, updating the `customer_name` or `facility_name` or `device_type_name`  to that device is not supported in caat-helper.
+* Following Edge AI Device types are supported:
+    ** SZP123S-001
+    ** AIH-lVRW2
+    ** CSV26
+====

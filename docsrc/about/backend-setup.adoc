@@ -1,0 +1,208 @@
+
+== Backend Server (backend)
+
+=== Requirements
+
+* Python 3.10
+* Pipenv
+* Docker
+
+=== Quick start
+
+==== Prepare environment
+
+[NOTE]
+====
+The following commands assume `backend` as current working directory.
+====
+
+Make a copy of example env as following:
+
+[source,shell]
+----
+# from backend
+$ cp .env.example .env
+----
+
+Populate following mandatory variables:
+
+* DATABASE_URL
+* APP_SECRET_KEY
+
+[NOTE]
+====
+There are other optional environment variable, if changes, please be careful to modify at other places.
+====
+
+===== Get DATABASE_URL
+
+Postgres Database is used for local development.
+
+* Run docker command to start Postgres Server (DB Server instance) container
+
+[source,shell]
+----
+# from backend
+$ docker run --env "POSTGRES_USER=postgres" --env "POSTGRES_PASSWORD=V3ry5tr0ndbServerPa55" --env "POSTGRES_DB=caatdb" --publish 5432:5432 --name postgres-container --detach postgres:13
+----
+
+* The DATABASE_URL would look like following:
+
+[source,shell]
+----
+DATABASE_URL="postgresql://postgres:V3ry5tr0ndbServerPa55@localhost:5432/caatdb"
+----
+
+* Replace the DATABASE_URL value in `.env` file.
+
+[NOTE]
+====
+* If Database password contains special characters, please replace with encoding values in DATABASE_URL.
+* Please see: link:https://www.prisma.io/docs/orm/reference/connection-urls#special-characters[Connection URLs^]
+====
+
+===== Get APP_SECRET_KEY
+
+* To generate App secret key of 32 characters in length (to sign the JWT and encrypt/decrypt the credentials), use following command:
+
+[source,shell]
+----
+# from backend
+$ openssl rand -base64 24
+----
+
+* Copy the output and Replace the secret key value. Example APP_SECRET_KEY:
+
+[source,shell]
+----
+APP_SECRET_KEY="hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
+----
+
+* Use the generated Key instead of copying the example key. It is only for reference.
+* Replace the APP_SECRET_KEY value in `.env` file.
+
+[NOTE]
+====
+If the secret key is changed, the data already signed/encrypted will be of no use (redo the setup).
+====
+
+==== Run Backend Server
+
+* Create virtual environment
+
+[source,shell]
+----
+# from backend
+$ pipenv shell
+$ pipenv install
+
+# Install dev packages
+$ pipenv install --dev
+----
+
+* Generate ORM code (run only whenever there is change in Database schema). Additional details about prisma, see backend/prisma/README.md
+
+[source,shell]
+----
+# from backend
+$ make model
+----
+
+* Apply schema changes into the database. (run for the first time or only whenever there is change in Database schema)
+* Define database schema in backend/prisma/schema.prisma. link:https://www.prisma.io/docs/concepts/components/prisma-schema[Reference]
+
+* Apply schema changes into the database.
+
+[source,shell]
+----
+# from backend
+$ make migrate
+----
+
+* Start development server
+
+[source,shell]
+----
+# from backend
+$ make dev
+----
+
+[NOTE]
+====
+Make a note of the backend server URL with the port which is required while setting contractor app and admin app.
+Also make backend URL accessible from contractor app and admin app. If using Codespaces, set port visibility to `public`.
+====
+
+[NOTE]
+====
+* If there is change in environment variables (`.env`) and would like to export them to current terminal, run following command:
+
+[source,shell]
+----
+# from backend
+$ export $(grep -v '^#' .env | xargs)
+----
+====
+
+==== DB Operations
+
+Utility scripts are provided to perform following:
+
+
+===== Populate data to DB
+
+* When DB is created for the first time, it is empty.
+* Data needs to be filled.
+* Fill backend/scripts/SIer-Data.json
+* Edit backend/scripts/seed.py and provide the APP_SECRET_KEY value as generated in previous step.
+* Execute following backend/scripts/seed.py (set the secret key and json file in the script)
+
+[NOTE]
+====
+Executing following scripts would first clear the data from Database if any.
+====
+
+[source,shell]
+----
+# from backend
+$ python scripts/seed.py
+----
+
+[NOTE]
+====
+* Alternatively, CAAT Helper (see: tools/caat-helper/README.md) can be used to populate the initial data to Database.
+* If `caat-helper` is used for local development/hosting, please set BUILD_ENV variable before using any caat-helper commands. +
+`$ export BUILD_ENV=local`
+====
+
+* View the populated data using prisma studio
+
+[source,shell]
+----
+# from backend
+$ prisma studio --schema=./prisma/schema.local.prisma
+----
+
+===== Generate QR codes
+
+* After DB is created and data is populated, a QR code is needed to open the contractor App.
+* Make sure to setup the contractor app (see: web-app/README.md) and copy the URL of contractor app.
+* Edit URL variable in the backend/scripts/generate_qr.py and replace with Contractor App URL
+* Edit backend/scripts/generate_qr.py and provide the APP_SECRET_KEY value as generated in previous step
+* Execute following backend/scripts/generate_qr.py to generate all the QR codes (all the facility QR codes) of Contractor app URL.
+
+[source,shell]
+----
+# from backend
+$ python scripts/generate_qr.py
+----
+
+===== Reset Admin Login Password (Optional)
+
+* To reset admin password execute following script.
+
+[source,shell]
+----
+# from backend
+$ python scripts/reset_pass.py
+----

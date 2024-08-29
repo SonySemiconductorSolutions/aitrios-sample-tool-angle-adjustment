@@ -1,0 +1,208 @@
+== backendサーバー (backend)
+
+=== 要件
+
+* Python 3.10
+* Pipenv
+* Docker
+
+=== クイックスタート
+
+==== 環境の準備
+
+[注記]
+====
+以下のコマンドは`backend`をカレントディレクトリとして想定しています。
+====
+
+以下のようにサンプル環境のコピーを作成します:
+
+[source,shell]
+----
+# from backend
+$ cp .env.example .env
+----
+
+以下の必須変数を設定します:
+
+* DATABASE_URL
+* APP_SECRET_KEY
+
+[注記]
+====
+任意の環境変数は他にもあるため、変更する場合、他の箇所の修正には注意を払ってください。
+====
+
+===== Get DATABASE_URL
+
+ローカル開発にはPostgresデータベースが使用されます。
+
+* Run dockerコマンドを実行してPostgresサーバー (DBサーバーインスタンス) コンテナを開始します。
+
+[source,shell]
+----
+# from backend
+$ docker run --env "POSTGRES_USER=postgres" --env "POSTGRES_PASSWORD=V3ry5tr0ndbServerPa55" --env "POSTGRES_DB=caatdb" --publish 5432:5432 --name postgres-container --detach postgres:13
+----
+
+* DATABASE_URLは以下のようになります:
+
+[source,shell]
+----
+DATABASE_URL="postgresql://postgres:V3ry5tr0ndbServerPa55@localhost:5432/caatdb"
+----
+
+* `.env` ファイルのDATABASE_URL値を置き換えます
+
+[注記]
+====
+* データベースのパスワードには特殊文字が含まれます。DATABASE_URL内のエンコーディング値で置き換えてください
+* こちらを参照してください: link:https://www.prisma.io/docs/orm/reference/connection-urls#special-characters[Connection
+URLs^]
+====
+
+===== Get APP_SECRET_KEY
+
+* 32文字の長さのアプリ秘密鍵 (JWTにサインし、認証情報を暗号化・複合化)の生成には、以下のコマンドを使用します:
+
+[source,shell]
+----
+# from backend
+$ openssl rand -base64 24
+----
+
+* アウトプットをコピーし、秘密鍵値を置き換えます。例 APP_SECRET_KEY:
+
+[source,shell]
+----
+APP_SECRET_KEY="hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
+----
+
+* サンプル鍵をコピーする代わりに、生成した鍵を使用します。これはあくまで参照用です。
+* `.env` ファイルのAPP_SECRET_KEY値を置き換えます。
+
+[注記]
+====
+秘密鍵を変更した場合、既にサイン・暗号化されたデータは無効になります (セットアップのやり直し)。
+====
+
+==== backendサーバーの実行
+
+* 仮想環境を作成します。
+
+[source,shell]
+----
+# from backend
+$ pipenv shell
+$ pipenv install
+
+# Install dev packages
+$ pipenv install --dev
+----
+
+* ORMコードを作成します(データベーススキーマに変更がでた場合にのみ実行）。プリズマに関する追加の詳細は、backend/prisma/README.md　を参照してください。
+
+[source,shell]
+----
+# from backend
+$ make model
+----
+
+* スキーマ変更をデータベースに適用します。 (初めての場合、またはデータベーススキーマに変更があった場合のみ実行します)
+* backend/prisma/schema.prisma.のデータベーススキーマを定義します link:https://www.prisma.io/docs/concepts/components/prisma-schema[参考]
+
+* スキーマ変更をデータベースに適用します。
+
+[source,shell]
+----
+# from backend
+$ make migrate
+----
+
+* 開発サーバーの開始
+
+[source,shell]
+----
+# from backend
+$ make dev
+----
+
+[注記]
+====
+コントラクターアプリと管理者アプリを設定する際に必要なポートをもつbackendサーバーURLを記録しておいてください。
+また、コントラクターアプリと管理者アプリはbackend URLにアクセスできるようにしておいてください。Codespacesを使う場合は、ポートの可視性を `公開`にしてください。
+====
+
+[注記]
+====
+環境変数 (`.env`) に変更があり、かつ現行のターミナルにエクスポートしたい場合、以下のコマンドを実行します:
+
+[source,shell]
+----
+# from backend
+$ export $(grep -v '^#' .env | xargs)
+----
+====
+
+==== DBの操作
+
+以下を実行するためのユーティリティスクリプトが示されます:
+
+
+===== PDBへデータを移入
+
+* 最初のデータベース作成時は空です。
+* データを入力する必要があります。
+* backend/scripts/SIer-Data.jsonに入力
+* backend/scripts/seed.pyを編集し、前のステップで生成したAPP_SECRET_KEY値を入力します。
+* 以下のbackend/scripts/seed.pyを実行します (スクリプト内に秘密鍵とjsonファイルを設定)
+
+[注記]
+====
+以下のスクリプトを実行することで、データベース内にデータがある場合は初めに消去します。
+====
+
+[source,shell]
+----
+# from backend
+$ python scripts/seed.py
+----
+
+[注記]
+====
+* また、データベースに初期データを生成する際にはCAATヘルパー (see: tools/caat-helper/README.md) を使用可能です。
+* `caat-helper` がローカル開発・ホスティングに使用される場合、任意のcaatヘルパーコマンドを使用する前に BUILD_ENV変数を設定してください。 +
+`$ export BUILD_ENV=local`
+====
+
+* prisma studioを使用して入力されたデータを表示
+
+[source,shell]
+----
+# from backend
+$ prisma studio --schema=./prisma/schema.local.prisma
+----
+
+===== Generate QR codes
+
+* データベースの作成、およびデータの入力後、コントラクターアプリを開くためにはQRコードが必要となります。
+* コントラクターアプリをセットアップし (参照: web-app/README.md) コントラクターアプリのURLをコピーしてください。
+* backend/scripts/generate_qr.pyのURL変数を編集し、コントラクターアプリURLと置き換えてください。
+* backend/scripts/generate_qr.pyを編集し、前のステップで生成したAPP_SECRET_KEY値を入力します。
+* 次のbackend/scripts/generate_qr.pyを実行し、すべてのコントラクターアプリURLのQRコード(すべての施設のQRコード)を生成します。
+
+[source,shell]
+----
+# from backend
+$ python scripts/generate_qr.py
+----
+
+===== Reset Admin Login Password (Optional)
+
+* 管理者パスワードのリセットは、以下のスクリプトを実行します。
+
+[source,shell]
+----
+# from backend
+$ python scripts/reset_pass.py
+----

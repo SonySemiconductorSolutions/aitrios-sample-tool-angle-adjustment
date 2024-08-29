@@ -1,0 +1,42 @@
+name: Deploy Documentation
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.0'
+
+    - name: Install Asciidoctor
+      run: |
+        gem install asciidoctor
+        gem install asciidoctor-diagram
+        gem install asciidoctor-multipage
+        gem install asciidoctor-pdf
+
+    - name: Build documentation
+      run: |
+        cd docsrc
+        bash ./scripts/build_docs.sh
+
+    - name: Copy output to docs
+      run: |
+        cp -r docsrc/output-docs docs
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs

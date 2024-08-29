@@ -1,0 +1,60 @@
+{
+  "facility_type": [
+    {
+      "name": "Parking"
+    }
+  ],
+  "device_type": [
+    {
+      "name": "Entrance Device",
+      "sample_image_path": "/path/to/sample/image"
+    },
+    {
+      "name": "Exit Device",
+      "sample_image_path": "/path/to/sample/image"
+    }
+  ],
+  "admin": [
+    {
+      "login_id": "INSERT_UNIQUE_LOGIN_ID",
+      "admin_pass": "INSERT USER_PASS",
+      "customers": [
+        {
+          "customer_name": "INSERT CUSTOMER NAME",
+          "auth_url": "insert/auth/url",
+          "base_url": "insert/base/url",
+          "client_id": "INSERT_CLIENT_ID",
+          "client_secret": "INSERT_CLIENT_SECRET",
+          "application_id": "INSERT_APPLICATION_ID_IF_ENTERPRISE",
+          "facilities": [
+            {
+              "facility_type_name": "Parking",
+              "prefecture": "INSERT_PREFECTURE",
+              "municipality": "INSERT_MUNICIPALITY",
+              "facility_name": "INSERT_FACILITY_NAME",
+              "effective_start_utc": "YYYY-MM-DDTHH:MM:SS+00:00",
+              "effective_end_utc": "YYYY-MM-DDTHH:MM:SS+00:00",
+              "devices": [
+                {
+                  "device_id": "Aid-00010004-0000-2000-9002-000000000xxx",
+                  "device_name": "ADD_DEVICE_NAME",
+                  "device_type_name": "Entrance Device"
+                },
+                {
+                  "device_id": "Aid-00010004-0000-2000-9002-000000000xxx",
+                  "device_name": "ADD_DEVICE_NAME",
+                  "device_type_name": "Entrance Device"
+                },
+                {
+                  "device_id": "Aid-00010004-0000-2000-9002-000000000xxx",
+                  "device_name": "ADD_DEVICE_NAME",
+                  "device_type_name": "Entrance Device"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

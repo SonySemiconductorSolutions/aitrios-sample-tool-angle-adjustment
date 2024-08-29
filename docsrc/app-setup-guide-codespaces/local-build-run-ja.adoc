@@ -1,0 +1,38 @@
+
+== ビルドと実行
+
+=== ソースコードのビルドとアプリの実行
+
+* 環境が正常に作成されたら、`local-setup.sh`スクリプトを使用してソースコードをビルド・実行します。
+* ソースコードがDockerイメージとしてビルドされたら、docker composeを使用して実行します。
+* 以下のコマンドで`local-setup.sh` スクリプトを実行します。ビルドには5-10分程度かかる場合があります。
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash local-setup.sh
+----
+
+* Dockerイメージのビルドと実行が成功したら、以下のアプリはライブになります。
+
+** 管理者アプリ
+** コントラクターアプリ
+** バックエンドサーバー
+
+* アプリが作成されても、データベースはまだ空のため、データを使用することはできません。
+* ポート転送に関連したスクリプトの実行に問題があった場合は、こちらを参照してください: <<faq-port-forward, Troubleshoot Port Forward>>
+
+[注記]
+====
+* スクリプトは`tools/local-setup-codespaces`の下に'caatdbdata'ディレクトリを作成します。AATの開始から終了までのデータを保存するためにこのディレクトリは必要となります。
+* 入力されたデータはすべて `caatdbdata`ディレクトリに表示され、データベースパスワードも設定として保存されます。
+* 新しくセットアップする度に `caatdbdata`ディレクトリを消去してください。
+* Command:
+```
+# from tools/local-setup-codespaces
+$ sudo rm -rf caatdbdata
+```
+====
+
+* データベースへのデータの入力については <<db-operations, DB Operations>> 章で説明します。
+* アプリへのアクセスについては <<post-setup, Post Setup>> 章で説明します。

@@ -1,0 +1,23 @@
+= 画角調整ツール (AAT)
+:docinfo: shared
+:doctype: book
+:data-uri:
+:title: Angle Adjustment Tool (AAT) Local Setup
+:toc: left
+:toclevels: 3
+:sectanchors:
+:sectlinks:
+:sectnums:
+:multipage-level: 2
+:icons: font
+:encoding: utf-8
+
+
+AATドキュメントへようこそ。このドキュメントではGitHub Codespaceを使用したローカルセットアップについて説明します。
+
+include::local-introduction-ja.adoc[]
+include::local-environment-setup-ja.adoc[]
+include::local-build-run-ja.adoc[]
+include::local-db-operations-ja.adoc[]
+include::local-post-setup-ja.adoc[]
+include::local-faq-ja.adoc[]

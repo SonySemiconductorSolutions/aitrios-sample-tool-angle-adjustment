@@ -1,0 +1,24 @@
+
+== Introduction
+
+=== Block Diagram
+
+image::images/caat-localsetup-design.png[Codespaces Design]
+
+[cols="1,3"]
+|===
+|Block |Description
+
+|Backend Server
+|Backend server running on Docker serves the API for Admin and Contractor App.
+
+|Contractor App
+|Web application running on Docker as Contractor App.
+
+|Admin App
+|Web application running on Docker as Admin App.
+
+|Postgres Server Database
+|Database for Postgres Server run from docker contains the information about the admin, customers and application reviews. It also stores the Sample and Captured images of the Cameras.
+
+|===
