@@ -8,7 +8,6 @@
     - [Hardware requirements](#hardware-requirements)
     - [Software requirements](#software-requirements)
 - [Documentation](#documentation)
-    - [GitHub Pages](#github-pages)
     - [Release Artifact](#release-artifact)
     - [Build documentation (Optional)](build-documentation-optional)
 - [Tested on](#tested-on)
@@ -58,11 +57,6 @@ Documentation contains following:
 * User Guide for both Contractor and Admin App
 * Hosting App in Azure Cloud
 * Hosting App in GitHub Codespaces
-
-### GitHub Pages
-
-* To view documents in GitHub hosted page, please click link in
-**About** section of this repository.
 
 ### Release Artifact
 
