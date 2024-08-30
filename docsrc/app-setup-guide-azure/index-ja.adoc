@@ -1,0 +1,24 @@
+= 画角調整ツール (AAT)
+:docinfo: shared
+:doctype: book
+:data-uri:
+:title: Angle Adjustment Tool (AAT) Documentation
+:toc: left
+:toclevels: 3
+:sectanchors:
+:sectlinks:
+:sectnums:
+:multipage-level: 2
+:icons: font
+:encoding: utf-8
+
+
+AATドキュメントへようこそ。このドキュメントにはアプリケーションのビルド、コンパイル、ホスト、および使用方法に関する総合的な情報が記載されています。
+
+
+include::introduction-ja.adoc[]
+include::environment-setup-ja.adoc[]
+include::build-deploy-ja.adoc[]
+include::db-operations-ja.adoc[]
+include::post-setup-ja.adoc[]
+include::faq-ja.adoc[]

@@ -1,0 +1,130 @@
+
+== 環境のセットアップ
+
+本ページではクラウドにAATアプリケーションをセットアップする際の手順を説明します。
+
+
+- Azureクラウド環境のセットアップには link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces の概要^] の使用を推奨します。また、Ubuntuマシンでも可能です。
+- ホストマシンがAzureにアクセスできること、そしてデータベースポートに接続できることを確認してください (Port: 1443)。
+
+
+=== 前提条件
+
+* 次のステップへ進む前に、必ず以下のソフトウェアをインストールしてください。
+** Ubuntu 20.04 (v20.04.6 LTS にてテスト済み)
+** Python 3.10 (v3.10.12 にてテスト済み)
+** link:https://docs.docker.com/engine/install/ubuntu/[Install Docker Engine on Ubuntu^] (v26.1.4-1 にてテスト済み)
+*** Dockerのインストール後、ルート以外のユーザがDockerを設定するには、以下を参照してください。link:https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[Manage Docker as a non-root user]
+** link:https://learn.microsoft.com/ja-jp/cli/azure/install-azure-cli-linux?pivots=apt[Linux に Azure CLI をインストールする^] (v2.60.0  にてテスト済み)
+** link:https://jqlang.github.io/jq/download/[Install `jq` JSON Processor Tool^] (v1.6  にてテスト済み)
+* クラウド側には、有効なAzureサブスクリプションを含むAzureログイン認証情報が必要です。
+
+=== クラウド環境のセットアップ
+
+本章で実行するすべてのコマンドは`tools/cloud-setup/scripts`を作業ディレクトリとして想定しています。
+
+[注記]
+====
+レポジトリを複製したもう一つのターミナルを開くと、以下のコマンドを実行できます。
+====
+
+==== 環境ファイル
+
+*  _.env_ ファイル内に以下の環境変数を更新してください。
+* PLACEHOLDER_*値を _.env_ ファイル内の実際の値に置き換えます。
+* 値の例を含む _.env.example_ ファイルを参照してください。
+* 以下の表で、値の例と共に使用される環境変数について説明します。
+
+[cols="1,2,2,1"]
+|===
+|変数 |使用法 |有効な文字セット | 値の例
+
+|APP_NAME
+|クラウドサービスを命名する際には、本アプリケーション名が使用されます。名前は必ず一意の名前にしてください。
+| `A-Z`,`a-z`,`0-9` +
+長さ: 4-50文字 +
+| cameratool2024, caat2024
+
+|LOCATION
+|クラウドインスタンスはこのリージョン内に作成されます。
+| すべての可能な値を一覧表示するためにこのコマンドを実行します。 +
+`az account list-locations -o table` +
+| japaneast, japanwest, eastus
+
+|BACKEND_NAME
+|この名前はアプリサービス内のバックエンドサーバーを作成する際に使用され、 https://BACKEND_NAME.azurewebsites.net. として表示されます。この値は必ずAzure全般にわたって一意のものにしてください。
+| `A-Z`,`a-z`,`0-9`, `.`, `_` +
+長さ: 2-60 文字 +
+| caatbackend, caatbackendserver, caatbackendapp.
+
+|WEBAPP_NAME
+|この名前はアプリサービス内のコントラクターアプリを作成する際に使用され、 https://WEBAPP_NAME.azurewebsites.net　として表示されます。この値は必ずAzure全般にわたって一意のものにしてください。
+| `A-Z`,`a-z`,`0-9`, `.`, `_` +
+長さ: 2-60 文字 +
+| caatwebapp, caatcontractor, caatcontractorapp.
+
+|WEBADMIN_NAME
+|この名前はアプリサービス内の管理者アプリを作成する際に使用され、 https://WEBADMIN_NAME.azurewebsites.net　として表示されます。この値は必ずAzure全般にわたって一意のものにしてください。
+| `A-Z`, `a-z`, `0-9`, `.`, `_` +
+長さ: 2-60 文字 +
+| caatwebadmin, caatadminapp, caatadmin.
+
+|APP_SECRET_KEY
+|英数字のみを含む32文字の強力なキーです。本キーはJWTのサインおよび認証情報の暗号化・復号化に使用されます。 +
+| `A-Z`, `a-z`, `0-9` +
+以下のコマンドを実行して作成します: +
+`openssl rand -base64 24` +
+| "hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
+
+|AZURE_SUBSCRIPTION_ID
+|AATインスタンスのデプロイ先のAzureクラウドのサブスクリプションID
+|
+|123cdef6-1234-1234-bc2e-abc4566322bd
+
+|SQL_DATABASE_PASSWORD
+|SQLサーバー管理者用の強力なパスワードです。.
+| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%`, `@` +
+長さ: 8-128 文字 +
+| "V3ry5tr0ngSq1ServerPa55"
+
+|===
+
+==== クラウドのセットアップ
+
+[注記]
+====
+* リソースの作成に必要な権限を取得してからAzure CLIのAzureアカウントにログインしてください。
+* Azure CLIへのログインは、以下のリンクを参照してください。
+
+- link:https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli-interactively[Azure CLI を使用した対話形式でのサインイン^]
+- link:https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli-service-principal[Azure CLI でサービス プリンシパルを使用したサインイン^]
+====
+
+* 以下のコマンドを実行してログインに成功したこと、およびアウトプットにサブスクリプションの詳細が表示されていることを確認してください。
+
+[source,shell]
+----
+$ az account show
+----
+
+[注記]
+====
+管理者アプリユーザーセッションはデフォルトで1440分間維持されます。時間を変更する場合は、 `tools/cloud-setup/scripts/azure/arm-template-caat.json`で編集してください。DEFAULT_JWT_EXPIRED_MINUTESのフィールドを確認して値を分単位で更新します。
+====
+
+* Azureにクラウドインスタンスを作成するには、`cloud-setup.sh`を実行してください。クラウドインスタンスの作成には10分ほどかかる場合があります。
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ bash cloud-setup.sh
+----
+
+スクリプトの実行が成功すると、クラウドインスタンスとリソースが作成されます
+Azureポータルを開いて確認してください。
+
+参照テーブルは以下の通りです。`値の例` 列の最初の値が例として表示されています。
+
+**リソースグループ:** rg-cameratool2024
+
+image::images/resource-group-contents-after-setup.png[resource-group-contents-after-setup]

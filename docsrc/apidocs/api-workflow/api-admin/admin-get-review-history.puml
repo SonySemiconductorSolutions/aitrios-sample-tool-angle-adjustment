@@ -1,0 +1,37 @@
+@startuml get review history by device ID
+title Get Review History By Device
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired) then (yes)
+        :Send HTTP status 401,
+        Auth token is invalid or token expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+: Validate parameters;
+note right
+    1. device_id (mandatory)
+    2. page
+    3. page_size
+end note
+if (Parameters are not valid?) then (yes)
+    : Send HTTP status 400 error;
+    kill
+endif
+if (Device doesn't exist?) then (yes)
+    : Send HTTP status 404 Not found error;
+    kill
+endif
+if (Device is not authorized?) then (yes)
+    : Send HTTP status 403 Permission error;
+    kill
+endif
+: Set Limit and offset based on the page and page size parameters;
+: Get the reviews history by device ID from the database;
+: Send HTTP status 200 with reviews history as response;
+stop
+@enduml

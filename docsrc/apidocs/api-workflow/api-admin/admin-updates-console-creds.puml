@@ -1,0 +1,56 @@
+@startuml Admin updates console credentials
+title Admin Updates Console credentials
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired) then (yes)
+        :Send HTTP status 401,
+        Auth token is invalid or token expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+: Validate parameters;
+note right
+    customer_id (mandatory)
+    client_id (mandatory)
+    client_secret (mandatory)
+    auth_url (mandatory)
+    base_url (mandatory)
+    application_id
+end note
+if (Parameters are not valid?) then (yes)
+    : Send HTTP status 400 error;
+    kill
+endif
+: Get customer by ID from the DB;
+if (Customer doesn't exists?) then (yes)
+    : Send HTTP status 404, Not found error;
+    kill
+endif
+if (Customer is not associated with the current user?) then (yes)
+    : Send HTTP status 403, Permission denied;
+    kill
+endif
+: Get console credentials by the customer ID from the DB;
+if (Unable to get the AITRIOS token with the credentials?) then (yes)
+    : Send HTTP status 403, "Invalid Auth token URL / Client ID / Client secret / Application ID provided";
+    kill
+endif
+if (Base URL is not valid?) then (yes)
+    : Send HTTP status 403, "Invalid Base URL";
+    kill
+endif
+: Encrypt the console credentials;
+note right
+    Following will be encrypted
+    1. client_id
+    2. client_secret
+    3. application_id
+end note
+: Update the Console credentials to the DB;
+: Send HTTP status 200 with success message as reponse;
+stop
+@enduml

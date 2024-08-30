@@ -1,0 +1,38 @@
+
+== Build and Run
+
+=== Source Code build and Run the app
+
+* Once the environment is successfully created, build and run the source code using `local-setup.sh` script.
+* Source code will be built as docker images and will be run using docker compose.
+* Run `local-setup.sh` script with the following command. Build may take around 5-10 minutes.
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash local-setup.sh
+----
+
+* Upon successful build and run of docker images, following apps will be live.
+
+** Admin App
+** Contractor App
+** Backend Server
+
+* Although apps are created, please note that apps cannot be used as Data in the Database is still empty.
+* If there is any issue in execution on the script related to port forwarding, please refer: <<faq-port-forward, Troubleshoot Port Forward>>
+
+[NOTE]
+====
+* The script creates the 'caatdbdata' directory under `tools/local-setup-codespaces`. This directory is required to preserve the data between start-stop of the AAT.
+* All the data populated will be present in `caatdbdata` directory and Database Password is also stored as a configuration.
+* Please clear `caatdbdata` directory for every fresh setup.
+* Command:
+```
+# from tools/local-setup-codespaces
+$ sudo rm -rf caatdbdata
+```
+====
+
+* Populating the Data into Database in explained in  <<db-operations, DB Operations>> chapter.
+* Accessing the apps is explained in <<post-setup, Post Setup>> chapter.

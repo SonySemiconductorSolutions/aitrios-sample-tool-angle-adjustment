@@ -1,0 +1,79 @@
+// = Angle Adjustment Tool (AAT)
+:docinfo: shared
+:doctype: book
+:data-uri:
+:title: AAT API Workflow
+:toc: left
+:toclevels: 3
+:sectanchors:
+:sectlinks:
+:sectnums:
+:multipage-level: 2
+
+
+== API Workflow
+
+=== Admin API workflow
+
+==== Admin Login
+
+plantuml::api-workflow/api-admin/admin-login.puml[]
+
+==== Get latest reviews
+
+plantuml::api-workflow/api-admin/admin-get-latest-reviews.puml[]
+
+==== Get reviews history
+
+plantuml::api-workflow/api-admin/admin-get-review-history.puml[]
+
+==== Get review by ID
+
+plantuml::api-workflow/api-admin/admin-get-review-by-id.puml[]
+
+
+==== Update review by ID
+
+plantuml::api-workflow/api-admin/admin-approve-or-reject-review-by-id.puml[]
+
+==== Get customer list
+
+plantuml::api-workflow/api-admin/admin-get-customer-list.puml[]
+
+==== Get customer details by ID
+
+plantuml::api-workflow/api-admin/admin-get-customer-details.puml[]
+
+==== Update customer console credentials
+
+plantuml::api-workflow/api-admin/admin-updates-console-creds.puml[]
+
+==== Get device connection state
+
+plantuml::api-workflow/api-admin/admin-get-device-status.puml[]
+
+
+=== Contractor API workflow
+
+==== Contractor Authorize
+
+plantuml::api-workflow/api-contractor/contractor-auth.puml[]
+
+==== Get facility devices
+
+plantuml::api-workflow/api-contractor/contractor-get-facility-devices.puml[]
+
+
+==== Get camera / reference image by device ID
+
+plantuml::api-workflow/api-contractor/contractor-get-images.puml[]
+
+
+==== Get device status
+
+plantuml::api-workflow/api-contractor/contractor-gets-device-status.puml[]
+
+
+==== Create review
+
+plantuml::api-workflow/api-contractor/contractor-create-review.puml[]

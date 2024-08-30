@@ -1,0 +1,58 @@
+services:
+  caatdb:
+    image: postgres:13
+    container_name: postgresql-container
+    volumes:
+      - ./caatdbdata/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: caatdb
+
+  caat-backend-base:
+    build:
+      context: ./../../backend
+      dockerfile: Dockerfile-base
+    image: caat-backend-base:latest
+    command: echo "Backend Base image built"
+
+  caat-backend-server:
+    build:
+      context: ./../../backend
+      dockerfile: Dockerfile
+      args:
+        BUILD_ENV: local
+    image: caat-backend-service:latest
+    ports:
+      - "8000:8000"
+    depends_on:
+      - caatdb
+      - caat-backend-base
+    restart: on-failure
+    environment:
+      PYTHONUNBUFFERED: 1
+      APP_SECRET_KEY: ${APP_SECRET_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+
+  contractor-app:
+    build:
+      context: ./../../web-app
+      dockerfile: Dockerfile
+    image: caat-webapp:latest
+    depends_on:
+      - caat-backend-server
+    ports:
+      - "3000:3000"
+
+  caat-admin-app:
+    build:
+      context: ./../../web-admin
+      dockerfile: Dockerfile
+    image: caat-webadmin:latest
+    depends_on:
+      - caat-backend-server
+      - contractor-app
+    ports:
+      - "3001:3000"

@@ -1,0 +1,158 @@
+
+== DBの操作
+
+* CAAT-helper(`caat-helper`) はpythonのパッケージの１つで、CAATデータベースと相互作用するコマンドラインインターフェイスを提供します。
+* caat-helperは以下のことを実行できます:
+  ** DBに生成されるエクセルデータ(管理者およびカスタマーの詳細)の読み込み
+  ** 管理者パスワードのリセット
+  ** DBの消去
+  ** コントラクターアプリURLのQRコードの作成
+
+CAAT-helperにより、ローカル (開発中) およびクラウド (プロダクション中/実際のセットアップ)上にDBを入力することができます。
+
+[[whitelist-host-machine-ip]]
+=== ホストマシンIPのホワイトリスト
+
+* クラウドのセットアップ中(前セクション)に、仮想ネットワークでホストマシンIPをホワイトリストします。
+* 何らかの理由でセットアップ手順が中断され、次の日に再開、または他のマシンで再開する場合、ホストマシンIPが変更されている可能性があります。
+* データベースにアクセスするホストマシンIPを追加するには、以下のコマンドを実行してください:
+
+[注記]
+====
+caat-helperコマンドを実行する前に、ホストマシーンIPをホワイトリストします
+====
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ bash allow-host-ip-db.sh
+----
+
+=== インストレーション
+以下のコマンドを実行して仮想環境を作成し、`caat-helper`パッケージをインストールします。
+
+==== 仮想環境の作成
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ python3 -m venv .venv
+----
+
+[[activate-virtual-environment]]
+==== 仮想環境のアクティベート
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ source .venv/bin/activate
+----
+
+==== `caat-helper`パッケージのインストール
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+# Upgrade pip
+$ pip install -U pip
+
+# Install CAAT helper package
+$ pip install ../../caat-helper/
+----
+
+[[set-environment-variables]]
+=== 環境変数の設定
+
+* コマンドの実行には以下の環境変数が必要です。
+
+  - DATABASE_URL (SQLサーバーデータベースの接続文字列)
+  - APP_SECRET_KEY (URLトークンにサイン、及びカスタマー認証情報を暗号化する暗号化キー)
+
+* 環境変数を設定するために以下のコマンドを実行します
+
+[注記]
+====
+caat-helperコマンドを実行する前に、必ずセット環境変数スクリプトを実行してください。
+====
+
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+$ source set-env-var.sh
+----
+
+
+=== prismaクライアントの作成 (一度のみ)
+
+クライアントの生成は、以下のコマンドを実行します。
+
+注意: caat-helper以外のコマンドを実行する前に、必ず初めにこのコマンドを1度のみ実行してください。
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+(.venv) $ caat-helper-init
+----
+
+=== エクセルファイルの作成
+
+* エクセルテンプレートとエクセルサンプルファイルを作成します。
+
+* 以下のコマンドを実行し、現在の作業ディレクトリにエクセルファイルを作成します:
+
+[source,shell]
+----
+(.venv) $ caat-helper db export-template
+----
+
+* 上記のエクスポートコマンドにより２つのファイルがアウトプットされます。
+  ** `SIerData_template.xlsx`: データを入力するエクセルテンプレートファイル
+  ** `SIerData_template.xlsx`: 参照用のエクセルにサンプルデータが入ったエクセルサンプルファイル
+
+=== エクセルファイルの準備
+
+* 有効なデータをシートに入力するエクセルテンプレートが作成されます。
+
+[注記]
+====
+* Codespacesを使用する場合、エクセルファイルをホストマシンへダウンロードする必要があるかもしれません。
+* ホストマシンでエクセルファイルを編集し、データの準備ができたらまたCodespacesへ更新します。
+====
+
+* 各シートの内容及び目的に関しては、次章を参照してください。
+
+include::excel-readme-ja.adoc[Excel Instructions]
+
+=== DBへデータを入力
+
+* 作成されたテンプレートに必要な詳細が入力されたら、以下のコマンドを実行してDBにデータを入力します。
+
+* 特に: `カスタマー` シートでは、auth_url, base_url, client_id, client_secret などのカスタマーの認証情報を後から管理者アプリのUI上で追加・更新できます。
+
+==== エクセルを使った入力
+
+[source,shell]
+----
+# e.g.,
+# caat-helper db populate --excel-path SIer-Data.xlsx
+(.venv) $ caat-helper db populate --excel-path '/path/to/excel'
+----
+
+=== スタジオを使用してDBデータを閲覧する
+
+* データベース内に入力されるデータの閲覧・確認は、以下のコマンドを実行します:
+
+[source,shell]
+----
+# from tools/cloud-setup/scripts
+(.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.prisma
+----
+
+* ブラウザでスタジオビューアーを開くためには、上記のコマンドの開く・プロンプトを実行します。
+* prismaスタジオを開いたら、以下のモデルが表示されます:
+
+image::images/prisma-db-model-list.png[Prisma Model List]
+
+* データの閲覧は任意のモデルをクリックします。
+* スタジオインスタンスを閉じるには、上記のコマンドが実行されたターミナルで `ctrl+c` を実行します。

@@ -1,0 +1,36 @@
+@startuml admin login flow
+title Admin Login Flow
+
+:Start;
+:Validate input parameters;
+note right
+    Parameters validation
+end note
+if (Parameters are not valid?) then (yes)
+    :Check if the login_id exists in the database;
+    if (Login ID doesn't exists?) then (yes)
+        :Send HTTP status code 401 Login failed error;
+        kill
+    endif
+    :Validate the password provided by the user;
+    if (Password didn't match?) then (yes)
+        :Send HTTP status code 401 Login failed error;
+        kill
+    endif
+    :Generate JWT token;
+    note right
+        Generate auth token
+    end note
+    :Return token, user_id and login_id as the response;
+    note right
+        Returns:
+            token: Auth token (expires in 24 hours)
+            user_id: Admin User Id
+            login_id: Admin Login Id
+    end note
+else (no)
+    :Send HTTP status code 400 with error message;
+    kill
+endif
+stop
+@enduml

@@ -1,0 +1,65 @@
+
+== FAQ
+
+Q: What prerequisites are needed to deploy AAT application using local setup scripts?::
+A: Before deploying AAT application using local setup scripts, ensure you have the following prerequisites:
+    * GitHub Account to use the GitHub Codespaces.
+    * Docker is installed in GitHub Codespaces.
+
+Q: How can I delete the Local setup instance that I created using scripts?::
+A: Execute following commands to stop the local instance and delete all docker images
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ bash caat-local-stop.sh
+$ docker system prune -a
+----
+
+Q: How can I troubleshoot common errors during deployment?::
+A: If you encounter errors during deployment:
+    * Check the Script output or deployment logs for specific error messages.
+    * Ensure all required parameters in `tools/local-setup-codespaces/.env` file are correctly provided and formatted.
+    * Run following command to view logs for all services and look out for any errors.
+
+[source,shell]
+----
+# from tools/local-setup-codespaces
+$ docker compose logs
+----
+
+[[faq-port-forward]]
+Q: When starting the app using `local-setup.sh` or `caat-local-start.sh` there is error in port forwarding, what do I do?::
+A: Follow the steps:
+    * Sometimes, simply restarting the Codespaces can resolve transient issues. Try stopping and restarting your Codespaces.
+    * Manually forward the port from PORTS tab and set port visibility to Public. Reference: link:https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace#sharing-a-port[Sharing a port^]
+    * Forward ports: 8000 (backend), 3000 (contractor App), 3001 (Admin App)
+
+
+Q: How do I reset Admin Password?::
+A: Using caat-helper, the Admin password can be reset by providing the Login ID. +
+
+Use the following command, to list the admin and their Login ID
+
+[source,shell]
+----
+(.venv) $ caat-helper db list-admin
+----
+
+Use the following command to reset the password
+
+[source,shell]
+----
+(.venv) $ caat-helper db reset-pass --login-id {admin-login-id} --password {new-pasword-value}
+----
+
+Q: How do I clear data from the database to start fresh or in case of wrong details entered?::
+A: Using caat-helper, all the data from the database can be deleted at once. +
+At present, caat-helper doesn't support clearing the selective data.
+
+Use the following command, to clear the database.
+
+[source,shell]
+----
+(.venv) $ caat-helper db clear
+----

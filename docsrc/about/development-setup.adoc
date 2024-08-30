@@ -1,0 +1,23 @@
+// = Angle Adjustment Tool (AAT)
+:docinfo: shared
+:doctype: book
+:data-uri:
+:title: AAT Development Setup
+:toc: left
+:toclevels: 3
+:sectanchors:
+:sectlinks:
+:sectnums:
+:multipage-level: 2
+:icons: font
+:encoding: utf-8
+
+= Setup Development Environment
+
+Three components are involved while setting AAT application, viz., backend, web-admin, web-app.
+
+The following sections explains setting up of each component.
+
+include::backend-setup.adoc[]
+include::contractor-app-setup.adoc[]
+include::admin-app-setup.adoc[]

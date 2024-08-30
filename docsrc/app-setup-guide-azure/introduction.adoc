@@ -1,0 +1,23 @@
+
+== Introduction
+
+=== Cloud Architecture
+image::images/CloudArch.png[CloudArchitecture]
+
+[cols="1,3"]
+|===
+|Resource |Description
+
+|Azure App Service
+|WebApp service serving as Backend server and web application for Admin and Contractor App.
+
+|Virtual Network and Subnet
+|Network Service which allows access to resources within that subnet securely. Subnet enables restricted access for the Database so that it can only be accessed by App Service.
+
+|SQL Database
+|Database service for SQL Server which contains the information about the admin, customers and application reviews. It also stores the Sample and Captured images of the Cameras.
+
+|Container Registry
+|Docker image storage service which hosts the Docker images of Admin, Backend, Contractor App
+
+|===

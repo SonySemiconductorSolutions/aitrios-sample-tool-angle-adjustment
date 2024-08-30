@@ -1,0 +1,41 @@
+@startuml Admin getting customer details
+title Get Console credentials By Customer ID
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired) then (yes)
+        :Send HTTP status 401,
+        Auth token is invalid or token expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+: Validate parameters;
+note right
+    customer_id (mandatory)
+end note
+if (Parameters are not valid?) then (yes)
+    : Send HTTP status 400 error;
+    kill
+endif
+: Get customer by ID from the DB;
+if (Customer does not exists?) then (yes)
+    : Send HTTP status 404, Customer not found;
+    kill
+endif
+if (Customer is not associated with the current user?) then (yes)
+    : Send HTTP status 403, Permission denied;
+    kill
+endif
+: Get console credentials by the customer ID from the DB;
+: Decrypt the client ID, client secret and application ID;
+: Mask the client secret except the last 4 characters;
+note right
+Client secret looks like this
+●●●●●●●●●●●●●●●●●●●●●y4Td
+end note
+: Send HTTP status 200 with console credentials as the response;
+stop
+@enduml

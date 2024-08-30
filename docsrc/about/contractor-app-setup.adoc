@@ -1,0 +1,107 @@
+== Contractor App (web-app)
+
+=== Requirements
+
+* node >= 18.19
+* npm
+
+=== Quick start
+
+[NOTE]
+====
+The following commands assume `web-app` as current working directory.
+====
+
+==== Prepare environment
+
+Make a copy of example env as following:
+
+[source,shell]
+----
+# from web-app
+$ cp .env.example .env
+----
+
+* populate environment variables (`.env`)
+* Replace VITE_API_URL value with server URL that is hosted. Example VITE_API_URL looks like:
+
+[source,shell]
+----
+# from web-app
+# if localhost
+REACT_APP_API_BASE_URL=http://localhost:8000
+# or
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000
+# if IP
+REACT_APP_API_BASE_URL=http://172.16.5.4:8000
+# if GitHub codespaces
+REACT_APP_API_BASE_URL=https://effective-space-garbanzo-7jwgv746j9q3rqqr-8000.app.github.dev
+----
+
+==== Start development server
+
+===== Using npm
+
+[arabic, start=1]
+. Install dependencies
+
+[source,shell]
+----
+# from web-app
+$ npm install
+----
+
+[arabic, start=2]
+. Build and Serve App
+
+[source,shell]
+----
+# from web-app
+$ npm run dev
+----
+
+===== Using docker
+
+[arabic, start=1]
+. Build docker image
+
+[source,shell]
+----
+# from web-app
+$ docker build -f Dockerfile -t caat-webapp:latest .
+----
+
+[arabic, start=2]
+. Run docker container
+
+[source,shell]
+----
+# from web-app
+$ docker run -p 3001:3000 caat-webapp:latest
+----
+
+=== Linting and Formatting
+
+==== Linting
+
+* ESLint is used to maintain a consistent code style and catch potential issues in JavaScript/TypeScript code.
+
+* To run ESLint and check for any linting errors, use the following command:
+
+[source,shell]
+----
+# from web-app
+$ npm run lint
+----
+
+==== Formatting
+
+* Prettier is used to format code and ensure a consistent style.
+
+* To check if code is properly formatted, use the following command:
+
+[source,shell]
+----
+# from web-app
+$ npm run format
+----

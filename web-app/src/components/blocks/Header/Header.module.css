@@ -1,0 +1,109 @@
+/*
+------------------------------------------------------------------------
+Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+------------------------------------------------------------------------
+*/
+.headerContainer {
+  height: 120px;
+}
+
+.steps {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.goBackButton {
+  margin-top: 16px;
+  margin-left: -1px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: darkgray;
+  line-height: 1em;
+}
+
+.goBackButtonIcon {
+  color: darkgray;
+  width: 14px !important;
+  height: 16px !important;
+}
+
+.topContainer {
+  display: flex;
+  color: #dadada;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem 0 0.5rem;
+  justify-content: space-between;
+}
+
+.toolContainer {
+  display: flex;
+  align-items: center;
+}
+
+.backButton {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.languageToggler {
+  display: flex;
+  font-size: 12px;
+}
+
+.languageToggler .language {
+  display: flex;
+  color: #dadada;
+  min-width: 36px;
+  padding: 0.25rem;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid yellow;
+  background-color: transparent;
+}
+
+.languageToggler .language:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.languageToggler .language:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.languageToggler .language.selected {
+  color: black;
+  border-color: yellow;
+  background-color: yellow;
+}
+
+@media only screen and (max-width: 400px) {
+  .topContainer {
+    padding-left: 0;
+  }
+  .toolContainer {
+    font-size: 14px;
+  }
+  .languageToggler {
+    font-size: 10px;
+  }
+}

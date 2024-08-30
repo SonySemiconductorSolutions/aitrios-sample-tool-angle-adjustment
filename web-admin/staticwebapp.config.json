@@ -1,0 +1,15 @@
+{
+  "navigationFallback": {
+    "rewrite": "index.html",
+    "exclude": ["/images/*.{png,jpg,gif,ico}", "/*.{css,scss,js}"]
+  },
+  "networking": {
+    "allowedIpRanges": [
+      "125.103.205.78/32",
+      "150.147.226.61/32",
+      "202.93.156.46/32",
+      "147.161.198.87/32",
+      "147.161.198.91/32"
+    ]
+  }
+}
