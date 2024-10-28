@@ -46,7 +46,21 @@ class ApiClient {
       function (error: AxiosError) {
         // If unauthorized error, clear storage and redirect to home
         if (error?.response?.status === 401 && error?.config?.url !== "auth/login") {
-          localStorage.clear();
+          // Application store is managed by zustand package which uses the localStorage.
+          // Please make necessary changes to the JSON object if zustand version is
+          // upgrade and it has changes in the application store data structure.
+          const currentState = JSON.parse(localStorage.getItem("storage") || "{}")?.state;
+          if (currentState) {
+            // Preserve 'currentLanguage' and 'gridLine'
+            const preservedState = {
+              currentLanguage: currentState.currentLanguage,
+              gridLine: currentState.gridLine,
+            };
+            // Overwrite the state with only the preserved properties
+            localStorage.setItem("storage", JSON.stringify({ state: preservedState }));
+          } else {
+            localStorage.clear();
+          }
           location.replace("/");
         }
 

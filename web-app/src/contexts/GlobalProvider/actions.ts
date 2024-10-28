@@ -60,6 +60,16 @@ export const setAuthorized = (payload: GlobalContextState["isAuthorized"]) => ({
   payload,
 });
 
+export const setGridLineColor = (payload: GlobalContextState["gridLineProps"]["color"]) => ({
+  type: "setGridLineColor" as const,
+  payload,
+});
+
+export const setGridLineVisibility = (payload: GlobalContextState["gridLineProps"]["visibility"]) => ({
+  type: "setGridLineVisibility" as const,
+  payload,
+});
+
 export type GlobalContextAction =
   | ReturnType<typeof setCameraImage>
   | ReturnType<typeof setSampleImage>
@@ -68,4 +78,6 @@ export type GlobalContextAction =
   | ReturnType<typeof setFacilityDetail>
   | ReturnType<typeof setSelectedDevice>
   | ReturnType<typeof unsetSelectedDevice>
-  | ReturnType<typeof setAuthorized>;
+  | ReturnType<typeof setAuthorized>
+  | ReturnType<typeof setGridLineColor>
+  | ReturnType<typeof setGridLineVisibility>;

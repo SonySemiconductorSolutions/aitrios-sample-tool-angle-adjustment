@@ -104,6 +104,9 @@ def build_device_query(connection: Prisma, customer_id: int, parameters: ReviewL
     # Include facility record
     include = {"facility": {"include": {"facility_type": True}}}
 
+    # Initialize the status count filter
+    status_count_filters = []
+
     if parameters.pagination:
         take = parameters.page_size
         if parameters.page > 0:
@@ -113,7 +116,14 @@ def build_device_query(connection: Prisma, customer_id: int, parameters: ReviewL
             skip = skip if take > 0 else None
 
     # Check if any parameters are provided
-    if any([parameters.facility_name, parameters.prefecture, parameters.municipality, parameters.status]):
+    if any(
+        [
+            parameters.facility_name,
+            parameters.prefecture,
+            parameters.municipality,
+            parameters.status,
+        ]
+    ):
         and_conditions = []
 
         # Filter by facility name
@@ -130,6 +140,8 @@ def build_device_query(connection: Prisma, customer_id: int, parameters: ReviewL
         if parameters.municipality:
             and_conditions.append({"facility": {"municipality": {"contains": parameters.municipality}}})
 
+        # Set the result count conditions
+        status_count_filters = and_conditions.copy()
         # Filter by device result
         if parameters.status:
             and_conditions.append({"result": {"in": status_to_list(parameters.status)}})
@@ -139,18 +151,47 @@ def build_device_query(connection: Prisma, customer_id: int, parameters: ReviewL
 
     # Query with the given parameters
     data = connection.device.find_many(take=take, skip=skip, where=where, include=include)
+    _where = {"facility": {"customer_id": customer_id}}
+
+    # Check if the any filters are provided by user
+    if status_count_filters:
+        _where["AND"] = status_count_filters
+
+    # Get the status count with user provided condition
+    status_counts = connection.device.group_by(
+        by=["result"],
+        where=_where,
+        count={"result": True},
+    )
+
+    # Set status count
+    result_count = {}
+    for status_count in status_counts:
+        if status_count["result"] == DeviceReviewAllowedEnums.INITIAL_STATE.value:
+            # 1
+            result_count["initial_state"] = status_count["_count"]["result"]
+        if status_count["result"] == DeviceReviewAllowedEnums.REQUESTING_FOR_REVIEW.value:
+            # 2
+            result_count["requesting"] = status_count["_count"]["result"]
+        if status_count["result"] == DeviceReviewAllowedEnums.REJECTED.value:
+            # 3
+            result_count["rejected"] = status_count["_count"]["result"]
+        if status_count["result"] == DeviceReviewAllowedEnums.APPROVED.value:
+            # 4
+            result_count["approved"] = status_count["_count"]["result"]
+
     total_records = connection.device.count(where=where)
-    return data, total_records
+    return data, total_records, result_count
 
 
 def get_checking_reviews_info(data: List[ReviewSchema], late_minutes: int) -> dict:
     """
     Calculates the number of current and late reviews based on the provided data.
-    
+
     Args:
         data (List[ReviewSchema]): A list of review objects conforming to the ReviewSchema.
         late_minutes (int): The threshold in minutes to determine if a review is late.
-    
+
     Returns:
         dict: A dictionary containing the count of late reviews, current reviews, and the late minutes threshold.
     """
@@ -159,7 +200,7 @@ def get_checking_reviews_info(data: List[ReviewSchema], late_minutes: int) -> di
     for review in data:
         result = review.result
         # If the device review status is applied, skip.
-        if result != DeviceReviewAllowedEnums.APPLIED.value:
+        if result != DeviceReviewAllowedEnums.REQUESTING_FOR_REVIEW.value:
             continue
 
         current = current + 1

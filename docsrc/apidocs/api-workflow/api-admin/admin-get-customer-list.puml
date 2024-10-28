@@ -12,6 +12,7 @@ else (no)
     : Send HTTP status 401, unauthorized;
     kill
 endif
+->no(valid token);
 : Validate parameters;
 note right
     Auth token (mandatory)

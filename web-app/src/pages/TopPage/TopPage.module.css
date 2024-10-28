@@ -19,7 +19,7 @@ limitations under the License.
   display: flex;
   padding: 24px 0;
   flex-direction: column;
-  height: calc(100dvh - 48px);
+  min-height: calc(100dvh - 48px);
 }
 .content {
   flex-grow: 1;
@@ -38,6 +38,7 @@ limitations under the License.
   padding: 0px 10px;
   text-align: center;
   line-height: 1.7em;
+  word-break: break-word;
 }
 
 .description.error {
@@ -45,15 +46,15 @@ limitations under the License.
 }
 
 .buttonsContainer {
-  padding: 0 24px;
+  padding: 6px 24px;
 }
 
 .authContainer {
   display: flex;
   padding: 24px 0px;
   flex-direction: column;
-  height: calc(100dvh - 48px);
   justify-content: space-between;
+  min-height: calc(100dvh - 48px);
 }
 .authButtonRetry {
   display: flex;

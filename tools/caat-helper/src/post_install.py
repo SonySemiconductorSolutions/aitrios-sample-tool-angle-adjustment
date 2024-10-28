@@ -14,23 +14,25 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
-import subprocess
-
-from src.utils.util_resources import get_prisma_file, get_resource_path
+from src.prisma_generate import generate_prisma_client
 from src.utils.logger import get_json_logger
 
 logger = get_json_logger()
 
+
 def main():
     """
-    Generate prisma client
+    Main function to generate the Prisma client and apply schema to the database
     """
-    logger.info(f"Generating prisma client...")
-    # get which prisma file to use based on BUILD_ENV (cloud/local)
-    prisma_file = get_prisma_file()
-    prisma_path = get_resource_path(prisma_file)
+    try:
+        # First generate the Prisma client
+        result = generate_prisma_client()
 
-    prisma_generate_cmd = ["prisma", "generate", "--schema", prisma_path]
-    subprocess.run(prisma_generate_cmd)
-    prisma_dbpush_cmd = ["prisma", "db", "push", "--schema", prisma_path]
-    subprocess.run(prisma_dbpush_cmd)
+        # Apply the Prisma schema to the database
+        if result:
+            from src.prisma_push import push_prisma_schema
+
+            push_prisma_schema()
+
+    except Exception:
+        logger.error("Unknown error occurred, please try again")

@@ -51,6 +51,10 @@ AAT involves following components:
 
 To setup application locally, refer menu: `Development`
 
-==== Setup Application - Cloud
+==== Setup Application - Azure Cloud
 
 To setup application in Azure cloud, refer menu: `App Setup Guide (Azure Cloud)`
+
+==== Setup Application - AWS Cloud
+
+To setup application in AWS cloud, refer menu: `App Setup Guide (AWS Cloud)`

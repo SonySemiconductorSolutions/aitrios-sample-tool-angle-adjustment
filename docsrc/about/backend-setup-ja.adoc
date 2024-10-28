@@ -12,7 +12,7 @@
 
 [注記]
 ====
-以下のコマンドは`backend`をカレントディレクトリとして想定しています。
+以下のコマンドは `backend` をカレントディレクトリとして想定しています。
 ====
 
 以下のようにサンプル環境のコピーを作成します:
@@ -93,7 +93,7 @@ APP_SECRET_KEY="hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
 [source,shell]
 ----
 # from backend
-$ pipenv shell
+$ pipenv shell --python 3.10
 $ pipenv install
 
 # Install dev packages
@@ -130,7 +130,7 @@ $ make dev
 [注記]
 ====
 コントラクターアプリと管理者アプリを設定する際に必要なポートをもつbackendサーバーURLを記録しておいてください。
-また、コントラクターアプリと管理者アプリはbackend URLにアクセスできるようにしておいてください。Codespacesを使う場合は、ポートの可視性を `公開`にしてください。
+また、コントラクターアプリと管理者アプリはbackend URLにアクセスできるようにしておいてください。Codespacesを使う場合は、ポートの可視性を `公開` にしてください。
 ====
 
 [注記]
@@ -171,8 +171,8 @@ $ python scripts/seed.py
 [注記]
 ====
 * また、データベースに初期データを生成する際にはCAATヘルパー (see: tools/caat-helper/README.md) を使用可能です。
-* `caat-helper` がローカル開発・ホスティングに使用される場合、任意のcaatヘルパーコマンドを使用する前に BUILD_ENV変数を設定してください。 +
-`$ export BUILD_ENV=local`
+* `caat-helper` がローカル開発・ホスティングに使用される場合、任意のcaatヘルパーコマンドを使用する前に APP_ENV変数を設定してください。 +
+`$ export APP_ENV=local`
 ====
 
 * prisma studioを使用して入力されたデータを表示
@@ -180,7 +180,7 @@ $ python scripts/seed.py
 [source,shell]
 ----
 # from backend
-$ prisma studio --schema=./prisma/schema.local.prisma
+$ prisma studio --schema=./prisma/schema.postgres.prisma
 ----
 
 ===== Generate QR codes

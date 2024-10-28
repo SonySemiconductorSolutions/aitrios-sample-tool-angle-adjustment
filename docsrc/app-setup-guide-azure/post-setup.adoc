@@ -15,7 +15,7 @@
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash print-app-url.sh
 ----
 
@@ -33,7 +33,7 @@ This command generates QR Codes for all the facilities at once in the 'QRCodes' 
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 (.venv) $ caat-helper qr generate -u {PLACEHOLDER_CONTRACTOR_APP_URL}
 ----
 
@@ -52,7 +52,7 @@ This command generates QR Codes for all the facilities at once in the 'QRCodes' 
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash remove-host-ip-db.sh
 ----
 

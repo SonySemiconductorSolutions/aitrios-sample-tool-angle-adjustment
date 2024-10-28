@@ -17,29 +17,30 @@ limitations under the License.
 */
 import {
   Box,
-  Button,
   Card,
-  Chip,
   CircularProgress,
   Checkbox,
   Divider,
   FormLabel,
-  Sheet,
+  ToggleButtonGroup,
+  Button,
   Snackbar,
   Stack,
-  Table,
-  Tooltip,
+  Tab,
+  TabList,
+  TabPanel,
+  Tabs,
   Typography,
 } from "@mui/joy";
-import { CloseRounded, ErrorRounded, InfoOutlined } from "@mui/icons-material";
+import { CloseRounded, ErrorRounded, List, Apps } from "@mui/icons-material";
 import { Backdrop, FormGroup, IconButton, Pagination } from "@mui/material";
-import { ChangeEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { getLatestReviewsThrottled, getDeviceStatusThrottled } from "../../../services";
 import { useStore } from "../../../store";
-import { formatDatetime, getDeviceStatusColor, statusToString } from "../../../utils";
+import { getCheckboxState, getStatusString } from "../../../utils";
 import { Filter } from "./Filter";
-import { TableCell } from "../../../components/TableCell";
+import { GridView } from "./GridView";
+import { ListView } from "./ListView";
 import { useTranslation } from "react-i18next";
 
 
@@ -57,6 +58,8 @@ interface DeviceLatestReviewDetails {
   latest_review: {
     result: number;
     id: number;
+    image_blob: string;
+    image_date_utc: string;
     created_at_utc: string;
     last_updated_at_utc: string;
   }
@@ -73,6 +76,8 @@ interface TableRow {
   };
   latestReviewId: number;
   result: number;
+  imageBlob: string;
+  imageDate: string;
   requested: string;
   answered: string;
 }
@@ -96,7 +101,7 @@ interface CheckboxStates {
 // Interface defining properties for a checkbox
 interface CheckboxProps {
   label: string;
-  value: number;
+  value: string;
   state_key: keyof CheckboxStates;
 }
 
@@ -105,37 +110,30 @@ interface DeviceStatusMap {
   [key: string]: string;
 }
 
+type ViewType = "list" | "grid";
+type GridType = "small" | "medium" | "large";
+
 const CHECKBOX_SX = { fontSize: 14 }; // Styling for checkboxes
 const LABEL_SX = {
   fontSize: 16,
   fontWeight: "bold"
 }; // Styling for labels
 
-const PER_PAGE = 10; // Number of items per page in pagination
-const TABLE_HEIGHT = "500px"; // Height of the table
+const PER_PAGE = 15; // Number of items per page in pagination
+const TABLE_HEIGHT = "700px"; // Height of the table
+const CHECKBOX_STATE_TIMEOUT = 1000; // Timeout of checkbox state update
+const DEVICE_CONNECTION_STATE_FETCH_ERROR = 50011;
+const CONSOLE_CREDENTIALS_FETCH_ERROR = 50013;
 
 export default function ReviewsTable() {
-  const navigate = useNavigate();
-  const { filter, status, setStatus } = useStore();
+  const { filter, setSingleFilter, dashboard, setViewType, setGridType, setCurrentPage } = useStore();
   const { t } = useTranslation();
 
   const CHECKBOX_LIST: CheckboxProps[] = [
-    { label: t("statusList.initialState"), value: 1, state_key: "initialState" },
-    { label: t("statusList.requesting"), value: 2, state_key: "requesting" },
-    { label: t("statusList.rejected"), value: 3, state_key: "rejected" },
-    { label: t("statusList.approved"), value: 4, state_key: "approved" },
-  ];
-
-  const TABLE_HEADERS = [
-    { label: t("dashboardPage.slNo"), width: "40px" },
-    { label: t("dashboardPage.facilityName"), width: "90px" },
-    { label: t("dashboardPage.facilityType"), width: "80px" },
-    { label: t("dashboardPage.deviceName"), width: "120px" },
-    { label: t("dashboardPage.deviceId"), width: "220px" },
-    { label: t("dashboardPage.deviceApplicationStatus"), width: "120px" },
-    { label: t("dashboardPage.applicationDateTime"), width: "100px" },
-    { label: t("dashboardPage.reviewDateTime"), width: "100px" },
-    { label: t("dashboardPage.angleConfirmation"), width: "100px" },
+    { label: t("statusList.initialState"), value: "1", state_key: "initialState" },
+    { label: t("statusList.requesting"), value: "2", state_key: "requesting" },
+    { label: t("statusList.rejected"), value: "3", state_key: "rejected" },
+    { label: t("statusList.approved"), value: "4", state_key: "approved" },
   ];
 
   // State variables
@@ -155,29 +153,35 @@ export default function ReviewsTable() {
     approved: 0,
   };
   const [stateKeyCount, setStateKeyCount] = useState(stateKeyCountInitState);
-  const [checkboxState, setCheckboxState] = useState<CheckboxStates>(status);
-  const [filteredData, setFilteredData] = useState<TableRow[]>([]);
+  const [checkboxState, setCheckboxState] = useState<CheckboxStates>(getCheckboxState(filter.status));
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [deviceStatus, setDeviceStatus] = useState<DeviceStatusMap>({});
+  const [deviceStatus, setDeviceStatus] = useState<DeviceStatusMap | undefined>();
   const errorCodes: Record<number, string> = t("errorCodes", { returnObjects: true });
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [paginatedData, setPaginatedData] = useState<TableRow[]>([]);
+  const [startIndex, setStartIndex] = useState<number>(1);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
+
+  // Reference variables
+  const focusRef = useRef<HTMLDivElement>(null);
+
+  // Handles view type change
+  const handleViewTypeChange = (viewType: ViewType) => {
+    setViewType(viewType);
+  };
+
+  // Handle grid type change
+  const handleGridTypeChange = (gridType: GridType | null) => {
+    if (gridType) {
+      setGridType(gridType);
+    }
+  };
 
   // Handles checkbox state change
   const handleCheckboxChange = (e: ChangeEvent<{ checked: boolean }>, state_key: string) => {
     setCheckboxState({ ...checkboxState, [state_key]: e.target.checked });
-  };
-
-  // Filters table data based on checkbox state
-  const filterData = () => {
-    setStatus(checkboxState);
-    const newData = (checkboxState && Object.values(checkboxState).some(state => state)) ?
-      data.filter(row => checkboxState[statusToString(row.result) as keyof CheckboxStates]) :
-      data;
-    setFilteredData(newData);
   };
 
   // Fetches data of latest reviews
@@ -185,12 +189,15 @@ export default function ReviewsTable() {
     if (isLoading || !filter.customerId) return;
     setIsLoading(true);
     setErrorMessage("");
-    setDeviceStatus({});
+    setDeviceStatus(undefined);
     getLatestReviewsThrottled(
       filter.customerId,
+      dashboard.currentPage,
+      PER_PAGE,
       filter.facilityName,
       filter.prefecture,
       filter.municipality,
+      filter.status,
     )?.then((responseData) => {
       if (responseData) {
         setData(
@@ -204,6 +211,8 @@ export default function ReviewsTable() {
             },
             latestReviewId: value.latest_review?.id,
             result: value.latest_review?.result,
+            imageBlob: value.latest_review?.image_blob,
+            imageDate: value.latest_review?.image_date_utc,
             requested: value.latest_review?.created_at_utc,
             answered: value.latest_review?.last_updated_at_utc,
           })),
@@ -214,6 +223,14 @@ export default function ReviewsTable() {
           reviewDurationMinutes: responseData.reviewing_info?.minutes,
           totalReviews: responseData.total,
         });
+        setStateKeyCount({
+          initialState: responseData.status_count?.initial_state ?? 0,
+          requesting: responseData.status_count?.requesting ?? 0,
+          rejected: responseData.status_count?.rejected ?? 0,
+          approved: responseData.status_count?.approved ?? 0,
+        });
+        setTotalPages(Math.ceil(responseData.total / PER_PAGE));
+        setStartIndex((dashboard.currentPage - 1) * PER_PAGE + 1);
         // Fetch device connection status
         fetchDeviceStatus();
       }
@@ -231,9 +248,12 @@ export default function ReviewsTable() {
     if (!filter.customerId) return;
     getDeviceStatusThrottled(
       filter.customerId,
+      dashboard.currentPage,
+      PER_PAGE,
       filter.facilityName,
       filter.prefecture,
       filter.municipality,
+      filter.status,
     )?.then((responseData) => {
       setDeviceStatus(responseData?.data?.reduce(
         (statusMap: DeviceStatusMap, device: any) => {
@@ -248,55 +268,66 @@ export default function ReviewsTable() {
   // Handles errors during data fetching
   const handleError = (error: any) => {
     if (error?.error_code && error.error_code in errorCodes) {
-      setErrorMessage(`errorCodes.${error.error_code}`);
+      const errorCode =
+        error.error_code === CONSOLE_CREDENTIALS_FETCH_ERROR
+          ? DEVICE_CONNECTION_STATE_FETCH_ERROR
+          : error.error_code;
+      setErrorMessage(`errorCodes.${errorCode}`);
     } else {
       setErrorMessage("errorCodes.10000");
     }
     setOpenSnackbar(true);
   };
 
-  // Sets pagination for table data
-  const setPages = () => {
-    const totalItems = filteredData.length;
-    const pages = Math.ceil(totalItems / PER_PAGE);
-    setTotalPages(pages);
-
-    // Ensure currentPage stays within the valid range
-    const newCurrentPage = Math.min(currentPage, Math.max(1, pages));
-    setCurrentPage(newCurrentPage);
-
-    const startIndex = (currentPage - 1) * PER_PAGE;
-    const endIndex = Math.min(startIndex + PER_PAGE, totalItems);
-    const newPaginatedData = filteredData.slice(startIndex, endIndex);
-    setPaginatedData(newPaginatedData);
-  };
-
-  // Effect hook to fetch data initially and when filters change
+  // Effect hook to fetch data initially and when filters or current change
   useEffect(() => {
     fetchData();
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filter, dashboard.currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Effect hook to update state key counts when data changes
+  // Effect hook to set application status filter 
   useEffect(() => {
-    setStateKeyCount(data?.reduce((count: any, value: TableRow) => {
-      count[statusToString(value.result)]++;
-      return count;
-    }, stateKeyCountInitState));
-  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    const newTimeoutId = setTimeout(() => {
+      const newStatus = getStatusString(checkboxState);
+      if (newStatus !== filter.status) {
+        // Set current page to 1 and set filter
+        setCurrentPage(1);
+        setSingleFilter({ key: "status", value: newStatus });
+      }
+    }, CHECKBOX_STATE_TIMEOUT);
+    setTimeoutId(newTimeoutId);
+  }, [checkboxState]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Effect hook to filter data when data or checkbox state changes
+  // Effect hook to scroll to view
   useEffect(() => {
-    filterData();
-  }, [data, checkboxState]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Effect hook to update pagination when filtered data or current page changes
-  useEffect(() => {
-    setPages();
-  }, [filteredData, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isMounted) {
+      focusRef?.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    } else {
+      setIsMounted(true);
+    }
+  }, [dashboard.viewType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
-      {(!isLoading && reviewStatistics?.totalReviews) ?
+      {isLoading && (
+        <Backdrop
+          open
+          sx={{
+            position: "absolute",
+            height: "100%",
+            left: { md: "255px" },
+            width: { xs: "100%", md: "calc(100vw - 255px)" },
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 499,
+          }}
+        >
+          <CircularProgress variant="soft" />
+        </Backdrop>
+      )}
+
+      {reviewStatistics.totalReviews ?
         (<Stack sx={{ display: "flex" }}>
           <Typography>
             <Typography>
@@ -317,7 +348,7 @@ export default function ReviewsTable() {
         <Divider />
       </Box>
 
-      <FormGroup sx={{ display: "flex", gap: 1 }}>
+      <FormGroup sx={{ display: "flex", gap: 1 }} ref={focusRef}>
         <FormLabel sx={LABEL_SX}>{t("dashboardPage.applicationStatus")}:</FormLabel>
         <Box sx={{ display: "flex", flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, md: 6, lg: 12 } }}>
           {CHECKBOX_LIST.map((props) => (
@@ -337,209 +368,67 @@ export default function ReviewsTable() {
         <Divider />
       </Box>
 
-      {!isLoading &&
-        <Typography>
-          {t("dashboardPage.showing")
-            + Math.min((currentPage - 1) * PER_PAGE + 1, filteredData.length)
-            + "-"
-            + (Math.min(currentPage * PER_PAGE, filteredData.length))
-            + t("dashboardPage.items") + t("dashboardPage.outOf")
-            + filteredData.length + t("dashboardPage.items")}
-        </Typography>}
+      <Tabs
+        value={dashboard.viewType}
+        sx={{ background: "none" }}
+        onChange={(_, value) => handleViewTypeChange(value as ViewType)}
+      >
+        <TabList sx={{ justifyContent: "flex-end" }}>
+          <Typography alignSelf="center" mr="auto" pr={2}>
+            {t("dashboardPage.showing")
+              + Math.min((dashboard.currentPage - 1) * PER_PAGE + 1, reviewStatistics.totalReviews)
+              + "-"
+              + (Math.min(dashboard.currentPage * PER_PAGE, reviewStatistics.totalReviews))
+              + t("dashboardPage.items") + t("dashboardPage.outOf")
+              + reviewStatistics.totalReviews + t("dashboardPage.items")}
+          </Typography>
+          <Tab color="primary" value="list"><List />{t("dashboardPage.list")}</Tab>
+          <Tab color="primary" value="grid"><Apps />{t("dashboardPage.tiled")}</Tab>
+        </TabList>
 
-      {filteredData.length ? (
-        <>
-          <Sheet
-            variant="outlined"
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          {dashboard.viewType === "grid" && <ToggleButtonGroup
+            size="sm"
+            value={dashboard.gridType}
+            color="primary"
+            sx={{ mt: 1 }}
+            onChange={(_, value) => handleGridTypeChange(value as GridType)}
+          >
+            <Button value="small">{t("dashboardPage.small")}</Button>
+            <Button value="medium">{t("dashboardPage.medium")}</Button>
+            <Button value="large">{t("dashboardPage.large")}</Button>
+          </ToggleButtonGroup>}
+        </Box>
+
+        {reviewStatistics.totalReviews ? (
+          <>
+            <TabPanel value="list" sx={{ px: 0, py: 3 }}>
+              <ListView data={data} deviceStatus={deviceStatus} startIndex={startIndex} />
+            </TabPanel>
+            <TabPanel value="grid" sx={{ px: 0, py: 3 }}>
+              <GridView data={data} deviceStatus={deviceStatus} view={dashboard.gridType} perPage={PER_PAGE} isLastPage={dashboard.currentPage === totalPages} />
+            </TabPanel>
+            <Pagination
+              count={totalPages}
+              page={dashboard.currentPage}
+              onChange={(_, page) => setCurrentPage(page)}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              sx={{ display: "flex", justifyContent: "center" }}
+            />
+          </>
+        ) : (
+          <Stack
             sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignContent: "center",
               width: "100%",
-              borderRadius: "sm",
-              overflow: "auto",
-              flexGrow: 1,
-              mt: 2,
+              my: 3,
               height: TABLE_HEIGHT,
             }}
           >
-            <Table
-              stripe="2n"
-              aria-labelledby="tableTitle"
-              stickyHeader
-              hoverRow
-              sx={{
-                "--Table-headerUnderlineThickness": "1px",
-                "--TableCell-paddingY": "2px",
-                "--TableCell-paddingX": "10px",
-                "--TableCell-wordBreak": "break-all",
-                "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-                "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
-              }}
-            >
-              <thead>
-                <tr style={{ justifyContent: "center", alignItems: "center" }}>
-                  {TABLE_HEADERS.map(({ label, width }, index) => (
-                    <th
-                      key={label}
-                      style={{
-                        width,
-                        padding: "12px 10px",
-                        textAlign: [6, 9].includes(index + 1) ? "center" : "left",
-                        whiteSpace: "normal",
-                        wordWrap: "break-word",
-                      }}
-                    >
-                      {index + 1 !== 5
-                        ? label
-                        : (<Box display="flex" gap={1} alignItems="center">
-                          <Typography>{label}</Typography>
-                          {(deviceStatus && Object.entries(deviceStatus).length) ?
-                            (<Tooltip
-                              title={
-                                <Box display="flex" flexDirection="column">
-                                  <Typography sx={{ fontWeight: 600 }}>
-                                    {t("dashboardPage.deviceConnectionStatus")}
-                                  </Typography>
-                                  <Typography lineHeight={1.2}>
-                                    <span style={{ color: "green", fontSize: 18, marginRight: 4 }}>&#x25CF;</span>
-                                    Connected
-                                  </Typography>
-                                  <Typography lineHeight={1.2}>
-                                    <span style={{ color: "red", fontSize: 18, marginRight: 4 }}>&#x25CF;</span>
-                                    Disconnected
-                                  </Typography>
-                                  <Typography lineHeight={1.2}>
-                                    <span style={{ color: "grey", fontSize: 18, marginRight: 4 }}>&#x25CF;</span>
-                                    Unknown
-                                  </Typography>
-                                </Box>
-                              }
-                              placement="right-end"
-                              variant="outlined"
-                              arrow
-                            >
-                              <InfoOutlined sx={{ fontSize: 14 }} />
-                            </Tooltip>) : null}
-                        </Box>)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={9}>
-                      <Backdrop
-                        open
-                        sx={{
-                          position: "absolute",
-                          height: "100%",
-                          width: "100%",
-                          backgroundColor: "rgba(221, 231, 238)",
-                        }}
-                      >
-                        <CircularProgress variant="soft" />
-                      </Backdrop>
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedData?.map((row, index) => (
-                    <tr key={index}>
-                      <TableCell>{((currentPage - 1) * PER_PAGE) + index + 1}</TableCell>
-                      <TableCell>{row.facility.name}</TableCell>
-                      <TableCell>{row.facility.type}</TableCell>
-                      <TableCell>{row.aitriosName}</TableCell>
-                      <TableCell>
-                        <Typography display="flex" alignItems="center">
-                          {(deviceStatus && Object.entries(deviceStatus).length)
-                            ? <span
-                              style={{
-                                color: getDeviceStatusColor(deviceStatus[row.serialNumber]),
-                                fontSize: 20,
-                                marginRight: 4
-                              }}>&#x25CF;</span>
-                            : null}
-                          {row.serialNumber}
-                        </Typography>
-                      </TableCell>
-                      <TableCell centerAlign>
-                        <Chip
-                          variant="soft"
-                          size="sm"
-                          color={
-                            row.result === 4 ? "success"
-                              : row.result === 3 ? "danger"
-                                : row.result === 2 ? "warning"
-                                  : "primary"
-                          }
-                        >
-                          {t(`statusList.${statusToString(row.result)}`)}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>{[2, 3, 4].includes(row.result) ? formatDatetime(row.requested) : "-"}</TableCell>
-                      <TableCell>{[3, 4].includes(row.result) ? formatDatetime(row.answered) : "-"}</TableCell>
-                      <TableCell centerAlign>
-                        {[2, 3, 4].includes(row.result) &&
-                          <Button
-                            variant="solid"
-                            sx={{ width: 80 }}
-                            onClick={() => {
-                              navigate("/review", {
-                                state: { reviewId: row.latestReviewId },
-                              });
-                            }}
-                          >
-                            {t("dashboardPage.details")}
-                          </Button>}
-                      </TableCell>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          </Sheet>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={(_, page) => setCurrentPage(page)}
-            variant="outlined"
-            shape="rounded"
-            color="primary"
-            sx={{ marginTop: 2, display: "flex", justifyContent: "center" }}
-          />
-        </>
-      ) : (
-        <Stack
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "center",
-            width: "100%",
-            mt: 2,
-            height: TABLE_HEIGHT,
-          }}
-        >
-          {isLoading ? (
-            <Card
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignContent: "center",
-                width: "100%",
-                height: "100%",
-              }}
-            >
-              <Backdrop
-                open
-                sx={{
-                  position: "absolute",
-                  height: "100%",
-                  width: "100%",
-                  backgroundColor: "rgba(221, 231, 238)",
-                }}
-              >
-                <CircularProgress variant="soft" />
-              </Backdrop>
-            </Card>
-          ) : (
             <Card
               sx={{
                 display: "flex",
@@ -554,9 +443,10 @@ export default function ReviewsTable() {
                 {t("dashboardPage.noData")}
               </Typography>
             </Card>
-          )}
-        </Stack>
-      )}
+          </Stack>
+        )}
+      </Tabs>
+
       {errorMessage ? <Snackbar
         variant="soft"
         size="lg"

@@ -21,7 +21,10 @@ APP_SECRET_KEY = os.getenv("APP_SECRET_KEY", None)
 DEFAULT_PAGE_SIZE = int(os.getenv("DEFAULT_PAGE_SIZE", 100))
 DEFAULT_JWT_EXPIRED_MINUTES = int(os.getenv("DEFAULT_JWT_EXPIRED_MINUTES", 1440))
 SSL_VERIFICATION = True
-HTTP_TIMEOUT = 55
+HTTP_TIMEOUT = 20
+
+DB_TRANSACTION_MAX_WAIT_SECONDS = 5
+DB_TRANSACTION_TIMEOUT_SECONDS = 30
 
 
 # Section to check missing env
@@ -32,7 +35,7 @@ class MissingEnvironmentVariableException(Exception):
 def validate_missing_environments():
     """
     Validates that all required environment variables are set.
-    
+
     Raises:
         MissingEnvironmentVariableException: If any required environment variable is missing.
     """

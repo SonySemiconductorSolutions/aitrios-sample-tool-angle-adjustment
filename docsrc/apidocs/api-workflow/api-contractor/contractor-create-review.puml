@@ -8,18 +8,22 @@ if (Contractor token is provided?) then (yes)
         : Send HTTP status 401 Token has expired;
         kill
     endif
+    ->no;
     if (Facility ID is not valid?) then (yes)
         : Send HTTP status 401 Facility ID is not valid;
         kill
     endif
+    ->no;
     if (Start time is not valid?) then (yes)
         : Send HTTP status 401 Token is not yet valid;
         kill
     endif
+    ->no;
     if (Token exp is not valid?) then (yes)
         : Send HTTP status 401 exp is not valid;
         kill
     endif
+    ->no;
 else (no)
     : Send HTTP status 401 Invalid authorization header format;
     kill
@@ -34,6 +38,7 @@ if (Device not found?) then (yes)
     : Send HTTP status 404, Device is not found;
     kill
 endif
+->no;
 : Get the existing review for the device from the DB;
 note right
     If the latest existing review for the device ID is already in applied state,
@@ -43,11 +48,13 @@ if (Existing review is in applied state?) then (yes)
     : Send HTTP status 200, with the existing review ID;
     kill
 endif
+->no;
 : Create a new review;
 if (Create review failed?) then (yes)
     : Send HTTP status 500, Failed to create a new review;
     kill
 endif
+->no;
 : Send HTTP status 200 with review ID as the response;
 stop
 @enduml

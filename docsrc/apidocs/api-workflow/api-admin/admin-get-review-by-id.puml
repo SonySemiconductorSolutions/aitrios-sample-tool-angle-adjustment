@@ -12,6 +12,7 @@ else (no)
     : Send HTTP status 401, unauthorized;
     kill
 endif
+->no(valid token);
 : Validate Parameters;
 note right
 1. Review ID (mandatory)
@@ -20,15 +21,18 @@ if (Parameters are not valid?) then (yes)
     : Send HTTP status 400 error;
     kill
 endif
+->no;
 if (Review is not authorized?) then (yes)
     : Send HTTP status 403 Permission error;
     kill
 endif
+->no;
 : Get review from the DB;
 if (Review does not exists in DB?) then (yes)
     : Send HTTP status 404 Not found error;
     kill
 endif
+->no;
 : Send HTTP status 200 review info as the response;
 stop
 @enduml

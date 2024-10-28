@@ -1,0 +1,115 @@
+// schema.postgres.prisma
+
+// Define datasource
+generator client {
+    provider             = "prisma-client-py"
+    interface            = "sync"
+    recursive_type_depth = "5"
+}
+
+datasource db {
+    provider = "postgres"
+    url      = env("DATABASE_URL")
+}
+
+// Define models
+model admin {
+    id                  Int        @id @default(autoincrement())
+    login_id            String     @unique
+    admin_password      String
+    created_at_utc      DateTime   @default(now()) @map("created_at_utc")
+    last_updated_at_utc DateTime   @updatedAt @map("last_updated_at_utc")
+    created_by          String     @default("system") @db.VarChar(255)
+    last_updated_by     String     @default("system") @db.VarChar(255)
+    customers           customer[] // Admin can have multiple customers
+}
+
+model customer {
+    id                  Int        @id @default(autoincrement())
+    customer_uuid       String     @db.VarChar(255)
+    admin               admin?     @relation(fields: [admin_id], references: [id])
+    admin_id            Int?
+    customer_name       String     @unique
+    auth_url            String?
+    base_url            String?
+    client_id           String?
+    client_secret       String?
+    application_id      String?
+    created_by          String     @default("system") @db.VarChar(255)
+    last_updated_by     String     @default("system") @db.VarChar(255)
+    created_at_utc      DateTime   @default(now()) @map("created_at_utc")
+    last_updated_at_utc DateTime   @updatedAt @map("last_updated_at_utc")
+    facilities          facility[] // Customer can have multiple Facilities
+    review              review[]
+}
+
+model facility {
+    id                  Int           @id @default(autoincrement())
+    facility_type       facility_type @relation(fields: [facility_type_id], references: [id])
+    customer            customer      @relation(fields: [customer_id], references: [id])
+    customer_id         Int
+    status              Int           @default(1)
+    prefecture          String?
+    municipality        String?
+    facility_name       String        @unique
+    effective_start_utc String
+    effective_end_utc   String
+    created_by          String        @default("system") @db.VarChar(255)
+    created_at_utc      DateTime      @default(now()) @map("created_at_utc")
+    last_updated_by     String        @default("system") @db.VarChar(255)
+    last_updated_at_utc DateTime      @updatedAt @map("last_updated_at_utc")
+    devices             device[] // Facility can have many devices
+    facility_type_id    Int
+    review              review[]
+}
+
+model facility_type {
+    id                  Int        @id @default(autoincrement())
+    name                String
+    created_by          String     @default("system") @db.VarChar(255)
+    created_at_utc      DateTime   @default(now()) @map("created_at_utc")
+    last_updated_by     String     @default("system") @db.VarChar(255)
+    last_updated_at_utc DateTime   @updatedAt @map("last_updated_at_utc")
+    facilities          facility[]
+}
+
+model device {
+    id             Int         @id @default(autoincrement())
+    device_id      String      @unique(map: "UQ__stores__2CB9A42611EEDF49") @db.VarChar(40)
+    device_name    String      @unique
+    device_type    device_type @relation(fields: [device_type_id], references: [id])
+    facility       facility    @relation(fields: [facility_id], references: [id])
+    facility_id    Int
+    device_type_id Int
+    result         Int         @default(1)
+    review         review[]
+}
+
+model device_type {
+    id                  Int      @id @default(autoincrement())
+    name                String
+    sample_image_blob   String   @default("") @db.Text
+    created_by          String   @default("system") @db.VarChar(255)
+    created_at_utc      DateTime @default(now()) @map("created_at_utc")
+    last_updated_by     String   @default("system") @db.VarChar(255)
+    last_updated_at_utc DateTime @updatedAt @map("last_updated_at_utc")
+    devices             device[]
+}
+
+model review {
+    id                  Int       @id @default(autoincrement())
+    image_blob          String    @default("") @db.Text
+    image_date_utc      DateTime  @default(now())
+    result              Int       @default(0)
+    review_comment      String    @default("")
+    customer            customer  @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    customer_id         Int
+    facility            facility  @relation(fields: [facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    facility_id         Int
+    device              device    @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    device_id           Int
+    created_by          String    @default("system") @db.VarChar(255)
+    created_at_utc      DateTime  @default(now()) @map("created_at_utc")
+    last_updated_by     String    @default("system") @db.VarChar(255)
+    last_updated_at_utc DateTime? @default(now()) @updatedAt @map("last_updated_at_utc")
+}

@@ -23,7 +23,10 @@ import { useTranslation } from "react-i18next";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 // Import components
 import { Step } from "src/components";
-// Import helpers
+// Import helpers, utils
+import {
+  storeSelectedLanguage
+} from "src/utils/languageStore";
 import {
   useGlobalState,
   useGlobalDispatch,
@@ -73,6 +76,7 @@ export const Header: React.FC<Props> = ({
     if (lang !== selectedLanguage) {
       dispatch(setSelectedLanguage(lang));
       i18n.changeLanguage(lang);
+      storeSelectedLanguage(lang);
     }
   };
 

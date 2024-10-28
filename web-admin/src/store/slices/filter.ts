@@ -24,6 +24,7 @@ const initState = {
     facilityName: "",
     prefecture: "",
     municipality: "",
+    status: "2", // Requesting for review has to be checked initially
   },
 };
 
@@ -37,6 +38,16 @@ export const filterSlice = (set: any) => ({
       },
       MERGE_STATE,
       "filter/setFilter",
+    );
+  },
+
+  setSingleFilter: (filter: { key: string, value: string }) => {
+    set(
+      (state: StoreState) => {
+        state.filter = { ...state.filter, [filter.key]: filter.value };  // Update filter in the store state
+      },
+      MERGE_STATE,
+      "filter/setSingleFilter",
     );
   },
 });

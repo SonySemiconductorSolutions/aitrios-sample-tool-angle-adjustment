@@ -8,22 +8,27 @@ if (Contractor token is provided?) then (yes)
         : Send HTTP status 401 Token has expired;
         kill
     endif
+    ->no;
     if (Facility ID is not valid?) then (yes)
         : Send HTTP status 401 Facility ID is not valid;
         kill
     endif
+    ->no;
     if (Start time is not valid?) then (yes)
         : Send HTTP status 401 Token is not yet valid;
         kill
     endif
+    ->no;
     if (Token exp is not valid?) then (yes)
         : Send HTTP status 401 exp is not valid;
         kill
     endif
+    ->no;
 else (no)
     : Send HTTP status 401 Invalid authorization header format;
     kill
 endif
+->no;
 : Validate parameters;
 note right
 1. device_id (mandatory)
@@ -34,7 +39,7 @@ if (Device does not exists?) then (yes)
     : Send HTTP status 404, Device not found;
     kill
 endif
-
+->no;
 : Get latest review by device ID;
 
 if (Review found?) then (yes)

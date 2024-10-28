@@ -4,20 +4,32 @@
 === Cloud Architecture
 image::images/CloudArch.png[CloudArchitecture]
 
-[cols="1,3"]
+
+The following table describes the resource used in AAT, the purpose of the resource and resource configuration.
+
+[cols="1,3,3"]
 |===
-|Resource |Description
+|Resource |Purpose | Resource Configuration
 
-|Azure App Service
+|App Service
 |WebApp service serving as Backend server and web application for Admin and Contractor App.
-
-|Virtual Network and Subnet
-|Network Service which allows access to resources within that subnet securely. Subnet enables restricted access for the Database so that it can only be accessed by App Service.
+|Basic Tier; 1 B2 (2 Core(s), 3.5 GB RAM, 10 GB Storage); Linux OS
 
 |SQL Database
 |Database service for SQL Server which contains the information about the admin, customers and application reviews. It also stores the Sample and Captured images of the Cameras.
+|Single Database, DTU Purchase Model, Basic Tier, B: 5 DTUs, 2 GB included storage per DB
 
 |Container Registry
 |Docker image storage service which hosts the Docker images of Admin, Backend, Contractor App
+|Basic Tier
+
+|Virtual Network
+|Network Service which allows access to resources within that subnet securely. Subnet enables restricted access for the Database so that it can only be accessed by App Service.
+|Japan East (Virtual Network 1)
 
 |===
+
+[NOTE]
+====
+* Please refer to the link:https://azure.microsoft.com/pricing/calculator/[Azure Pricing Calculator^] and add the resource as required for latest cost estimate.
+====

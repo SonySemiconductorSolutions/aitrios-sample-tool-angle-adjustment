@@ -3,7 +3,7 @@ title Get Console credentials By Customer ID
 
 : Start;
 if (Auth token is provided?) then (yes)
-    if (Auth token is not valid or expired) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
         :Send HTTP status 401,
         Auth token is invalid or token expired;
         kill
@@ -12,6 +12,7 @@ else (no)
     : Send HTTP status 401, unauthorized;
     kill
 endif
+->no(valid token);
 : Validate parameters;
 note right
     customer_id (mandatory)
@@ -20,15 +21,18 @@ if (Parameters are not valid?) then (yes)
     : Send HTTP status 400 error;
     kill
 endif
+->no;
 : Get customer by ID from the DB;
 if (Customer does not exists?) then (yes)
     : Send HTTP status 404, Customer not found;
     kill
 endif
+->no;
 if (Customer is not associated with the current user?) then (yes)
     : Send HTTP status 403, Permission denied;
     kill
 endif
+->no;
 : Get console credentials by the customer ID from the DB;
 : Decrypt the client ID, client secret and application ID;
 : Mask the client secret except the last 4 characters;

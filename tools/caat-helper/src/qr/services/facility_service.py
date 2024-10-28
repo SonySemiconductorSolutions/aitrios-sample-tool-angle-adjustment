@@ -29,6 +29,7 @@ from src.utils.logger import get_json_logger
 
 logger = get_json_logger()
 
+
 class FacilityService:
     """
     A class to generate QR codes with JWT tokens embedded in the URL.
@@ -42,7 +43,15 @@ class FacilityService:
         url (str): The base URL for the web app.
     """
 
-    def __init__(self, facility_id=None, customer_id=None, secret_key=None, start_time=None, exp=None, url=None):
+    def __init__(
+        self,
+        facility_id=None,
+        customer_id=None,
+        secret_key=None,
+        start_time=None,
+        exp=None,
+        url=None,
+    ):
         """
         Initializes the QRCodeGenerator with the given parameters.
 
@@ -87,13 +96,13 @@ class FacilityService:
             logger.error(f"Error generating JWT token: {e}")
             return None
 
-    def generate_qr_code(self, web_app_url_payload, filename_prefix):
+    def generate_qr_code(self, web_app_url_payload, filename):
         """
         Generate QR codes for web app URL.
 
         Parameters:
             web_app_url_payload (str): Payload for the web app URL.
-            filename_prefix (str): Prefix for the filename of the generated QR code images.
+            filename (str): Filename to save generated QR code image.
         """
         try:
             qr = qrcode.QRCode(
@@ -110,12 +119,11 @@ class FacilityService:
                 module_drawer=RoundedModuleDrawer(),
                 color_mask=SolidFillColorMask(back_color=(255, 255, 255), front_color=(0, 0, 0)),
             )
-            qr_img.save(f"{filename_prefix}.png")
-
-            filename = f"{filename_prefix}.png"
-            logger.info(f"\nQR Code of Web App URL stored at: \n{os.path.abspath(filename)}")
+            qr_img.save(filename)
+            return True
         except Exception as e:
             logger.error(f"Error generating QR code: {e}")
+            return False
 
     def create_payload(self):
         """
@@ -215,7 +223,24 @@ class FacilityService:
             return 0
 
 
+def log_directory_tree(startpath, level=0):
+    """
+    Recursive function to print the tree structure of QRCodes
+    """
+
+    prefix = "│   " * (level - 1) + ("└── " if level > 0 else "")
+    logger.info("%s%s/", prefix, os.path.basename(startpath))
+    if os.path.isdir(startpath):
+        for item in os.listdir(startpath):
+            item_path = os.path.join(startpath, item)
+            log_directory_tree(item_path, level + 1)
+
+
 def generate_qr_codes(url):
+    """
+    Generate QRCodes for all customers and their facilities, given the the Contractor App URL
+    """
+
     facility_id = None
     customer_id = None
     start_time = None
@@ -226,9 +251,20 @@ def generate_qr_codes(url):
     qr_generator = FacilityService(facility_id, customer_id, APP_SECRET_KEY, start_time, exp, url)
     admins = qr_generator.fetch_admins()
 
+    # Directory to save the QR Codes in the current working directory
+    main_directory = "QRCodes"
+    if not os.path.exists(main_directory):
+        os.mkdir(main_directory)
+
     for admin in admins:
         customers = qr_generator.fetch_customers(admin.id)
         for customer in customers:
+            # Create sub-directory with the customer_name
+            customer_name_directory = f"{main_directory}/{customer.customer_name}"
+            if not os.path.exists(customer_name_directory):
+                os.mkdir(customer_name_directory)
+
+            # Fetch the facilities for a given customer ID
             facilities = qr_generator.fetch_facilities(customer.id)
             for facility in facilities:
                 # Update QRCodeGenerator instance attributes
@@ -241,18 +277,24 @@ def generate_qr_codes(url):
                 token_url = qr_generator.generate_jwt_token()
                 if token_url:
                     web_app_url_payload = f"{url}?authenticate={token_url}"
-                    logger.info(f"\nURL token: {token_url}")
-                    logger.info(f"\nWeb App URL: {web_app_url_payload}")
+                    logger.info("\n%s", "-" * 50)
+                    logger.info("%s -> %s", customer.customer_name, facility.facility_name)
+                    logger.info("%s", "-" * 50)
+                    logger.info("URL token:\n%s", token_url)
+                    logger.info("Web App URL:\n%s", web_app_url_payload)
 
-                    main_directory = "QRCodes"
-                    if not os.path.exists(main_directory):
-                        os.mkdir(main_directory)
-
-                    customer_name_directory = f"{main_directory}/{customer.customer_name}"
-                    if not os.path.exists(customer_name_directory):
-                        os.mkdir(customer_name_directory)
-
-                    output_file = f"{customer_name_directory}/QRCode+{customer.customer_name}+{facility.facility_name}+{qr_generator.fetch_device_count(facility.id)}+app-url"
+                    file_name = (
+                        f"QRCode+"
+                        f"{customer.customer_name}+"
+                        f"{facility.facility_name}+"
+                        f"{qr_generator.fetch_device_count(facility.id)}+app-url.png"
+                    )
+                    output_file = f"{customer_name_directory}/{file_name}"
                     qr_generator.generate_qr_code(web_app_url_payload, output_file)
+                    logger.info("QR Code of Web App URL stored at:\n%s", os.path.abspath(output_file))
                 else:
                     logger.error("Failed to generate tokens.")
+
+    # log the tree structure of QR Codes
+    logger.info("\n\nThe QR COdes are stored at %s directory:", main_directory)
+    log_directory_tree(main_directory)

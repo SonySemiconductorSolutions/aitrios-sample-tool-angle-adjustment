@@ -35,3 +35,14 @@ button {
   padding: 0;
   appearance: none;
 }
+
+@media (orientation: landscape) {
+  .react-colorful {
+    margin: 0 auto;
+    max-width: 90vh !important;
+  }
+}
+
+.react-colorful__saturation {
+  border-bottom: none !important;
+}

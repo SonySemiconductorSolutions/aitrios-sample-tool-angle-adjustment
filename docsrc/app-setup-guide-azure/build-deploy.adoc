@@ -10,7 +10,7 @@
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash source-build.sh
 ----
 

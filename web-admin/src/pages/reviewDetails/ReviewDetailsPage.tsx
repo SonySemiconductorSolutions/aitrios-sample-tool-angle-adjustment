@@ -19,11 +19,14 @@ import {
   AspectRatio,
   Box,
   Button,
+  Checkbox,
   Card,
   CircularProgress,
   FormHelperText,
   List,
   ListItem,
+  Modal,
+  ModalDialog,
   Stack,
   Snackbar,
   Textarea,
@@ -35,13 +38,17 @@ import {
   AssignmentTurnedInRounded,
   CloseRounded,
   ErrorRounded,
-  ImageNotSupportedOutlined
+  ColorLensOutlined,
+  InfoOutlined,
 } from "@mui/icons-material";
+import { HexColorPicker } from "react-colorful";
 import { Backdrop, IconButton } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { approveReview, getReviewById, rejectReview } from "../../services";
-import { getBase64ImageUrl, formatDatetime, statusToString } from "../../utils";
+import { approveReview, getReviewById, rejectReview, updateDeviceTypeReferenceImage } from "../../services";
+import { ImageWithFallback } from "../../components/ImageWithFallback";
+import { formatDatetime, statusToString } from "../../utils";
+import { useStore } from "../../store";
 import { useTranslation } from "react-i18next";
 
 // Interface for Review details from Response payload
@@ -52,6 +59,7 @@ interface ReviewAPIResponse {
     device_name: string;
     device_id: string;
     device_type: {
+      id: number;
       name: string;
       sample_image_blob: string | null;
     };
@@ -77,7 +85,8 @@ interface ReviewDetails {
   serialNumber: string;
   device: {
     id: number;
-    type: string;
+    typeId: number;
+    typeName: string;
   },
   facility: {
     name: string;
@@ -89,15 +98,16 @@ interface ReviewDetails {
   answered: string;
 }
 
+const CHECKBOX_SX = { fontSize: 14 }; // Styling for checkboxes
+
 // Constants
 const CHARACTER_LIMIT = 255;
 const NOT_LATEST_REVIEW_ERROR = [40303, 40304];
 const NAVIGATE_TIMEOUT = 3000;
 const IMAGE_NOT_SUBMITTED = "NoImageSubmitted";
-const SUBMITTED_IMAGE_NOT_FOUND = "SubmittedImageNotFound";
-const REFERENCE_IMAGE_NOT_FOUND = "ReferenceImageNotFound";
 
 export const ReviewDetailsPage = () => {
+  const { gridLine, setGridLineColor, setGridLineVisibility } = useStore();
   const theme = useTheme();
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -117,7 +127,16 @@ export const ReviewDetailsPage = () => {
   const [isReviewDone, setIsReviewDone] = useState(false);
   const [reviewData, setReviewData] = useState<ReviewDetails>();
   const [referenceImageBase64, setReferenceImageBase64] = useState<string>();
+  const [initialReferenceImageBase64, setInitialReferenceImageBase64] = useState<string>();
   const [submittedImageBase64, setSubmittedImageBase64] = useState<string>();
+  const [submittedImageDimension, setSubmittedImageDimension] = useState({ width: 0, height: 0 });
+  const [adjustedImageBase64, setAdjustedImageBase64] = useState<string>();
+  const [savedGridLineVisibility, setSavedGridLineVisibility] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<number>(4 / 3);
+  const [preserveAspectRatio, setPreserveAspectRatio] = useState<boolean>(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [startAdjust, setStartAdjust] = useState(false);
 
   // Handles input change for Rejection comment
   const onRejectReasonChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -138,32 +157,33 @@ export const ReviewDetailsPage = () => {
   };
 
   // Handles the rejection of a review request
-  const onReject = () => {
+  const onReject = async () => {
     if (!rejectReason.trim()) return;
     setOpenSnackbar(false);
     setIsRejecting(true);
-    rejectReview(state.reviewId, 3, rejectReason.trim()) // 3 mean reject
-      .then(() => {
+    try {
+      if (referenceImageBase64 && referenceImageBase64 !== initialReferenceImageBase64) {
+        await updateDeviceTypeReferenceImage(reviewData?.device.typeId, referenceImageBase64 ?? "");
+      }
+      await rejectReview(state.reviewId, 3, rejectReason.trim()); // 3 means reject
+      setIsReviewDone(true);
+      setOpenSnackbar(true);
+      setInitialRejectReason(rejectReason.trim());
+      setSuccessMessage("reviewRequestPage.rejectSuccess");
+      setTimeout(() => {
+        navigate("/");
+      }, NAVIGATE_TIMEOUT);
+    } catch (err: any) {
+      handleError(err);
+      if (NOT_LATEST_REVIEW_ERROR.includes(err?.error_code)) {
         setIsReviewDone(true);
-        setOpenSnackbar(true);
-        setInitialRejectReason(rejectReason.trim());
-        setSuccessMessage("reviewRequestPage.rejectSuccess");
         setTimeout(() => {
           navigate("/");
         }, NAVIGATE_TIMEOUT);
-      })
-      .catch((err) => {
-        handleError(err);
-        if (NOT_LATEST_REVIEW_ERROR.includes(err?.error_code)) {
-          setIsReviewDone(true);
-          setTimeout(() => {
-            navigate("/");
-          }, NAVIGATE_TIMEOUT);
-        }
-      })
-      .finally(() => {
-        setIsRejecting(false);
-      });
+      }
+    } finally {
+      setIsRejecting(false);
+    }
   };
 
   // Handles the approval of a review request
@@ -207,7 +227,8 @@ export const ReviewDetailsPage = () => {
           serialNumber: responseData.device?.device_id,
           device: {
             id: responseData.device?.id,
-            type: responseData.device?.device_type?.name,
+            typeId: responseData.device?.device_type?.id,
+            typeName: responseData.device?.device_type?.name,
           },
           facility: {
             name: responseData.facility?.facility_name,
@@ -222,13 +243,14 @@ export const ReviewDetailsPage = () => {
         setRejectReason(responseData?.review_comment ?? "");
         setInitialRejectReason(responseData?.review_comment ?? "");
 
-        if (reviewDetails.result === 1) {
-          setSubmittedImageBase64(IMAGE_NOT_SUBMITTED);
-        } else {
-          setSubmittedImageBase64(responseData?.image_blob ?? SUBMITTED_IMAGE_NOT_FOUND);
-        }
+        const submittedImageBlob = [2, 3, 4].includes(reviewDetails?.result)
+          ? (responseData?.image_blob ?? "") : IMAGE_NOT_SUBMITTED;
 
-        setReferenceImageBase64(responseData?.device?.device_type?.sample_image_blob ?? REFERENCE_IMAGE_NOT_FOUND);
+        setSubmittedImageBase64(submittedImageBlob);
+        calculateImageAspectRatio(submittedImageBlob, setSubmittedImageDimension, setAspectRatio);
+
+        setReferenceImageBase64(responseData?.device?.device_type?.sample_image_blob ?? "");
+        setInitialReferenceImageBase64(responseData?.device?.device_type?.sample_image_blob ?? "");
 
         setReviewData(reviewDetails);
       })
@@ -238,6 +260,66 @@ export const ReviewDetailsPage = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  // Function to calculate image aspect ratio from base64 string
+  const calculateImageAspectRatio = (
+    base64Url: string | undefined,
+    setImageDimension: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>,
+    setImageAspectRatio: React.Dispatch<React.SetStateAction<number>>,
+  ) => {
+    if (!base64Url) {
+      setImageAspectRatio(4 / 3); // Default aspect ratio
+      return;
+    }
+
+    const img = new Image();
+
+    img.onload = () => {
+      const { naturalWidth, naturalHeight } = img;
+      setImageDimension({ width: naturalWidth, height: naturalHeight });
+      setImageAspectRatio(naturalWidth / naturalHeight);
+    };
+
+    img.onerror = () => setImageAspectRatio(4 / 3); // Default aspect ratio
+
+    img.src = base64Url;
+  };
+
+  // Determine text color based on background brightness
+  const getContrastingColor = (hexColor: string) => {
+    // Convert hex color to RGB
+    const rgb = parseInt(hexColor.slice(1), 16);
+    const r = (rgb >> 16) & 0xff;
+    const g = (rgb >> 8) & 0xff;
+    const b = (rgb >> 0) & 0xff;
+    // Calculate brightness (luminance)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 125 ? '#000' : '#fff'; // Return black for light colors and white for dark colors
+  };
+
+  // Handles adjusting Submitted image
+  const toggleAdjustMode = () => {
+    if (startAdjust) {
+      setPosition({ x: 0, y: 0 });
+      setGridLineVisibility(savedGridLineVisibility);
+    } else {
+      setSavedGridLineVisibility(gridLine.visibility);
+      setGridLineVisibility(true);
+    }
+    setStartAdjust(!startAdjust);
+  };
+
+  // Handles updating referenceImageBase64 for rejection
+  const updateReferenceImage = () => {
+    setReferenceImageBase64(adjustedImageBase64);
+    if (!rejectReason.trim()) setRejectReason(t("reviewRequestPage.adjustToMatchSampleImage"))
+    toggleAdjustMode();
+  };
+
+  // Handles restoring original referenceImageBase64
+  const restoreReferenceImage = () => {
+    setReferenceImageBase64(initialReferenceImageBase64);
   };
 
   // Effect hook to fetch data initially
@@ -254,7 +336,8 @@ export const ReviewDetailsPage = () => {
           sx={{
             position: "absolute",
             height: "100%",
-            width: "100%",
+            left: { md: "255px" },
+            width: { xs: "100%", md: "calc(100vw - 255px)" },
             backgroundColor: "rgba(221, 231, 238)",
           }}
         >
@@ -275,10 +358,11 @@ export const ReviewDetailsPage = () => {
                 display: "flex",
                 mt: { xs: 2, md: 0 },
                 mb: 1,
+                gap: 1,
                 flexDirection: { xs: "column", sm: "row" },
-                alignItems: { xs: "start", sm: "center" },
+                alignItems: "center",
                 flexWrap: "wrap",
-                justifyContent: "space-between",
+                justifyContent: { xs: "center", sm: "space-between" },
               }}
             >
               <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -320,7 +404,7 @@ export const ReviewDetailsPage = () => {
               >
                 <Card
                   variant="outlined"
-                  sx={{ flex: 2, display: "flex", flexDirection: "row" }}
+                  sx={{ flex: 2, display: "flex", flexDirection: { xs: "column", md: "row" }, }}
                 >
                   <List>
                     <ListItem>
@@ -382,71 +466,119 @@ export const ReviewDetailsPage = () => {
                   </Card>
                 </Card>
               </Box>
-              <Box sx={{ display: "flex", flexGrow: 1, columnGap: 2 }}>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center", justifyContent: "center" }}>
+                <Checkbox
+                  label={t("reviewRequestPage.showGridLines")}
+                  sx={CHECKBOX_SX}
+                  checked={gridLine.visibility}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setGridLineVisibility(e.target.checked)
+                  }
+                />
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  sx={{
+                    width: 30,
+                    height: 30,
+                    backgroundColor: gridLine.color,
+                    cursor: "pointer",
+                    border: "1px solid #ccc",
+                  }}
+                  onClick={() => setShowColorPicker(!showColorPicker)}
+                >
+                  <ColorLensOutlined sx={{ fill: getContrastingColor(gridLine.color) }} />
+                </Box>
+              </Box>
+              <Modal
+                aria-labelledby="color-picker-modal"
+                aria-describedby="pick grid color"
+                open={showColorPicker}
+                onClose={() => setShowColorPicker(false)}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backdropFilter: "blur(0.25px)",
+                  zIndex: 100000,
+                }}
+              >
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  gap={2}
+                  position="absolute"
+                  marginLeft={{ md: "255px" }}
+                >
+                  <HexColorPicker color={gridLine.color} onChange={setGridLineColor} />
+                  <Button
+                    size="lg"
+                    sx={{ width: 125, maxHeight: 20 }}
+                    onClick={() => setShowColorPicker(false)}
+                  >
+                    {t("reviewRequestPage.close")}
+                  </Button>
+                </Box>
+              </Modal>
+              <Box sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" }, flexGrow: 1, gap: 2 }}>
                 <Card variant="outlined" sx={{ flex: 1 }}>
-                  <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}>
-                    {t("reviewRequestPage.submittedImage")}
-                  </Typography>
-                  <AspectRatio maxHeight={360}>
-                    {submittedImageBase64 === IMAGE_NOT_SUBMITTED || submittedImageBase64 === SUBMITTED_IMAGE_NOT_FOUND ? (
-                      <Stack
-                        justifyContent="center"
-                        alignItems="center"
-                        width="100%"
-                        height="100%"
-                        bgcolor="rgba(221, 231, 238, 0.5)"
-                      >
-                        <ImageNotSupportedOutlined sx={{ fontSize: 100 }} />
-                        <Typography textAlign="center">
-                          {submittedImageBase64 === IMAGE_NOT_SUBMITTED
-                            ? t("reviewRequestPage.notSubmitted")
-                            : t("reviewRequestPage.submittedImageNotFound")}
-                        </Typography>
-                      </Stack>
-                    ) : (
-                      <Card
-                        sx={{
-                          backgroundImage: getBase64ImageUrl(submittedImageBase64),
-                          backgroundRepeat: "no-repeat",
-                          backgroundPosition: "center",
-                          backgroundSize: "contain",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                        variant="plain"
-                      />
-                    )}
+                  <Box display="flex" flexDirection="column" height="48px">
+                    <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold", mt: "auto" }}>
+                      {t("reviewRequestPage.submittedImage")}
+                      {submittedImageDimension?.width && submittedImageDimension?.height ? (
+                        <span style={{ marginLeft: "4px" }}>
+                          ({submittedImageDimension.width}x{submittedImageDimension.height})
+                        </span>
+                      ) : null}
+                    </Typography>
+                  </Box>
+                  <AspectRatio
+                    variant="plain"
+                    ratio={aspectRatio}
+                    maxHeight="360px"
+                    sx={{ borderRadius: 0 }}
+                  >
+                    <ImageWithFallback
+                      src={submittedImageBase64}
+                      alt={t("reviewRequestPage.submittedImage")}
+                      height="360px"
+                      aspectRatio={aspectRatio}
+                      fallbackIconSize={100}
+                      showGrid
+                    />
                   </AspectRatio>
                 </Card>
                 <Card variant="outlined" sx={{ flex: 1 }}>
-                  <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}>
-                    {t("reviewRequestPage.referenceImage")}
-                  </Typography>
-                  <AspectRatio maxHeight={300}>
-                    {referenceImageBase64 === REFERENCE_IMAGE_NOT_FOUND ? (
-                      <Stack
-                        justifyContent="center"
-                        alignItems="center"
-                        width="90%"
-                        height="100%"
-                        bgcolor="rgba(221, 231, 238, 0.5)"
-                      >
-                        <ImageNotSupportedOutlined sx={{ fontSize: 100 }} />
-                        <Typography textAlign="center">{t("reviewRequestPage.referenceImageNotFound")}</Typography>
-                      </Stack>
-                    ) : (
-                      <Card
-                        sx={{
-                          backgroundImage: getBase64ImageUrl(referenceImageBase64),
-                          backgroundRepeat: "no-repeat",
-                          backgroundPosition: "center",
-                          backgroundSize: "contain",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                        variant="plain"
-                      />
-                    )}
+                  <Box display="flex" flexDirection="column" height="48px">
+                    <Checkbox
+                      label={t("reviewRequestPage.preserveAspectRatio")}
+                      sx={{ alignSelf: "flex-end", ...CHECKBOX_SX }}
+                      checked={preserveAspectRatio}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setPreserveAspectRatio(e.target.checked)
+                      }
+                    />
+                    <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold", mt: "auto" }}>
+                      {t("reviewRequestPage.referenceImage")}
+                    </Typography>
+                  </Box>
+                  <AspectRatio
+                    variant="plain"
+                    ratio={aspectRatio}
+                    maxHeight="360px"
+                    sx={{ borderRadius: 0 }}
+                  >
+                    <ImageWithFallback
+                      src={referenceImageBase64}
+                      alt={t("reviewRequestPage.referenceImage")}
+                      height="360px"
+                      aspectRatio={aspectRatio}
+                      preserveAspectRatio={preserveAspectRatio}
+                      fallbackIconSize={100}
+                      showGrid
+                    />
                   </AspectRatio>
                   <Box sx={{
                     display: "flex",
@@ -461,7 +593,7 @@ export const ReviewDetailsPage = () => {
                       </Typography>
                       <Typography level="body-sm">
                         {reviewData?.facility?.type
-                          ? `${reviewData.facility.type} (${reviewData?.device?.type})`
+                          ? `${reviewData.facility.type} (${reviewData?.device?.typeName})`
                           : "-"
                         }
                       </Typography>
@@ -474,7 +606,8 @@ export const ReviewDetailsPage = () => {
                       sx={{ width: 125, maxHeight: 20, alignSelf: "flex-end" }}
                       disabled={
                         ![2, 3].includes(reviewData?.result ?? 1) ||
-                        isReviewDone || isRejecting
+                        isReviewDone || isRejecting ||
+                        referenceImageBase64 !== initialReferenceImageBase64
                       }
                     >
                       {t("reviewRequestPage.approve")}
@@ -482,6 +615,128 @@ export const ReviewDetailsPage = () => {
                   </Box>
                 </Card>
               </Box>
+              <Box
+                display="flex"
+                flexDirection={{ xs: "column", lg: "row" }}
+                rowGap={2}
+                columnGap={4}
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Button
+                  onClick={toggleAdjustMode}
+                  size="lg"
+                  sx={{ width: 230, maxHeight: 20 }}
+                  disabled={!submittedImageDimension?.width || !submittedImageDimension?.height}
+                >
+                  {t("reviewRequestPage.updateReferenceImage")}
+                </Button>
+                <Button
+                  onClick={restoreReferenceImage}
+                  size="lg"
+                  sx={{ width: 230, maxHeight: 20 }}
+                  disabled={referenceImageBase64 === initialReferenceImageBase64}
+                >
+                  {t("reviewRequestPage.restoreReferenceImage")}
+                </Button>
+              </Box>
+              <Modal
+                open={startAdjust}
+                onClose={toggleAdjustMode}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backdropFilter: "blur(0.75px)",
+                  zIndex: 100000,
+                }}
+              >
+                <ModalDialog sx={{
+                  overflow: "auto",
+                  p: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  borderRadius: "md",
+                  boxShadow: "lg",
+                  maxWidth: "80dvw",
+                }}>
+                  <Typography textAlign="center" level="h3">
+                    {t("reviewRequestPage.adjustSubmittedImage")}
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, flexGrow: 1, gap: 2, mx: 2 }}>
+                    <Card variant="outlined" sx={{ flex: 1, width: { xs: "100%", md: 680 } }}>
+                      <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold", mb: "auto" }}>
+                        {t("reviewRequestPage.submittedImage")} ({t("reviewRequestPage.editHere")})
+                      </Typography>
+                      <ImageWithFallback
+                        src={submittedImageBase64}
+                        alt={t("reviewRequestPage.submittedImage")}
+                        height="480px"
+                        aspectRatio={aspectRatio}
+                        fallbackIconSize={100}
+                        showGrid
+                        draggable
+                        draggedPosition={position}
+                        setDraggedPosition={setPosition}
+                        setDraggedImage={setAdjustedImageBase64}
+                      />
+                    </Card>
+                    <Card variant="outlined" sx={{ flex: 1, width: { xs: "100%", md: 680 } }}>
+                      <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold", mb: "auto" }}>
+                        {t("reviewRequestPage.referenceImage")}
+                      </Typography>
+                      <ImageWithFallback
+                        src={referenceImageBase64}
+                        alt={t("reviewRequestPage.referenceImage")}
+                        height="480px"
+                        aspectRatio={aspectRatio}
+                        preserveAspectRatio={false}
+                        fallbackIconSize={100}
+                        showGrid
+                      />
+                    </Card>
+                  </Box>
+                  <Typography
+                    textAlign="justify"
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 1,
+                      px: 2,
+                      mx: "auto",
+                    }}
+                  >
+                    <InfoOutlined sx={{ fontSize: 24 }} />
+                    {t("reviewRequestPage.updateReferenceImageNote")}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 2,
+                      flexDirection: { xs: "column", md: "row-reverse" },
+                    }}
+                  >
+                    <Button
+                      size="lg"
+                      color="primary"
+                      onClick={updateReferenceImage}
+                      disabled={position.x === 0 && position.y === 0}
+                    >
+                      {t("reviewRequestPage.updateReferenceImage")}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="lg"
+                      color="neutral"
+                      onClick={toggleAdjustMode}
+                    >
+                      {t("reviewRequestPage.cancel")}
+                    </Button>
+                  </Box>
+                </ModalDialog>
+              </Modal>
             </Stack>
 
             <Card variant="outlined" sx={{ flex: 1 }}>
@@ -511,9 +766,10 @@ export const ReviewDetailsPage = () => {
                   loadingPosition="start"
                   sx={{ width: 125, maxHeight: 20 }}
                   disabled={
-                    rejectReason.trim() === initialRejectReason ||
+                    (rejectReason.trim() === initialRejectReason &&
+                      referenceImageBase64 === initialReferenceImageBase64) ||
                     ![2, 3, 4].includes(reviewData?.result ?? 1) ||
-                    isReviewDone || isApproving
+                    isReviewDone || isApproving || !rejectReason.trim()
                   }
                   onClick={onReject}
                 >

@@ -18,7 +18,7 @@ Run following commands to create virtual environment and install `caat-helper` p
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ python3 -m venv .venv
 ----
 
@@ -27,7 +27,7 @@ $ python3 -m venv .venv
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ source .venv/bin/activate
 ----
 
@@ -35,12 +35,12 @@ $ source .venv/bin/activate
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 # Upgrade pip
 $ pip install -U pip
 
 # Install CAAT helper package
-$ pip install ../caat-helper/
+$ pip install ../../caat-helper/
 ----
 
 [[set-environment-variables]]
@@ -61,7 +61,7 @@ Make sure to execute set environment variable script, before running caat-helper
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ source set-env-var.sh
 ----
 
@@ -74,7 +74,7 @@ WARNING: Please make sure to execute this command first before any other caat-he
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 (.venv) $ caat-helper-init
 ----
 
@@ -128,8 +128,8 @@ include::local-excel-readme.adoc[Excel Instructions]
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
-(.venv) $ prisma studio --schema=../caat-helper/src/data/prisma/schema.local.prisma
+# from tools/cloud-setup/codespaces
+(.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.postgres.prisma
 ----
 
 * The above command execution opens/prompts to open the studio viewer in web browser, please allow.

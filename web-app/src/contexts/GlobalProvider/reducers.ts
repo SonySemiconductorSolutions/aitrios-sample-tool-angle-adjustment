@@ -56,6 +56,14 @@ export const globalReducer = (
       draft.isAuthorized = action.payload;
       break;
     }
+    case "setGridLineColor": {
+      draft.gridLineProps.color = action.payload;
+      break;
+    }
+    case "setGridLineVisibility": {
+      draft.gridLineProps.visibility = action.payload;
+      break;
+    }
     default:
       assertUnreachable(action, "Unknown Global action type.");
   }

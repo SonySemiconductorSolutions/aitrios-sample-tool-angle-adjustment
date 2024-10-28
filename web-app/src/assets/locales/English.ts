@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
   language: "English",
-  version: "1.0.0-RC",
+  version: "1.4.0",
   app_title: "Angle Adjustment Tool",
   camera: "Camera",
 
@@ -82,6 +82,7 @@ const translations = {
     50008: "Sorry, we encountered an error while processing your request.",
     50009: "Unknown error, please try again.",
     50011: "Please try again or contact Admin if the issue persists.",
+    50014: "Please try again or contact Admin if the issue persists.",
     50301: "Unable to connect to the server. Please try again after sometime.",
     50401: "Sorry, the request timed out. Please try again.",
   },
@@ -116,6 +117,8 @@ const translations = {
   //ImageConfirmationPage
   image_confirmation_page: {
     facility_img: "Facility image",
+    show_grid_lines: "Show Grid Lines",
+    close: "Close",
     single_capture: "Single capture",
     interval_capture: "Interval capture",
     reacquisition_img: "Capture image",

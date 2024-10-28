@@ -11,7 +11,7 @@ A: 以下のコマンドを実行してローカルインスタンスを停止�
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash caat-local-stop.sh
 $ docker system prune -a
 ----
@@ -19,12 +19,12 @@ $ docker system prune -a
 Q: デプロイ中に発生した一般的なエラーのトラブルシューティングはどうすればいいですか?::
 A: デプロイ中にエラーが発生した場合:
     * 特定のエラーメッセージのスクリプトのアウトプット、およびデプロイメントログを確認します。
-    * `tools/local-setup-codespaces/.env`ファイル内のすべての必要なパラメーターが正しく提供され、フォーマットされていることを確認してください。
+    * `tools/cloud-setup/codespaces/.env` ファイル内のすべての必要なパラメーターが正しく提供され、フォーマットされていることを確認してください。
     * 以下のコマンドを実行して、すべてのサービスのログを表示し、エラーがないかを確認します。
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ docker compose logs
 ----
 

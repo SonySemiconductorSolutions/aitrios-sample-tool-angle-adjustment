@@ -18,19 +18,30 @@ limitations under the License.
 
 // Import packages
 import Alert from "@mui/material/Alert";
+import Checkbox from "@mui/material/Checkbox";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import LinearProgress from "@mui/material/LinearProgress";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import { useCallback, useEffect, useRef, useState } from "react";
-import ImageNotSupportedOutlinedIcon from '@mui/icons-material/ImageNotSupportedOutlined';
+import ColorLensOutlinedIcon from '@mui/icons-material/ColorLensOutlined';
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 // Import components
-import { MainButton, Header, CheckListIcon, Loading } from "src/components";
-import { ImageWithFallback } from "src/components/elements/ImageWithFallback";
+import {
+  Header,
+  Loading,
+  MainButton,
+  CheckListIcon,
+  GridColorPicker,
+  ImageWithFallback
+} from "src/components";
 // Import helpers
 import {
   unsetSelectedDevice,
   useGlobalDispatch,
+  setGridLineColor,
   useGlobalState,
+  setGridLineVisibility,
 } from "src/contexts/GlobalProvider";
 import {
   createReview,
@@ -44,7 +55,9 @@ import placeHolder from "../../assets/images/place-holder.svg";
 import EN from "../../assets/locales/English";
 import styles from "./ImageConfirmationPage.module.css";
 
-const NAVIGATE_TIMEOUT = 3000,
+const GRID_ROWS = 4,
+  GRID_COLUMNS = 4,
+  NAVIGATE_TIMEOUT = 3000,
   ALREADY_SUBMITTED_ERROR_CODE = "10002",
   ALREADY_APPROVED_ERROR_CODE = "10003";
 
@@ -55,6 +68,8 @@ export const ImageConfirmationPage = () => {
   const { t } = useTranslation();
 
   const selectedDevice = useGlobalState((s) => s.selectedDevice);
+  const gridLineColor = useGlobalState((s) => s.gridLineProps.color);
+  const gridLineVisibility = useGlobalState((s) => s.gridLineProps.visibility);
 
   const [sampleImage, setSampleImage] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -67,6 +82,7 @@ export const ImageConfirmationPage = () => {
   const [reportClicked, setReportClicked] = useState<boolean>(false);
   const [retrySampleImageFetch, setRetrySampleImageFetch] = useState<boolean>(false);
   const [sampleErrorMessage, setSampleErrorMessage] = useState<string>();
+  const [gridColorPickerOpen, setGridColorPickerOpen] = useState<boolean>(false);
 
   const isIntervalRef = useRef(false);
   const interval = 5 * 1000; // Interval time for capturing image
@@ -144,6 +160,7 @@ export const ImageConfirmationPage = () => {
   // Method called when selectedDevice is updated, to fetch the sample image and
   // latest image of the camera, and to delete the image capture interval on unload
   useEffect(() => {
+    window.scrollTo(0, 0);
     if (selectedDevice?.id) {
       fetchSampleImage();
       fetchDeviceImage();
@@ -191,7 +208,7 @@ export const ImageConfirmationPage = () => {
         deviceId: selectedDevice.id,
       })
         .then((data) => {
-          if (data?.status === DEVICE_PROGRESS_STATUS.APPLIED) {
+          if (data?.status === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW) {
             setIsLoading(false);
             setErrorMessage(ALREADY_SUBMITTED_ERROR_CODE);
             setTimeout(() => {
@@ -228,16 +245,58 @@ export const ImageConfirmationPage = () => {
     navigate("/devices", { replace: true });
   };
 
+  const toggleGridLineVisibility = () => {
+    dispatch(setGridLineVisibility(!gridLineVisibility));
+  }
+
+  const updateGridLineColor = (gridLineColor: string) => {
+    dispatch(setGridLineColor(gridLineColor));
+  }
+
+  const handleGridColorPickerClose = () => {
+    setGridColorPickerOpen(false);
+  }
+
+  const handleGridColorPickerOpen = () => {
+    setGridColorPickerOpen(true);
+  }
+
+  const getContrastColor = (hexColor: string) => {
+    const rgb = parseInt(hexColor.slice(1), 16);
+    const r = (rgb >> 16) & 0xff;
+    const g = (rgb >> 8) & 0xff;
+    const b = (rgb >> 0) & 0xff;
+    // Calculate brightness (luminance)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 125 ? '#000' : '#fff'; // Return black for light colors and white for dark colors
+  }
+
   return (
     <div className={styles.container}>
       <Header step={3} goBack={true} onGoBack={backClick} />
       {isLoading ? <Loading /> : <div className={styles.overlayFrame} />}
       <div>
-        <div style={{ textAlign: "center", marginTop: "10px" }}>
+        <div className={styles.deviceNameContainer}>
           {t("camera") + ": "}
           <span style={{ fontWeight: "bold" }}>
             {selectedDevice?.device_name}
           </span>
+        </div>
+        <div className={styles.gridLineContainer}>
+          <FormControlLabel
+            onChange={toggleGridLineVisibility}
+            control={<Checkbox checked={gridLineVisibility} />}
+            label={t("image_confirmation_page.show_grid_lines")}
+          />
+          <div className={styles.gridLineColorBox} style={{ backgroundColor: gridLineColor }} onClick={handleGridColorPickerOpen}>
+            <ColorLensOutlinedIcon sx={{ fill: getContrastColor(gridLineColor) }} />
+          </div>
+          <GridColorPicker
+            color={gridLineColor}
+            open={gridColorPickerOpen}
+            onChange={updateGridLineColor}
+            handleClose={handleGridColorPickerClose}
+          />
         </div>
         <div className={styles.imageWrap}>
           {!cameraImageBase64 ? (
@@ -250,10 +309,14 @@ export const ImageConfirmationPage = () => {
             cameraImageBase64 === DEVICE_IMAGE_NOT_FOUND ? (
               <ImageNotSupportedOutlinedIcon sx={{fontSize: 200}} />
             ) : (
-              <ImageWithFallback
-                src={cameraImageBase64}
-                alt={t("image_confirmation_page.facility_img")}
-              />
+              <>
+                <ImageWithFallback
+                  gridRows={GRID_ROWS}
+                  src={cameraImageBase64}
+                  gridColumns={GRID_COLUMNS}
+                  alt={t("image_confirmation_page.facility_img")}
+                />
+              </>
             )
           )}
         </div>
@@ -303,7 +366,7 @@ export const ImageConfirmationPage = () => {
                 {t("image_confirmation_page.chk_list_1")}
               </span>
             </div>
-            <div style={{ textAlign: "center" }}>
+            <div className={styles.sampleImageWrap}>
               {sampleImage === undefined ? (
                 <img
                   src={placeHolder}
@@ -321,10 +384,14 @@ export const ImageConfirmationPage = () => {
                     </span>
                   </div>
                 ) : (
-                  <ImageWithFallback
-                    src={sampleImage}
-                    alt={t("image_confirmation_page.facility_sample_img")}
-                  />
+                  <>
+                    <ImageWithFallback
+                      src={sampleImage}
+                      gridRows={GRID_ROWS}
+                      gridColumns={GRID_COLUMNS}
+                      alt={t("image_confirmation_page.facility_sample_img")}
+                    />
+                  </>
                 )
               )}
             </div>

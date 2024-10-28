@@ -3,7 +3,7 @@
 
 このページでは、GitHub CodespacesへのAATアプリケーションの設定について説明します。
 
-- Codespacesに関しては、 link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces の概要^] を参照してください。
+- Codespacesに関しては、 link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces^] を参照してください。
 - GitHub Codespacesの使用料はユーザーの負担となります。詳細は: link:https://docs.github.com/ja/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces[GitHub Codespaces の請求について^]を参照してください。
 - Codespacesの設定では4-Core、 16GB RAM、 32 GB ストレージを選択してください。詳細はlink:https://docs.github.com/ja/codespaces/getting-started/quickstart[GitHub Codespaces のクイックスタート^] もしくは link:https://docs.github.com/ja/codespaces/developing-in-a-codespace/creating-a-codespace-for-a-repository[リポジトリの codespace を作成する^]を参照してください。
 
@@ -13,19 +13,19 @@
 [注記]
 ====
 このCodespacesセットアップは、設置するカメラの合計台数が10台以下の場合にのみ適しています。
-カメラが10台以上の場合はAzureでのクラウドセットアップが推奨されています。
+カメラが10台以上の場合はAzure/AWSでのクラウドセットアップが推奨されています。
 ====
 
 === 前提条件
 
 * 次の手順に進む前に、必ず以下のソフトウェアをGitHub Codespacesへインストールしておいてください。
 
-- link:https://docs.docker.com/engine/install/ubuntu/[Docker CLI^]
-- Python 3.10.x
+- link:https://docs.docker.com/engine/install/ubuntu/[Docker CLI^] (v26.1.4-1 にてテスト済み)
+- Python 3.10.x (v3.10.12 にてテスト済み)
 
 === ローカル環境セットアップ
 
-本ドキュメントで実行するすべてのコマンドは `tools/local-setup-codespaces`を作業ディレクトリとして想定しています。
+本ドキュメントで実行するすべてのコマンドは `tools/cloud-setup/codespaces` を作業ディレクトリとして想定しています。
 
 ==== 環境ファイル
 
@@ -47,8 +47,8 @@
 
 |DATABASE_PASSWORD
 |DBサーバー管理者用の強力なパスワードです
-| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%`, `@` +
-推奨される文字の長さ: 8-128文字  +
+| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%` +
+推奨される文字の長さ: 8-96文字  +
 | "V3ry5tr0ndbServerPa55"
 
 |===

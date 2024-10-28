@@ -14,6 +14,7 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
+import asyncio
 import os
 import shutil
 
@@ -21,10 +22,12 @@ import click
 from src.config import APP_SECRET_KEY, DATABASE_URL
 from src.csv.main import db_clear, db_populate, list_admin_data, reset_password
 from src.qr.main import generate_qr
-from src.utils.util_resources import get_resource_path
+from src.utils.data_validator_util import confirm_alert
 from src.utils.logger import get_json_logger
+from src.utils.util_resources import get_resource_path
 
 logger = get_json_logger()
+
 
 @click.group()
 def cli():
@@ -50,7 +53,7 @@ def export_template():
     shutil.copy(template_excel_path, os.getcwd())
     shutil.copy(sample_excel_path, os.getcwd())
 
-    click.echo(f"Data template and Data Sample files are exported and saved at: {str(os.getcwd())}")
+    logger.info(f"Data template and Data Sample files are exported and saved at: {str(os.getcwd())}")
 
 
 @db.command()
@@ -66,17 +69,17 @@ def populate(excel_path, csv_dir):
 
     """
     if not excel_path and not csv_dir:
-        click.echo("At least one argument is required. Use --help for details", err=True)
+        logger.info("At least one argument is required. Use --help for details")
         return
 
     # Validate Database URL
     if not DATABASE_URL:
-        logger.error(f"DATABASE_URL is not provided in environment variables.")
+        logger.error("Error: The DATABASE_URL environment variable is not set. Please set it and try again.")
         return
 
     # Validate Application Secret Key
     if not APP_SECRET_KEY:
-        logger.error(f"APP_SECRET_KEY is not provided in environment variables.")
+        logger.error("Error: The APP_SECRET_KEY environment variable is not set. Please set it and try again.")
         return
 
     result, tables_added = db_populate(excel_path, csv_dir)
@@ -85,12 +88,13 @@ def populate(excel_path, csv_dir):
         tables_str = ", ".join(tables_added)
 
     if not result["is_valid"]:
-        click.echo(("Populating in Database Failed"))
+        logger.info("Populating in Database Failed")
+
     else:
         if tables_added:
-            click.echo(f"Populating {tables_str} in Database is Successful")
+            logger.info(f"Populating {tables_str} in Database is Successful")
         else:
-            click.echo(f"\nNo new data is added to the Database")
+            logger.info("\nNo new data is added to the Database")
 
 
 @db.command()
@@ -111,18 +115,8 @@ def reset_pass(login_id, password):
     """
 
     result = reset_password(login_id, password)
-    click.echo("Admin password reset is " + "Successful" if result else "Failed")
+    logger.info(f"Admin password reset is {'Successful' if result else 'Failed'}")
 
-def confirm_alert(alert_text):
-    """
-    Shows the confirmation alert with yes no
-    """
-    while True:
-        response = input(alert_text + " (y/n): ").lower()
-        if response in ['y', 'n']:
-            return response == 'y'
-        else:
-            logger.info(f"Please respond with 'y' or 'n'.")
 
 @db.command()
 def clear():
@@ -131,17 +125,20 @@ def clear():
     """
     # Validate Database URL
     if not DATABASE_URL:
-        logger.error(f"DATABASE_URL is not provided in environment variables.")
+        logger.error("Error: The DATABASE_URL environment variable is not set. Please set it and try again.")
         return
 
     # Validate Application Secret Key
     if not APP_SECRET_KEY:
-        logger.error(f"APP_SECRET_KEY is not provided in environment variables.")
+        logger.error("Error: The APP_SECRET_KEY environment variable is not set. Please set it and try again.")
         return
-    
-    if (confirm_alert("This will delete all the data from Database. Are you sure?")):
-        result = db_clear()
-        click.echo("Database Data Clear is " + "Successful" if result else "Failed")
+
+    if confirm_alert("This will delete all the data from Database. Are you sure?"):
+        result = asyncio.run(db_clear())
+        if result:
+            logger.info("Database Data clear is success")
+        else:
+            logger.error("Failed to clear database data after multiple attempts")
 
 
 @cli.group()
@@ -161,12 +158,12 @@ def generate(url):
 
     # Validate Database URL
     if not DATABASE_URL:
-        logger.error(f"DATABASE_URL is not provided in environment variables.")
+        logger.error("Error: The DATABASE_URL environment variable is not set. Please set it and try again.")
         return
 
     # Validate Application Secret Key
     if not APP_SECRET_KEY:
-        logger.error(f"APP_SECRET_KEY is not provided in environment variables.")
+        logger.error("Error: The APP_SECRET_KEY environment variable is not set. Please set it and try again.")
         return
 
     generate_qr(url=url)

@@ -19,5 +19,6 @@ export * from "./fetchWorkProgressStatus";
 export * from "./fetchCameraCaptureImage";
 export * from "./checkAuthorization";
 export * from "./fetchFacilityDevices";
+export * from "./getDevicesStatus";
 export * from "./createReview";
 export * from "./common";

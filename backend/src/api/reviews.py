@@ -14,15 +14,16 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, request
 from flask_login import current_user, login_required
 from flask_pydantic import validate
+from src.config import DB_TRANSACTION_MAX_WAIT_SECONDS, DB_TRANSACTION_TIMEOUT_SECONDS
 from src.core import db
 from src.exceptions import APIException, ErrorCodes
-from src.libs.auth import check_resource_authorization, validate_auth_token
-from src.models.reviews import build_device_query, build_review_query, get_checking_reviews_info
+from src.libs.auth import check_device_authorization, check_resource_authorization, validate_auth_token
+from src.models.reviews import build_device_query, get_checking_reviews_info
 from src.schemas import *
 from src.schemas.devices import DeviceSchema
 
@@ -50,15 +51,15 @@ api = Blueprint("reviews", __name__, url_prefix="/reviews")
 #     return ReviewListResponseSchema(**pagination_data).make_response()
 
 
-@api.get("/customers/<int:customer_id>/latest")
+@api.get("/latest")
 @login_required
-def get_device_latest_reviews(customer_id: int):
+def get_device_latest_reviews():
     """
     Endpoint to get the devices and its latest reviews
 
     Args:
-        customer_id (int): ID of the Customer
         QueryParams
+            customer_id
             status
             facility_name
             region
@@ -67,11 +68,25 @@ def get_device_latest_reviews(customer_id: int):
     Returns:
         List of devices and its latest reviews
     """
+    # Customer ID is mandatory
+    if not request.args.get("customer_id"):
+        _ec = ErrorCodes.VALUE_ERROR
+        _ec["message"] = "customer_id is required"
+        raise APIException(_ec)
+
+    # Raise error if customer Id is not an integer
+    try:
+        customer_id = int(request.args.get("customer_id"))
+    except ValueError:
+        _ec = ErrorCodes.VALUE_ERROR
+        _ec["message"] = "customer_id should be an integer"
+        raise APIException(_ec)
+
     check_resource_authorization(customer_id=customer_id)
 
     query = ReviewListSchema(**request.args)
 
-    devices, count = build_device_query(connection=db, customer_id=customer_id, parameters=query)
+    devices, count, result_count = build_device_query(connection=db, customer_id=customer_id, parameters=query)
     data = []
     reviews = []
     for device in devices:
@@ -100,6 +115,7 @@ def get_device_latest_reviews(customer_id: int):
         "page_size": query.page_size,
         "size": len(data),
         "reviewing_info": reviewing_info,
+        "status_count": result_count,
     }
 
     return ReviewListResponseSchema(**pagination_data).make_response()
@@ -234,7 +250,10 @@ def update_review_by_admin(review_id: int, body: ConfirmReviewRequestSchema):
     if not review.facility:
         raise APIException(ErrorCodes.FACILITY_NOT_FOUND)
 
-    if body.result in [DeviceReviewAllowedEnums.APPROVED.value, DeviceReviewAllowedEnums.REJECTED.value]:
+    if body.result in [
+        DeviceReviewAllowedEnums.APPROVED.value,
+        DeviceReviewAllowedEnums.REJECTED.value,
+    ]:
         # Get the latest review for the device
         latest_device_review = db.review.find_first(
             where={
@@ -251,7 +270,13 @@ def update_review_by_admin(review_id: int, body: ConfirmReviewRequestSchema):
                 raise APIException(ErrorCodes.REVIEW_APPROVE_FAILED)
             raise APIException(ErrorCodes.REVIEW_REJECT_FAILED)
 
-    with db.tx() as transaction:
+    # max_wait and timeout is added overriding the default, because, in case of Azure SQL DB
+    # if the transaction takes more than 5s  and there is a timeout of 5s default, which results in failed transaction.
+    # This is unlikely to occur in review update transaction, but added for safety
+    with db.tx(
+        max_wait=timedelta(seconds=DB_TRANSACTION_MAX_WAIT_SECONDS),
+        timeout=timedelta(seconds=DB_TRANSACTION_TIMEOUT_SECONDS),
+    ) as transaction:
         transaction.review.update(
             where={"id": review_id},
             data={
@@ -288,13 +313,19 @@ def create_review_by_contractor(body: CreateReviewRequestSchema, payload: dict):
     Endpoint to create the review.
 
     Args:
-        body (CreateReviewRequestSchema): Review body containing Review details.
+        body:       (CreateReviewRequestSchema) Review body containing Review details.
+        payload:    (dict) contains facility_id and customer_id.
+                    payload is returned as kwargs by`validate_auth_token` decorator.
+                    payload is formed by validating the request header in
+                    `validate_auth_token` decorator.
 
     Returns:
         Response: HTTP response indicating success or failure.
     """
     # extract data from review body
     device_id = body.device_id
+
+    check_device_authorization(device_id, payload)
 
     device = db.device.find_first(where={"id": int(device_id)})
 
@@ -327,7 +358,7 @@ def create_review_by_contractor(body: CreateReviewRequestSchema, payload: dict):
             "device_id": int(device_id),
             "facility_id": int(facility_id),
             "customer_id": customer.id,
-            "result": {"in": [DeviceReviewAllowedEnums.APPLIED]},
+            "result": {"in": [DeviceReviewAllowedEnums.REQUESTING_FOR_REVIEW]},
         }
     )
     if existing_review:
@@ -351,19 +382,27 @@ def create_review_by_contractor(body: CreateReviewRequestSchema, payload: dict):
 
     # Create DB transaction to add review in the DB
     try:
-        with db.tx() as transaction:
+        # max_wait and timeout is added overriding the default, because, in case of Azure SQL DB
+        # if the transaction takes more than 5s  and there is a timeout of 5s default, which results in failed transaction.
+        # This is unlikely to occur in review create transaction, but added for safety
+        with db.tx(
+            max_wait=timedelta(seconds=DB_TRANSACTION_MAX_WAIT_SECONDS),
+            timeout=timedelta(seconds=DB_TRANSACTION_TIMEOUT_SECONDS),
+        ) as transaction:
             # Create a new review record
             data = {
                 "customer_id": facility.customer_id,
                 "facility_id": facility_id,
                 "device_id": device_id,
-                "result": DeviceReviewAllowedEnums.APPLIED,
+                "result": DeviceReviewAllowedEnums.REQUESTING_FOR_REVIEW,
                 "image_blob": image,
             }
             review = transaction.review.create(data=data)
 
             # Update the device status as the review status
-            transaction.device.update(where={"id": review.device_id}, data={"result": DeviceReviewAllowedEnums.APPLIED})
+            transaction.device.update(
+                where={"id": review.device_id}, data={"result": DeviceReviewAllowedEnums.REQUESTING_FOR_REVIEW}
+            )
 
     except Exception as _exec:
         raise APIException(ErrorCodes.REVIEW_CREATION_FAILED)

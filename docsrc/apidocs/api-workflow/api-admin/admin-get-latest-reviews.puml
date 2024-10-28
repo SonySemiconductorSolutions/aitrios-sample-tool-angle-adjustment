@@ -12,6 +12,7 @@ else (no)
     : Send HTTP status 401, unauthorized;
     kill
 endif
+->no(valid token);
 : Validate parameters;
 note right
     Takes the following query parameters
@@ -24,16 +25,19 @@ if (Parameters are not valid?) then (yes)
     : Send HTTP status 400 error;
     kill
 endif
+->no;
 : Get customer from DB;
 if (Customer doesn't exists?) then (yes)
     : Send 404 HTTP status with not found error;
     kill
 endif
+->no;
 : Validate if the customer is associated with the admin;
 if (Customer is not associated with the admin?) then (yes)
     : Send 403 HTTP status with resource authorization error;
     kill
 endif
+->no;
 : Query the database with the given input;
 note right
     1. Gets all the devices matching the customer ID.

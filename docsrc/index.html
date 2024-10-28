@@ -45,7 +45,7 @@
       }
 
       .navbar-links li {
-        margin: 0 12px;
+        margin: 0 8px;
       }
 
       .navbar-links a {
@@ -129,7 +129,13 @@
         width: 100px;
       }
 
-      @media screen and (max-width: 1280px) {
+      @media screen and (max-width: 1920px) {
+        .navbar-links a {
+          font-size: 0.75em;
+        }
+      }
+
+      @media screen and (max-width: 1500px) {
         .menu-button {
           display: block;
         }
@@ -154,6 +160,10 @@
           text-align: center;
         }
 
+        .navbar-links a {
+          font-size: 0.85em;
+        }
+
         .backdrop.show {
           display: block;
         }
@@ -170,6 +180,7 @@
         <li><a href="CAAT-Admin-App-User-Guide-ja.html">管理者ユーザーガイド</a></li>
         <li><a href="CAAT-Contractor-App-User-Guide-ja.html">コントラクターユーザーガイド</a></li>
         <li><a href="CAAT-App-Setup-Guide-Azure-Cloud-ja.html">アプリセットアップガイド (Azureクラウド)</a></li>
+        <li><a href="CAAT-App-Setup-Guide-AWS-Cloud-ja.html">アプリセットアップガイド (AWS クラウド)</a></li>
         <li><a href="CAAT-App-Setup-Guide-Codespaces-ja.html">Codespaces でアプリを実行する方法</a></li>
         <li><a href="CAAT-api-spec.html">API仕様</a></li>
       </ul>
@@ -179,6 +190,7 @@
         <li><a href="CAAT-Admin-App-User-Guide-en.html">Admin User Guide</a></li>
         <li><a href="CAAT-Contractor-App-User-Guide-en.html">Contractor User Guide</a></li>
         <li><a href="CAAT-App-Setup-Guide-Azure-Cloud-en.html">App Setup Guide (Azure Cloud)</a></li>
+        <li><a href="CAAT-App-Setup-Guide-AWS-Cloud-en.html">App Setup Guide (AWS Cloud)</a></li>
         <li><a href="CAAT-App-Setup-Guide-Codespaces-en.html">How to run the app on Codespaces</a></li>
         <li><a href="CAAT-api-spec.html">API Spec</a></li>
       </ul>
@@ -206,7 +218,7 @@
       const backdrop = document.getElementById('backdrop');
       const iframeContent = document.getElementById('iframe-content');
       const loading = document.getElementById('loading');
-      const mediaQuery = window.matchMedia('(max-width: 1280px)');
+      const mediaQuery = window.matchMedia('(max-width: 1500px)');
 
       // Function to toggle language-specific navbar links
       function toggleLanguageLinks(lang) {

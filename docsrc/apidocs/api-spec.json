@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "AAT-Backend-APIs",
-        "version": "v1.0.0-RC"
+        "version": "v1.4.0"
     },
     "components": {
         "securitySchemes": {
@@ -66,7 +66,7 @@
                 }
             }
         },
-        "/reviews/customers/{customer_id}/latest": {
+        "/reviews/latest": {
             "get": {
                 "tags": [
                     "Admin-APIs"
@@ -80,7 +80,7 @@
                 "parameters": [
                     {
                         "name": "customer_id",
-                        "in": "path",
+                        "in": "query",
                         "schema": {
                             "type": "integer"
                         },
@@ -103,6 +103,28 @@
                     {
                         "name": "facility_name",
                         "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Comma separated status values",
                         "schema": {
                             "type": "string"
                         }
@@ -519,6 +541,28 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Comma separated status values",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -548,6 +592,72 @@
                     },
                     "500": {
                         "description": "Invalid console credentials | Unexpected error",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/device-types/{device_type_id}/reference-image": {
+            "put": {
+                "tags": [
+                    "Admin-APIs"
+                ],
+                "summary": "Update reference image for a device type",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "example": {
+                                    "data": {
+                                        "message": "Reference image updated successfully"
+                                    },
+                                    "error_code": 0,
+                                    "message": "Updated successfully",
+                                    "status_code": 200
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "device_type_id",
+                        "in": "path",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "400": {
+                        "description": "Bad parameters",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "403": {
+                        "description": "Permission error",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Device type not found",
                         "content": {
                             "application/json": {}
                         }
@@ -739,6 +849,52 @@
                     },
                     "404": {
                         "description": "Device not found error",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/facility/devices/connection-status": {
+            "get": {
+                "tags": [
+                    "Contractor-APIs"
+                ],
+                "summary": "Get connection status of the devices by contractor",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "400": {
+                        "description": "Bad parameters",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized | Invalid token | Expired token",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "403": {
+                        "description": "Permission error",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found error",
                         "content": {
                             "application/json": {}
                         }

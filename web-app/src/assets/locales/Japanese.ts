@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
   language: "Japanese",
-  version: "1.0.0-RC",
+  version: "1.4.0",
   app_title: "画角調整ツール",
   camera: "カメラ",
 
@@ -82,6 +82,7 @@ const translations = {
     50008: "処理中にエラーが発生しました。申し訳ありませんが、もう一度お試しください",
     50009: "不明なエラーです。もう一度お試しください。",
     50011: "再試行して問題が解決しない場合は管理者に問い合わせてください。",
+    50014: "再試行して問題が解決しない場合は管理者に問い合わせてください。",
     50301: "サーバーに接続できません。しばらくしてからもう一度お試しください",
     50401: "申請がタイムアウトしました。申し訳ありませんが、もう一度お試しください",
   },
@@ -116,6 +117,8 @@ const translations = {
   //ImageConfirmationPage
   image_confirmation_page: {
     facility_img: "カメラ画像",
+    show_grid_lines: "グリッド線を表示",
+    close: "閉じる",
     single_capture: "撮影",
     interval_capture: "連続撮影",
     reacquisition_img: "画像の再取得",
@@ -136,7 +139,7 @@ const translations = {
     des1: "画角を確認中",
     des2_p1: "本部にて、画角を確認中です",
     des2_p2: "完了するまでしばらくお待ちください。",
-    approval_des1_p1: "登録を承認しました",
+    approval_des1_p1: "申請を承認しました",
     approval_des1_p2: "お疲れ様でした！",
     reject_des1_p1: "画角確認を実施しました",
     reject_des1_p2: "画角調整をお願いします",
