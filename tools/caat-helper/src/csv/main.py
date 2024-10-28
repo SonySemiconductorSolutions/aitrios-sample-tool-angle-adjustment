@@ -18,6 +18,7 @@
 
 import os
 import sys
+import asyncio
 
 from src.config import CSV_OUTPUT_DIR
 from src.csv.csv_parser import check_csv_files, convert_excel_to_csv
@@ -341,10 +342,24 @@ def reset_password(login_id, passwd):
     return False
 
 
-def db_clear():
+async def db_clear():
     """Function to clear all the records from all tables
 
     Returns:
         bool: True if operation is success or otherwise False.
     """
-    return clear_all_data()
+    # Added 5 max retries
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            # Added timeout of 60 secs
+            return await asyncio.wait_for(clear_all_data(), timeout=60)
+        except asyncio.TimeoutError:
+            logger.error(
+                f"Attempt {attempt + 1} of {max_retries} failed: DB clear operation took too long and was terminated.")
+        except Exception as e:
+            logger.error(
+                f"Attempt {attempt + 1} of {max_retries} failed: An error occurred - {e}")
+        if attempt < max_retries - 1:
+            logger.info(f"Retrying... ({attempt + 2}/{max_retries})")
+    return False

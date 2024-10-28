@@ -57,7 +57,7 @@ An output file with the name ERD.svg is generated. (View in browser or any SVG v
 
 There are two copies of the prisma schema files.
 1. [schema.prisma](./schema.prisma): Used in Cloud deployment. Uses SQL DB Server.
-2. [schema.local.prisma](./schema.local.prisma): Used in Local deployment. Uses Postgres DB Server.
+2. [schema.postgres.prisma](./schema.postgres.prisma): Used in Local deployment. Uses Postgres DB Server.
 
 Keep both the files (models) in sync if intention is make changes available for both local and cloud deployment
 

@@ -14,6 +14,9 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
+# -------------------------------------------------------------------
+# Note: Do not sort the imports, as it causes circular import issue.
+# -------------------------------------------------------------------
 from flask import Flask
 
 from .health import api as health_api
@@ -22,7 +25,9 @@ from .reviews import api as reviews_api
 from .facilities import api as facility_api
 from .customers import api as customer_api
 from .devices import api as device_api
+from .device_types import api as device_type_api
+
 
 def register_apis(app: Flask):
-    for api in [login_api, reviews_api, facility_api, health_api, customer_api, device_api]:
+    for api in [login_api, reviews_api, facility_api, health_api, customer_api, device_api, device_type_api]:
         app.register_blueprint(api)

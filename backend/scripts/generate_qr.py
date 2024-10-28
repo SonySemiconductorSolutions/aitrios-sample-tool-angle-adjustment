@@ -25,9 +25,11 @@ from qrcode.image.styles.colormasks import SolidFillColorMask
 from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
 
 # ======== User Inputs ========
-# Edit the URL here
-URL = "REPLACE-WITH-CONTRACTOR-URL"
-APP_SECRET_KEY = "REPLACE-WITH-GENERATED-APP-SECRET-KEY"
+# Edit the inputs here
+# If environment variables are not set, please update REPLACE-WITH-* placeholders.
+# If environment variables are set, they would have precedence
+URL = os.getenv("CONTRACTOR_APP_URL", "REPLACE-WITH-CONTRACTOR-URL")
+APP_SECRET_KEY = os.getenv("APP_SECRET_KEY", "REPLACE-WITH-GENERATED-APP-SECRET-KEY")
 # ==============================
 
 
@@ -117,7 +119,7 @@ class QRCodeGenerator:
             qr_img.save(f"{filename_prefix}.png")
 
             filename = f"{filename_prefix}.png"
-            print(f"\nQR Code of Web App URL stored at: \n{os.path.abspath(filename)}")
+            print(f"QR Code: {os.path.abspath(filename)}")
         except Exception as e:
             print(f"Error generating QR code: {e}")
 
@@ -245,8 +247,8 @@ def main():
                 token_url = qr_generator.generate_jwt_token()
                 if token_url:
                     web_app_url_payload = f"{URL}?authenticate={token_url}"
-                    print("\nURL token: ", token_url)
-                    print("\nWeb App URL: ", web_app_url_payload)
+                    print("\nURL Token: ", token_url)
+                    print("Web App URL: ", web_app_url_payload)
 
                     main_directory = "QRCodes"
                     if not os.path.exists(main_directory):

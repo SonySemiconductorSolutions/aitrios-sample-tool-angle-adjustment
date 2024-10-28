@@ -31,6 +31,10 @@ export interface GlobalContextState {
     submission_status: number;
   };
   isAuthorized: boolean;
+  gridLineProps: {
+    color: string;
+    visibility: boolean;
+  }
 }
 
 export const initialState: GlobalContextState = {
@@ -38,4 +42,8 @@ export const initialState: GlobalContextState = {
   facility: {},
   selectedLanguage: "ja",
   isAuthorized: false,
+  gridLineProps: {
+    color: "#FFFFFF",
+    visibility: false
+  }
 };

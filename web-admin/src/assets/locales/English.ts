@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
     language: "English",
-    version: "v1.0.0-RC",
+    version: "v1.4.0",
     appTitle: "Angle Adjustment Tool (Admin)",
     appTitleShort: "AAT (Admin)",
 
@@ -74,6 +74,14 @@ const translations = {
         angleConfirmation: "Action",
         details: "Details",
         noData: "There is no corresponding data.",
+        moreItemsInNextPage: "More items available on next page...",
+        
+        // View Tab
+        list: "List",
+        tiled: "Tiled",
+        small: "Small",
+        medium: "Medium",
+        large: "Large",
     },
 
     // Review Request Page
@@ -89,14 +97,25 @@ const translations = {
         facilityPattern: "Facility Pattern",
         notSubmitted: "Contractor has not submitted the image.",
         submittedImage: "Submitted Image",
-        submittedImageNotFound: "Contractor submitted image not found.",
         referenceImage: "Reference Image",
-        referenceImageNotFound: "Reference Image not found.",
+        failedToLoadImage: "Failed to load image.",
+        showGridLines: "Show Grid Lines",
+        preserveAspectRatio: "Preserve Aspect Ratio",
+        close: "Close",
         approve: "Approve",
         reject: "Reject",
         adviceForContractors: "Advice for construction contractors",
         approveSuccess: "Review approval successful.",
         rejectSuccess: "Review rejection successful.",
+
+        // Adjust submitted image
+        updateReferenceImage: "Update Reference Image",
+        restoreReferenceImage: "Restore Reference Image",
+        adjustSubmittedImage: "Adjust Submitted image to save as Reference image",
+        editHere: "Edit here",
+        updateReferenceImageNote: "Updating the Reference image will disable review approval, and if the review is rejected, it will permanently overwrite the existing Reference image.",
+        cancel: "Cancel",
+        adjustToMatchSampleImage: "Adjust the camera angle of view to match the sample image.",
     },
 
     // Review History Page
@@ -225,6 +244,7 @@ const translations = {
         ERR_NETWORK: "Unable to Connect! Please check your network connection and try again.",
         10000: "Unknown error, please try again.",
         10001: "You have reached the character limit of 255.",
+        10002: "You have reached the character limit of 127.",
         40004: "Sorry, we encountered an error while processing your request.",
         40005: "Sorry, we encountered an error while processing your request.",
         40006: "Sorry, we encountered an error while processing your request.",
@@ -240,6 +260,8 @@ const translations = {
         40306: "Invalid Client ID / Client Secret / Auth URL / Application ID provided.",
         40307: "Invalid Console Endpoint.",
         40308: "Console credentials verification failed.",
+        40309: "Invalid Client ID provided.",
+        40310: "Invalid Client Secret provided.",
         40401: "Facility not found.",
         40402: "Image file not found.",
         40403: "Device not found.",
@@ -250,6 +272,7 @@ const translations = {
         50009: "Sorry, we encountered an error while processing your request.",
         50010: "Sorry, we failed to load review image.",
         50011: "Unable to fetch the device connection state. Please check the console credentials.",
+        50013: "Sorry, we encountered an error while fetching Console credentials.",
         50301: "Unable to connect to the server. Please try again after some time.",
         50401: "Sorry, the request timed out. Please try again.",
     }

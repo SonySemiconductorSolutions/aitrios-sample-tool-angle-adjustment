@@ -21,19 +21,26 @@ import throttle from "lodash/throttle";
 // API call to fetch the application list (latest reviews)
 export const getLatestReviews = async (
   customerId: number | null,
+  currentPage: number,
+  perPage: number,
   facilityName?: string,
   prefecture?: string | null,
-  municipality?: string | null,
+  municipality?: string,
+  status?: string | null,
 ) => {
   try {
     if (customerId === null) return null;
 
     // Params are provided from the Dashboard search filter
-    const res = await client.get("reviews/customers/" + customerId.toString() + "/latest", {
+    const res = await client.get("reviews/latest", {
       params: {
+        customer_id: customerId,
+        page: currentPage,
+        page_size: perPage,
         facility_name: facilityName,
         prefecture: prefecture,
         municipality: municipality,
+        status: status,
       },
     });
     return res.data;

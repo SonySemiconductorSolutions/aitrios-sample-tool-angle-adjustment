@@ -16,17 +16,20 @@ limitations under the License.
 ------------------------------------------------------------------------
 */
 .container {
+  display: flex;
   padding: 24px 0;
-  height: calc(100dvh - 48px);
+  flex-direction: column;
+  min-height: calc(100dvh - 48px);
 }
 
 .content {
-  height: calc(100% - 120px);
-  padding: 0 24px;
+  flex: 1;
   display: flex;
+  padding: 24px;
+  align-items: center;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  height: calc(100% - 120px);
 }
 
 .description {
@@ -41,6 +44,11 @@ limitations under the License.
   line-height: 1.7em;
 }
 
+.deviceNameContainer {
+  text-align: center;
+  word-break: break-word;
+}
+
 .reportSubmit {
   margin-top: 20px;
   width: 100%;
@@ -51,6 +59,7 @@ limitations under the License.
   font-size: 16px;
   margin-top: 15px;
   text-align: center;
+  word-break: break-word;
 }
 .reviewComment > .bold {
   font-weight: bold;

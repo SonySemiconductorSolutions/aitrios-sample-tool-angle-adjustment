@@ -24,18 +24,18 @@ caat-helperコマンドを実行する前に、ホストマシーンIPをホワ�
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash allow-host-ip-db.sh
 ----
 
 === インストレーション
-以下のコマンドを実行して仮想環境を作成し、`caat-helper`パッケージをインストールします。
+以下のコマンドを実行して仮想環境を作成し、 `caat-helper` パッケージをインストールします。
 
 ==== 仮想環境の作成
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ python3 -m venv .venv
 ----
 
@@ -44,15 +44,15 @@ $ python3 -m venv .venv
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ source .venv/bin/activate
 ----
 
-==== `caat-helper`パッケージのインストール
+==== `caat-helper` パッケージのインストール
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 # Upgrade pip
 $ pip install -U pip
 
@@ -78,7 +78,7 @@ caat-helperコマンドを実行する前に、必ずセット環境変数スク
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ source set-env-var.sh
 ----
 
@@ -91,7 +91,7 @@ $ source set-env-var.sh
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 (.venv) $ caat-helper-init
 ----
 
@@ -107,8 +107,8 @@ $ source set-env-var.sh
 ----
 
 * 上記のエクスポートコマンドにより２つのファイルがアウトプットされます。
-  ** `SIerData_template.xlsx`: データを入力するエクセルテンプレートファイル
-  ** `SIerData_template.xlsx`: 参照用のエクセルにサンプルデータが入ったエクセルサンプルファイル
+  ** `SIerData_template.xlsx` : データを入力するエクセルテンプレートファイル
+  ** `SIerData_template.xlsx` : 参照用のエクセルにサンプルデータが入ったエクセルサンプルファイル
 
 === エクセルファイルの準備
 
@@ -145,7 +145,7 @@ include::excel-readme-ja.adoc[Excel Instructions]
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 (.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.prisma
 ----
 

@@ -72,6 +72,7 @@ class ReviewGetSchema(ReviewSchema):
 class ReviewListResponseSchema(ListResponseHTTPSchema):
     data: List[dict] | None = []
     reviewing_info: dict | None = None
+    status_count: dict | None = None
 
 
 class ReviewGetResponseSchema(BaseGetResponseSchema, ReviewSchema):
@@ -91,6 +92,7 @@ class ReviewSortEnum(str, Enum):
 
 
 class ReviewListSchema(PaginationReviewSchema):
+    customer_id: int
     status: str | None = None
     facility_name: str | None = None
     region: str | None = None  # Currently not used
@@ -105,12 +107,12 @@ class ReviewListSchema(PaginationReviewSchema):
 
 
 class DeviceReviewAllowedEnums(IntEnum):
-    #               Updated by
-    NOT_APPLIED = 0  # SYSTEM
-    APPLYING = 1  # Contractor
-    APPLIED = 2  # Contractor
-    REJECTED = 3  # Admin
-    APPROVED = 4  # Admin
+    # ------------------------Status Updated by-#
+    NOT_USED = 0  # --------------SYSTEM
+    INITIAL_STATE = 1  # ---------Contractor app
+    REQUESTING_FOR_REVIEW = 2  # -Contractor app
+    REJECTED = 3  # --------------Admin app
+    APPROVED = 4  # --------------Admin app
 
 
 class ConfirmReviewRequestSchema(BaseModel):

@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
     language: "Japanese",
-    version: "v1.0.0-RC",
+    version: "v1.4.0",
     appTitle: "画角調整ツール (管理者)",
     appTitleShort: "AAT (管理者)",
 
@@ -74,6 +74,14 @@ const translations = {
         angleConfirmation: "画角確認",
         details: "詳細",
         noData: "該当するデータはありませんでした",
+        moreItemsInNextPage: "次のページにさらにアイテムがあります...",
+
+        // View Tab
+        list: "リスト",
+        tiled: "タイル",
+        small: "小",
+        medium: "中",
+        large: "大",
     },
 
     // Review Request Page
@@ -89,14 +97,25 @@ const translations = {
         facilityPattern: "パターン",
         notSubmitted: "請負業者は画像を提出していません。",
         submittedImage: "申請された画像",
-        submittedImageNotFound: "請負業者が提出した画像が見つかりません。",
         referenceImage: "参考画像",
-        referenceImageNotFound: "参照画像が見つかりません。",
+        failedToLoadImage: "画像の読み込みに失敗しました",
+        showGridLines: "グリッド線を表示",
+        preserveAspectRatio: "アスペクト比を維持",
+        close: "閉じる",
         approve: "承認",
         reject: "却下",
         adviceForContractors: "施工業者へのアドバイス",
         approveSuccess: "レビューの承認が成功しました。",
         rejectSuccess: "レビュー拒否が成功しました。",
+
+        // Adjust submitted image
+        updateReferenceImage: "参考画像を更新する",
+        restoreReferenceImage: "参考画像を元に戻す",
+        adjustSubmittedImage: "送信した画像を調整し、参考画像として保存する",
+        editHere: "ここで編集",
+        updateReferenceImageNote: "参考画像を更新すると、申請の承認は無効になります。申請が却下された場合、現在の参考画像は完全に上書きされます。",
+        cancel: "キャンセル",
+        adjustToMatchSampleImage: "サンプル画像のようにカメラの画角を調節してください。",
     },
 
     // Review History Page
@@ -225,6 +244,7 @@ const translations = {
         ERR_NETWORK: "ネットワーク接続を確認して、もう一度試してください。",
         10000: "予期しない問題が発生しましたもう一度試してください",
         10001: "文字数制限の 255字に達しました",
+        10002: "文字数制限の 127字に達しました",
         40004: "処理中にエラーが発生しました。申し訳ありませんが、もう一度お試しください",
         40005: "処理中にエラーが発生しました。申し訳ありませんが、もう一度お試しください",
         40006: "処理中にエラーが発生しました。申し訳ありませんが、もう一度お試しください",
@@ -240,6 +260,8 @@ const translations = {
         40306: "無効なクライアントID、クライアントシークレット、認証URL、Application IDが入力されました",
         40307: "Console エンドポイント が無効です",
         40308: "コンソールの資格情報の検証に失敗しました",
+        40309: "無効なクライアントIDです",
+        40310: "無効なクライアンシークレットです",
         40401: "施設が見つかりません",
         40402: "画像ファイルが見つかりません",
         40403: "カメラが見つかりません",
@@ -250,6 +272,7 @@ const translations = {
         50009: "処理中にエラーが発生しました。申し訳ありませんが、もう一度お試しください",
         50010: "申請された画像の読み込みに失敗しました",
         50011: "デバイスの接続状態が確認できません。コンソールの資格情報を確認してください",
+        50013: "コンソール認証情報の取得中にエラーが発生しました",
         50301: "サーバーに接続できません。しばらくしてからもう一度お試しください",
         50401: "申請がタイムアウトしました。申し訳ありませんが、もう一度お試しください",
     }

@@ -39,14 +39,23 @@ export interface FilterProps {
   facilityName: string;
   prefecture: string | null;
   municipality: string;
+  status: string | null;
 }
 
-// Represents states of checkboxes
-export interface CheckboxStates {
-  initialState: boolean,
-  requesting: boolean,
-  rejected: boolean,
-  approved: boolean,
+export type ViewType = "list" | "grid";
+export type GridType = "small" | "medium" | "large";
+
+// Represents a Dashboard entity
+export interface DashboardProps {
+  viewType: ViewType;
+  gridType: GridType;
+  currentPage: number;
+}
+
+// Represents gridLine properties
+export interface GridLineProps {
+  color: string;
+  visibility: boolean;
 }
 
 // Represents the overall state of the store
@@ -63,7 +72,14 @@ export interface StoreState {
 
   filter: FilterProps;
   setFilter: (filter: FilterProps) => void;
+  setSingleFilter: (filter: { key: string, value: string }) => void;
 
-  status: CheckboxStates;
-  setStatus: (status: CheckboxStates) => void;
+  dashboard: DashboardProps;
+  setViewType: (viewType: ViewType) => void;
+  setGridType: (gridType: GridType) => void;
+  setCurrentPage: (currentPage: number) => void;
+
+  gridLine: GridLineProps;
+  setGridLineColor: (color: string) => void;
+  setGridLineVisibility: (visibility: boolean) => void;
 }

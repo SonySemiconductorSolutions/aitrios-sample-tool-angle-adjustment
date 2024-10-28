@@ -21,7 +21,8 @@ import { immer } from "zustand/middleware/immer";
 import { StoreState } from "./types";
 import { accountSlice } from "./slices/account";
 import { filterSlice } from "./slices/filter";
-import { statusSlice } from "./slices/status";
+import { gridLineSlice } from "./slices/gridline";
+import { dashboardSlice } from "./slices/dashboard";
 import { customersSlice } from "./slices/customers";
 import { languageSlice } from "./slices/language";
 
@@ -33,7 +34,8 @@ export const useStore = create<StoreState>()(
         (set) => ({
           ...accountSlice(set),
           ...filterSlice(set),
-          ...statusSlice(set),
+          ...gridLineSlice(set),
+          ...dashboardSlice(set),
           ...customersSlice(set),
           ...languageSlice(set),
         }),

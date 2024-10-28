@@ -17,13 +17,19 @@ limitations under the License.
 */
 .container {
   padding: 24px 0;
-  overflow-y: auto;
-  height: calc(100dvh - 48px);
+  min-height: calc(100dvh - 48px);
 }
 
 .content {
   height: calc(100% - 120px);
   padding: 0 24px;
+}
+
+.deviceNameContainer {
+  padding: 0 15px;
+  margin-top: 10px;
+  text-align: center;
+  word-break: break-word;
 }
 
 .tabs {
@@ -57,10 +63,29 @@ limitations under the License.
   color: rgb(120, 120, 120);
 }
 
-.imageWrap {
-  margin-top: 16px;
+.gridLineContainer {
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.gridLineColorBox {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #FFF;
+}
+
+.imageWrap,
+.sampleImageWrap {
   width: 100%;
+  margin-top: 16px;
   text-align: center;
+  position: relative;
+  display: inline-block;
 }
 
 .reviewComment {
@@ -68,6 +93,7 @@ limitations under the License.
   font-size: 16px;
   margin-top: 15px;
   text-align: center;
+  word-break: break-word;
 }
 .reviewComment > .bold {
   font-weight: bold;
@@ -162,4 +188,21 @@ option {
   box-sizing: border-box;
   padding: 10px !important;
   border-radius: 0 !important;
+}
+
+@media (orientation: landscape) {
+  .imageWrap,
+  .sampleImageWrap {
+    left: 50%;
+    max-width: 90vh !important;
+    transform: translateX(-50%);
+  }
+}
+
+@media (orientation: portrait) {
+  .sampleImageWrap {
+    max-width: calc(100% + 48px);
+    transform: translateX(-24px);
+    width: calc(100% + 48px) !important;
+  }
 }

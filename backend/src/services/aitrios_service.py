@@ -21,12 +21,75 @@ import msal
 import requests
 from retry import retry
 from src.config import HTTP_TIMEOUT, SSL_VERIFICATION
-from src.exceptions import InvalidAuthTokenException, InvalidBaseURLException, RetryAPIException
+from src.exceptions import (
+    APIException,
+    ErrorCodes,
+    InvalidAuthTokenException,
+    InvalidBaseURLException,
+    RetryAPIException,
+)
 from src.logger import get_json_logger
 from src.schemas.devices import DeviceStatusSchema
 from src.utils import decrypt_data
 
 logger = get_json_logger()
+
+BACKOFF_SECS = 1
+DELAY_SECS = 2  # initial delay between attempts
+RETRIES = 2
+
+
+class GetDeviceImage:
+    """
+    Class definition to get the latest device image.
+    """
+
+    def __init__(self, device_id, access_token, base_url):
+        self.device_id = device_id
+        self.access_token = access_token
+        self.base_url = base_url.rstrip("/")
+
+    @retry(exceptions=(RetryAPIException,), tries=RETRIES, delay=DELAY_SECS, backoff=BACKOFF_SECS)
+    def get_image(self):
+        """
+        Method to get the latest device image
+        """
+
+        headers = {"Authorization": "Bearer " + self.access_token}
+        params = {"grant_type": "client_credentials"}
+        try:
+            response = requests.get(
+                f"{self.base_url}/devices/{self.device_id}/images/latest",
+                headers=headers,
+                params=params,
+                timeout=HTTP_TIMEOUT,
+                verify=SSL_VERIFICATION,
+            )
+            # 404 will be raised when AITRIOS cannot find the given device ID
+            if response.status_code == 404:
+                raise APIException(ErrorCodes.DEVICE_NOT_FOUND_IN_AITRIOS)
+            response.raise_for_status()
+
+            data = response.json()
+        except requests.exceptions.Timeout:
+            raise RetryAPIException()
+        except requests.exceptions.JSONDecodeError as _js_decode_exec:
+            raise InvalidBaseURLException() from _js_decode_exec
+        except requests.exceptions.RequestException as _exec:
+            logger.exception(f"Failed to get images from AITRIOS server {_exec}")
+            raise requests.exceptions.RequestException from _exec
+
+        try:
+            content = data["contents"]
+        except KeyError:
+            # Sometimes, aitrios return warning with payload
+            # {'code': 'W.SC.API.0011007', 'message': 'Device responded with an error when requested.
+            # Result = Denied', 'result': 'WARNING', 'time': '2024-01-04T08:44:07.152393'}
+            logger.warning("Retry because of warning result from Aitrios...")
+            raise RetryAPIException()
+
+        # Aitrios always return jpeg image
+        return content
 
 
 def decrypt_customer_details(customer: dict) -> dict:
@@ -49,14 +112,10 @@ def fetch_images_by_device_id(device_id: str, customer: dict):
     customer_decrypted = decrypt_customer_details(customer)
     access_token = get_aitrios_access_token(customer_decrypted)
 
-    if not access_token:
-        raise InvalidAuthTokenException()
-
-    return get_latest_device_image(
-        base_url=customer_decrypted["base_url"],
-        access_token=access_token,
-        device_id=device_id,
-    )
+    # Get latest image from the device
+    obj = GetDeviceImage(device_id, access_token, customer_decrypted["base_url"])
+    image = obj.get_image()
+    return f"data:image/jpeg;base64,{image}"
 
 
 def get_aitrios_access_token(customer: dict) -> str:
@@ -99,67 +158,29 @@ def get_aitrios_access_token(customer: dict) -> str:
             }
 
             try:
-                response = requests.post(
-                    url=auth_url, headers=headers, data=data, timeout=HTTP_TIMEOUT
-                )
+                response = requests.post(url=auth_url, headers=headers, data=data, timeout=HTTP_TIMEOUT)
+                # When invalid client ID provided by the user
+                if response.status_code == 400 and response.json().get("errorCode") == "invalid_client":
+                    raise APIException(ErrorCodes.INVALID_CLIENT_ID)
+
+                # When invalid client Secret provided by the user
+                if response.status_code == 401 and response.json().get("error") == "invalid_client":
+                    raise APIException(ErrorCodes.INVALID_CLIENT_SECRET)
+
                 if not response.json().get("access_token"):
                     return None
                 access_token = response.json().get("access_token")
+            except APIException as _api_exec:
+                raise _api_exec
             except Exception as _exec:
                 logger.exception(str(_exec))
-                return None
+                raise InvalidAuthTokenException
         return access_token
+    except APIException as _api_exec:
+        raise _api_exec
     except Exception as _exec:
         logger.exception(str(_exec))
-        return None
-
-
-@retry(exceptions=(RetryAPIException,), tries=3, delay=3, backoff=1.5)
-def get_latest_device_image(base_url: str, access_token: str, device_id: str) -> str:
-    """
-    Method to get the latest device image
-
-    Args:
-        base_url (str): AITRIOS Base URL
-        access_token (str): AITRIOS console Access Token
-        device_id (str): Device ID
-    Returns:
-        Base64 image
-    """
-    base_url = base_url.rstrip("/")
-
-    headers = {"Authorization": "Bearer " + access_token}
-    params = {"grant_type": "client_credentials"}
-    try:
-        response = requests.get(
-            f"{base_url}/devices/{device_id}/images/latest",
-            headers=headers,
-            params=params,
-            timeout=HTTP_TIMEOUT,
-            verify=SSL_VERIFICATION,
-        )
-        response.raise_for_status()
-
-        data = response.json()
-    except requests.exceptions.Timeout:
-        raise RetryAPIException()
-    except requests.exceptions.JSONDecodeError as _js_decode_exec:
-        raise InvalidBaseURLException() from _js_decode_exec
-    except requests.exceptions.RequestException as _exec:
-        logger.exception(f"Failed to get images from AITRIOS server {_exec}")
-        raise requests.exceptions.RequestException from _exec
-
-    try:
-        content = data["contents"]
-    except KeyError:
-        # Sometimes, aitrios return warning with payload
-        # {'code': 'W.SC.API.0011007', 'message': 'Device responded with an error when requested.
-        # Result = Denied', 'result': 'WARNING', 'time': '2024-01-04T08:44:07.152393'}
-        logger.warning("Retry because of warning result from Aitrios...")
-        raise RetryAPIException()
-
-    # Aitrios always return jpeg image
-    return f"data:image/jpeg;base64,{content}"
+        raise InvalidAuthTokenException
 
 
 def get_all_devices(base_url: str, access_token: str):
@@ -218,7 +239,7 @@ def verify_customer_credentials(customer_data: dict):
     return True
 
 
-@retry(exceptions=(RetryAPIException,), tries=3, delay=3, backoff=1.5)
+@retry(exceptions=(RetryAPIException,), tries=RETRIES, delay=DELAY_SECS, backoff=BACKOFF_SECS)
 def _get_devices(base_url: str, access_token: str, device_ids: str) -> str:
     """
     Method to get devices
@@ -269,9 +290,7 @@ def get_device_status(customer: dict, access_token: str, device_ids: str):
         List of DeviceStatusSchema
     """
     # Call the API to get devices
-    devices = _get_devices(
-        base_url=customer["base_url"], access_token=access_token, device_ids=device_ids
-    )
+    devices = _get_devices(base_url=customer["base_url"], access_token=access_token, device_ids=device_ids)
 
     # Prepare device ID and status schema
     result = []

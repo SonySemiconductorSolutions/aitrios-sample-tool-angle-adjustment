@@ -12,6 +12,7 @@ else (no)
     : Send HTTP status 401, unauthorized;
     kill
 endif
+->no(valid token);
 : Validate parameters;
 note right
     customer_id (mandatory)
@@ -25,24 +26,29 @@ if (Parameters are not valid?) then (yes)
     : Send HTTP status 400 error;
     kill
 endif
+->no;
 : Get customer by ID from the DB;
 if (Customer doesn't exists?) then (yes)
     : Send HTTP status 404, Not found error;
     kill
 endif
+->no;
 if (Customer is not associated with the current user?) then (yes)
     : Send HTTP status 403, Permission denied;
     kill
 endif
+->no;
 : Get console credentials by the customer ID from the DB;
 if (Unable to get the AITRIOS token with the credentials?) then (yes)
     : Send HTTP status 403, "Invalid Auth token URL / Client ID / Client secret / Application ID provided";
     kill
 endif
+->no;
 if (Base URL is not valid?) then (yes)
     : Send HTTP status 403, "Invalid Base URL";
     kill
 endif
+->no;
 : Encrypt the console credentials;
 note right
     Following will be encrypted

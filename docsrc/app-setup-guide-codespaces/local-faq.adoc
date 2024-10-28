@@ -11,7 +11,7 @@ A: Execute following commands to stop the local instance and delete all docker i
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash caat-local-stop.sh
 $ docker system prune -a
 ----
@@ -19,12 +19,12 @@ $ docker system prune -a
 Q: How can I troubleshoot common errors during deployment?::
 A: If you encounter errors during deployment:
     * Check the Script output or deployment logs for specific error messages.
-    * Ensure all required parameters in `tools/local-setup-codespaces/.env` file are correctly provided and formatted.
+    * Ensure all required parameters in `tools/cloud-setup/codespaces/.env` file are correctly provided and formatted.
     * Run following command to view logs for all services and look out for any errors.
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ docker compose logs
 ----
 

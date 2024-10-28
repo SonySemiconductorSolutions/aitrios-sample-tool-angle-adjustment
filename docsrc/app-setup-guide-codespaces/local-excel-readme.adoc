@@ -1,6 +1,12 @@
 
 ==== Excel file Data Details
 
+[NOTE]
+====
+- Filling the Excel template with other than allowed characters, excessive length may result in failure to populate the Database as `caat-helper` does not enforce strict validation of input.
+- Even if the Database is populated successfully (with characters that are not allowed, excessive length), the Web Application behavior may not be as expected.
+====
+
 ===== Sheet1: admin
 
 The `admin` sheet contains following columns.
@@ -11,10 +17,16 @@ The `admin` sheet contains following columns.
 
 |**Description**
 | **Mandatory field** +
-The unique ID (this column should contain unique values) from which admin can use it for login in Admin app. Verify login_id has AlphaNumeric Characters only without space.
+The unique ID (this column should contain unique values) from which admin can use it for login in Admin app.
 | **Mandatory field** +
-The admin password to login to the admin app. Verify password has: +
-1. Length more than 8 characters. +
+The admin password to login to the admin app. 
+
+|**Character details**
+|English AlphaNumeric characters without Space and Japanese Characters except `。` are supported. +
+Allowed Special characters are Hyphen `-`, Underscore `_`. +
+Length: 1-255 characters.
+|Verify password has: +
+1. Length: 8-255 characters. +
 2. Contains letter from any of 3 categories +
     a. Lowercase (a-z) +
     b. Uppercase (A-Z) +
@@ -45,7 +57,13 @@ The `facility_type` sheet contains following columns.
 |===
 | **Column** ^| _name_
 |**Description** | **Mandatory field** +
-Contains the facility type name. Name can be in English or Japanese.
+Contains the facility type name.
+
+|**Character details** 
+| English AlphaNumeric characters and Japanese Characters except `。` are supported. +
+Allowed Special characters are Space, Hyphen `-`, Underscore `_`. +
+Length: 1-127 Characters
+
 | **Sample Values** | Parking_Type1
 |===
 
@@ -65,14 +83,30 @@ The `customer` sheet contains following columns.
 
 | **Description**
 | **Mandatory field** +
-Customer name is supported in English and Japanese. Japanese Character '。' is not supported.
+Customer name
 | **Mandatory field** +
 Verify admin _login_id_ is present in `admin` data
-| **Optional field** Add a valid auth URL
-| **Optional field** Add a valid base URL
-| **Optional field** Add a valid client ID
-| **Optional field** Add a valid client secret
-| **Optional field** Verify application ID is in valid format
+| **Optional field** +
+Add a valid auth URL
+| **Optional field** +
+Add a valid base URL
+| **Optional field** +
+Add a valid client ID
+| **Optional field** +
+Add a valid client secret
+| **Optional field** +
+Verify application ID is in valid format
+
+|**Character details**
+| English AlphaNumeric characters and Japanese Characters except `。` are supported. +
+Allowed Special characters are Space, Hyphen `-`, Underscore `_`. +
+Length: 1-127 Characters
+|As mentioned in `admin` data
+|As supported in AITRIOS
+|As supported in AITRIOS
+|As supported in AITRIOS
+|As supported in AITRIOS
+|As supported in AITRIOS
 
 | **Sample Values**
 | 顧客A
@@ -112,10 +146,17 @@ The `device_type` sheet contains following columns.
 |===
 | **Column** ^| _name_ ^| _sample_image_path_
 | **Description** | **Mandatory field** +
-Contains the device type name. Name can be in English or Japanese. | **Mandatory field** +
-Path to the sample image. +
-Make sure the images are present in the machine that run `caat-helper`.
+Contains the device type name. | **Mandatory field** +
+Path to the sample image.
+
+|**Character details** 
+| English AlphaNumeric characters and Japanese Characters except `。` are supported. +
+Allowed Special characters are Space, Hyphen `-`, Underscore `_`. +
+Length: 1-127 Characters
+| Make sure the images are present in the machine that run `caat-helper`. +
+Sample image extension can be `.jpeg` or `.jpg` or `.png`. +
 Mention the absolute path to the image.
+
 | **Sample Values**| GarageDevice | /path/to/sample-images/garage.jpeg
 |===
 
@@ -124,7 +165,7 @@ Mention the absolute path to the image.
 * Device Type table is to declare the types of devices that will be installed at customer' facilities(premise)
 * E.g., Device to be installed at the shop entry/exit, one near the cashier counter, one right in the middle of the shop.
 * Sample images are the images that will be displayed in contractor app as reference image  while contractor adjusts the camera angle.
-* It is recommended to keep sample image resolution lower (around 640x480). Also, it is recommended to keep image size low, so that it is fetched quickly on contractor app.
+* This tool will only accept sample image data size up to 1MB.
 ====
 
 
@@ -136,13 +177,23 @@ The `facility` sheet contains following columns.
 |===
 | **Column** | _facility_name_ | _prefecture_ | _municipality_ | _effective_start_jst_ | _effective_end_jst_ | _customer_name_ | _facility_type_
 | **Description**   | **Mandatory field** +
-Add a valid facility name. Name can be in English or Japanese. | **Mandatory field** +
+Add a valid facility name. | **Mandatory field** +
 Add the prefecture where the facility is located | **Mandatory field** +
 Add municipality to link to the facility | **Mandatory field** +
 Add start time and verify effective start time is a valid date and in the **future** | **Mandatory field** +
 Add end time and verify effective end time is a valid date and greater than effective start time | **Mandatory field** +
 Add customer name to link to the facility and verify the customer name exists in the `customer` sheet | **Mandatory field** +
 Mention the facility type and verify it is present in the facility_type sheet
+
+|**Character details** 
+3+| English AlphaNumeric characters and Japanese Characters except `。` are supported. +
+Allowed Special characters are Space, Hyphen `-`, Underscore `_`. +
+Length: 1-127 Characters
+2+|Accepted date time format: +
+`YYYY-MM-DDTHH:MM:SS+00:00`
+|As mentioned in `customer` data
+|As mentioned in `facility_type` data
+
 | **Sample Values** | パーキング1 | 神奈川県  | 厚木市 | 2024-06-28T09:00:00+00:00 | 2024-12-14T09:00:00+00:00 | 顧客A |Parking_Type1
 |===
 
@@ -180,11 +231,21 @@ The `device` sheet contains following columns.
 |===
 | **Column** | _device_name_ | _device_id_ | _customer_name_ | _facility_name_ | _device_type_name_
 | **Description** | **Mandatory field** +
-Add a valid device name. Name can be in English or Japanese. | **Mandatory field** +
+Add a valid device name. | **Mandatory field** +
 Add a valid device_id | **Mandatory field** +
 Add customer name to link to the device and verify the customer name exists in the `customer` sheet | **Mandatory field** +
-Add facility name to link to the facility and verify the facility name is present in the facility sheet | **Mandatory field** +
-Add device type name to link to the device type and verify device type name is present in the device type sheet
+Add facility name to link to the facility and verify the facility name is present in the `facility` sheet | **Mandatory field** +
+Add device type name to link to the device type and verify device type name is present in the `device_type` sheet
+
+|**Character details** 
+| English AlphaNumeric characters and Japanese Characters except `。` are supported. +
+Allowed Special characters are Space, Hyphen `-`, Underscore `_`. +
+Length: 1-127 Characters
+|As supported in AITRIOS
+|As mentioned in `customer` data
+|As mentioned in `facility` data
+|As mentioned in `device_type` data
+
 | **Sample Values** | DEVICE_SZP123S_0001 | Aid-00010004-0000-2000-0000-000000000000 | 顧客A | パーキング1 | GarageDevice
 |===
 

@@ -27,8 +27,9 @@ from src.exceptions import (
     InvalidBaseURLException,
     RetryAPIException,
 )
-from src.libs.auth import validate_auth_token
+from src.libs.auth import check_device_authorization, validate_auth_token
 from src.schemas import *
+from src.schemas.devices import DeviceStatusListSchema
 from src.services import aitrios_service
 from src.utils import dict_has_non_null_values
 
@@ -84,6 +85,9 @@ def get_facility_devices(payload: dict) -> FacilityDeviceDataSchema:
 
     Args:
         payload (dict): Dict containing facility_id and customer_id.
+                        payload is returned as kwargs by`validate_auth_token` decorator.
+                        payload is formed by validating the request header in
+                        `validate_auth_token` decorator.
 
     Returns:
         FacilityDeviceDataSchema: Response containing devices associated to the facility.
@@ -146,6 +150,73 @@ def get_facility_devices(payload: dict) -> FacilityDeviceDataSchema:
     return jsonify(validated_response.dict())
 
 
+@api.get("/devices/connection-status")
+@validate_auth_token
+def get_device_connection_status(payload: dict):
+    """
+    Method to get the connection status of the facility devices from AITRIOS console
+    Args:
+        payload (dict): Dict containing facility_id and customer_id.
+                        payload is returned as kwargs by`validate_auth_token` decorator.
+                        payload is formed by validating the request header in
+                        `validate_auth_token` decorator.
+    Response:
+        List of devices and their connection status.
+    """
+    # Get the facility ID
+    facility_id = payload.get("facility_id")
+
+    # Get the Customer ID
+    customer_id = payload.get("customer_id")
+
+    # Query to find the facility based on facility_id and customer_id
+    facility = db.facility.find_first(where={"id": int(facility_id), "customer_id": int(customer_id)})
+    if not facility:
+        raise APIException(ErrorCodes.INVALID_FACILITY)
+
+    # Get all the devices associated to the facility
+    devices = db.device.find_many(where={"facility_id": int(facility_id)})
+    device_ids = ",".join([device.device_id for device in devices])
+
+    # Get customer details
+    customer = db.customer.find_first(where={"id": customer_id}).model_dump()
+    console_creds = {
+        "client_id": customer["client_id"],
+        "client_secret": customer["client_secret"],
+        "auth_url": customer["auth_url"],
+        "base_url": customer["base_url"],
+        "application_id": customer["application_id"],
+    }
+
+    # Check if the console credentials has any null values present.
+    if not dict_has_non_null_values(console_creds, exempt_key="application_id"):
+        raise APIException(ErrorCodes.INVALID_CONSOLE_CREDENTIALS)
+    # Decrypt the customer details
+    customer = aitrios_service.decrypt_customer_details(customer)
+    # Get AITRIOS Access token
+    access_token = aitrios_service.get_aitrios_access_token(customer)
+    if not access_token:
+        raise APIException(ErrorCodes.INVALID_AUTH_TOKEN)
+
+    try:
+        device_status_list = []
+        # Call the AITRIOS API only if the devices are present
+        if devices:
+            device_status_list = aitrios_service.get_device_status(console_creds, access_token, device_ids)
+        return_list = []
+        for _device in device_status_list:
+            device_db_id = [_d.id for _d in devices if _d.device_id == _device.device_id][0]
+            temp = {"device_id": device_db_id, "connection_status": _device.connection_status}
+            return_list.append(temp.copy())
+        return DeviceStatusListSchema(**{"data": return_list}).make_response()
+    except InvalidBaseURLException as _exec:
+        raise APIException(ErrorCodes.INVALID_BASE_URL) from _exec
+    except APIException as _api_exec:
+        raise _api_exec
+    except Exception as _exec:
+        raise APIException(ErrorCodes.UNEXPECTED_ERROR) from _exec
+
+
 @api.get("/devices/<int:device_id>/status")
 @validate_auth_token
 @validate()
@@ -155,12 +226,16 @@ def get_device_status(device_id: int, payload: dict) -> FacilityStatusGetRespons
     """
     Endpoint to get the status of a device in a facility.
     Args:
-        device_id (int): The ID of the device.
-        payload (dict): Dict containing facility_id and customer_id.
+        device_id (int):    The ID of the device.
+        payload (dict):     Dict contains facility_id and customer_id.
+                            payload is returned as kwargs by`validate_auth_token` decorator.
+                            payload is formed by validating the request header in
+                            `validate_auth_token` decorator.
 
     Returns:
         FacilityStatusGetResponseSchema: A schema containing the status and review comment of the device.
     """
+    check_device_authorization(device_id, payload)
     device = db.device.find_first(where={"id": int(device_id)})
 
     # Verify device. If no device for the facility then raise exception
@@ -205,7 +280,9 @@ def get_images(device_id: int, payload: dict):
     Args:
         device_id (int): The ID of the device.
         payload (dict): Dict containing facility_id and customer_id.
-
+                        payload is returned as kwargs by`validate_auth_token` decorator.
+                        payload is formed by validating the request header in
+                        `validate_auth_token` decorator.
     Returns:
         FacilityImageGetResponseSchema: Response containing devices associated to the facility.
 
@@ -213,6 +290,7 @@ def get_images(device_id: int, payload: dict):
         401: If any required header is missing or in invalid format, or if tokens are invalid or expired.
         500: If an unexpected error occurs during the processing of the request.
     """
+    check_device_authorization(device_id, payload)
     image_type = int(request.args.get("image_type", 0))
     if image_type not in [ImageTypeSchema.CAMERA, ImageTypeSchema.REVIEW_COMMENT_AND_SAMPLE_IMAGE]:
         raise APIException(ErrorCodes.IMAGE_TYPE_NOT_FOUND)
@@ -243,12 +321,14 @@ def get_images(device_id: int, payload: dict):
                 "client_secret": customer["client_secret"],
                 "auth_url": customer["auth_url"],
                 "base_url": customer["base_url"],
-                "application_id": customer["application_id"]
+                "application_id": customer["application_id"],
             }
             # Check if console creds has any null value
             if not dict_has_non_null_values(console_creds, "application_id"):
                 raise APIException(ErrorCodes.INVALID_CONSOLE_CREDENTIALS)
-            camera_image = aitrios_service.fetch_images_by_device_id(device.device_id, console_creds)
+
+            camera_image = aitrios_service.fetch_images_by_device_id(device.device_id, console_creds.copy())
+
         except RetryAPIException:
             raise APIException(ErrorCodes.CAMERA_ISSUE)
         except InvalidAuthTokenException as _token_exec:

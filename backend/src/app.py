@@ -15,58 +15,91 @@
 # ------------------------------------------------------------------------
 
 import os
+import re
 
-from flask import Flask
+from flask import Flask, g
+import uuid
 
 from .api import register_apis
 from .config import validate_missing_environments
 from .core import db
-from .exceptions import register_exceptions, handle_api_exception
+from .exceptions import handle_api_exception, register_exceptions
 from .libs import auth, cors
 from .logger import get_json_logger
+from flask import request
+from .exceptions import APIException, ErrorCodes
 
 logger = get_json_logger()
+
 
 def create_app():
     db.connect()
     app = Flask(__name__)
 
-    # 3rd-party modules
-    logger.info(f"Cors init is started")
-    cors.init_app(app)
-    
-    logger.info(f"Cors init is completed")
+    # Generate a TraceId for each request
+    @app.before_request
+    def start_trace():
+        """
+        Before request method to set trace ID
+        Args:
+            None
+        Returns:
+            None
+        """
+        g.trace_id = uuid.uuid4().hex
 
-    logger.info(f"auth init is started")
+    @app.before_request
+    def ignore_robots_txt():
+        """
+        Before request method to catch the `robots` URL
+        Args:
+            None
+        Returns:
+            None
+        """
+        # pattern to match /robots12345.txt or /robots.txt
+        pattern = r"robots\d*\.txt"
+        path = request.path
+        # Find all matches in the text
+        matches = re.findall(pattern, path)
+        if any(matches):
+            logger.info(f"Ignoring {path} URL")
+            raise APIException(ErrorCodes.URL_NOT_FOUND)
+
+    # 3rd-party modules
+    logger.info("Cors init is started")
+    cors.init_app(app)
+
+    logger.info("Cors init is completed")
+
+    logger.info("auth init is started")
 
     auth.init_app(app)
 
-    logger.info(f"auth init is completed")
+    logger.info("auth init is completed")
 
     # Custom modules
-    
-    logger.info(f"Registering exceptions")
+
+    logger.info("Registering exceptions")
 
     register_exceptions(app)
-    
-    logger.info(f"Registering exceptions completed")
+
+    logger.info("Registering exceptions completed")
 
     # Handle custom API exceptions
     handle_api_exception(app)
 
-
-    logger.info(f"Registering APIs")
+    logger.info("Registering APIs")
 
     register_apis(app)
-    
-    logger.info(f"Registering APIs completed")
 
+    logger.info("Registering APIs completed")
 
     if os.environ.get("DEBUG") is True:
         logger.debug(app.url_map)
 
     validate_missing_environments()
 
-    logger.info(f"Validation of missing env completed")
+    logger.info("Validation of missing env completed")
 
     return app

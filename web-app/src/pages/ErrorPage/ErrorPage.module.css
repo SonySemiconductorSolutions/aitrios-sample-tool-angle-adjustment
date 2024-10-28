@@ -21,7 +21,7 @@ limitations under the License.
   padding: 24px 0px;
   flex-direction: column;
   justify-content: flex-end;
-  height: calc(100dvh - 48px);
+  min-height: calc(100dvh - 48px);
 }
 
 .content {

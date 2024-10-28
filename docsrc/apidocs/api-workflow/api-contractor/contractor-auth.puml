@@ -8,18 +8,22 @@ if (Contractor token is provided?) then (yes)
         : Send HTTP status 401 Token has expired;
         kill
     endif
+    ->no;
     if (Facility ID is not valid?) then (yes)
         : Send HTTP status 401 Facility ID is not valid;
         kill
     endif
+    ->no;
     if (Start time is not valid?) then (yes)
         : Send HTTP status 401 Token is not yet valid;
         kill
     endif
+    ->no;
     if (Token exp is not valid?) then (yes)
         : Send HTTP status 401 exp is not valid;
         kill
     endif
+    ->no;
 else (no)
     : Send HTTP status 401 Invalid authorization header format;
     kill

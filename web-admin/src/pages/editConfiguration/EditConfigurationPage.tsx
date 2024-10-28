@@ -168,7 +168,8 @@ export const EditConfigurationPage = () => {
           sx={{
             position: "absolute",
             height: "100%",
-            width: "100%",
+            left: { md: "255px" },
+            width: { xs: "100%", md: "calc(100vw - 255px)" },
             backgroundColor: "rgba(221, 231, 238)",
           }}
         >
@@ -189,8 +190,7 @@ export const EditConfigurationPage = () => {
               mt: { xs: 2, md: 0 },
               mb: 1,
               gap: 1,
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: { xs: "start", sm: "center" },
+              alignItems: "center",
               flexWrap: "wrap",
               justifyContent: "start",
             }}
@@ -270,7 +270,8 @@ export const EditConfigurationPage = () => {
                       <FormHelperText sx={{
                         display: "flex",
                         flexDirection: "column",
-                        alignItems: "flex-start"
+                        alignItems: "flex-start",
+                        wordBreak: "break-word",
                       }}>
                         {t("editConfigurationPage.example")}
                         <span>

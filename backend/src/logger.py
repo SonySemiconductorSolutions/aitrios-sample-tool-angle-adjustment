@@ -22,9 +22,9 @@ Description: Utility module to log in JSON format
 import inspect
 import json
 import logging
-import os
 import sys
 import traceback
+from flask import g, has_request_context
 
 
 class FormatterJSON(logging.Formatter):
@@ -43,7 +43,7 @@ class FormatterJSON(logging.Formatter):
             supported_keys = {
                 "LogLevel": record.levelname.replace("CRITICAL", "FATAL"),
                 "DateTime": f"{record.asctime}.{int(record.msecs)}Z",
-                "TraceId": getattr(record, "TraceId", "-"),
+                "TraceId": g.trace_id if has_request_context() and hasattr(g, 'trace_id') else "-",
                 "LogMessage": record.getMessage(),
                 "Resources": record.name,
                 "Caller": f"{record.filename}:{record.lineno}",

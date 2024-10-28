@@ -9,7 +9,7 @@
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash local-setup.sh
 ----
 
@@ -24,12 +24,12 @@ $ bash local-setup.sh
 
 [NOTE]
 ====
-* The script creates the 'caatdbdata' directory under `tools/local-setup-codespaces`. This directory is required to preserve the data between start-stop of the AAT.
+* The script creates the 'caatdbdata' directory under `tools/cloud-setup/codespaces`. This directory is required to preserve the data between start-stop of the AAT.
 * All the data populated will be present in `caatdbdata` directory and Database Password is also stored as a configuration.
 * Please clear `caatdbdata` directory for every fresh setup.
 * Command:
 ```
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ sudo rm -rf caatdbdata
 ```
 ====

@@ -37,7 +37,7 @@ Following environment variables are required to execute the commands.
 
 - DATABASE_URL (Database Server Connection String)
 - APP_SECRET_KEY (Encryption KEY for Customer details encryption)
-- BUILD_ENV (Variable to identify which DB server will be used)
+- APP_ENV (Variable to identify App Environment based on respective DB server will be used)
 
 #### Obtaining environment variables - Local Setup
 
@@ -71,14 +71,14 @@ Following environment variables are required to execute the commands.
     $ export APP_SECRET_KEY="hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
     ```
 
-##### Set BUILD_ENV
+##### Set APP_ENV
 
-1. Set BUILD_ENV to local for local development. Postgres DB will be used.
+1. Set APP_ENV to local for local development. Postgres DB will be used.
     ```shell
-    $ export BUILD_ENV=local
+    $ export APP_ENV=local
     ```
 
-> NOTE: If `caat-helper` will be used to interact with cloud Database (sqlserver), skip setting BUILD_ENV variable.
+> NOTE: If `caat-helper` will be used to interact with cloud Database (aws/azure), set APP_ENV variable accordingly 'azure' in case of Azure and 'aws' in case of AWS.
 
 ## Usage guide for Database Operations
 
@@ -127,10 +127,10 @@ Excel template is explained here [EXCEL](EXCEL_README.md)
 
   ```shell
   # from tools/caat-helper
-  # To view data if postgres DB is used [local]
-  (.venv) $ prisma studio --schema=./src/data/prisma/schema.local.prisma
+  # To view data if postgres DB is used - local/aws
+  (.venv) $ prisma studio --schema=./src/data/prisma/schema.postgres.prisma
 
-  # To view data if sqlserver DB is used [cloud]
+  # To view data if sqlserver DB is used - azure
   (.venv) $ prisma studio --schema=./src/data/prisma/schema.prisma
    ```
 

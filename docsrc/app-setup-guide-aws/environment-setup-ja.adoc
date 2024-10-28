@@ -1,0 +1,176 @@
+
+== 環境のセットアップ
+
+本ページではAWSクラウドにAATアプリケーションをセットアップする際の手順を説明します。
+
+
+- AWSクラウド環境のセットアップには link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces^] の使用を推奨します。また、Ubuntuマシンでも可能です。
+- ホストマシンがAWSにアクセスできること、そしてデータベースポートに接続できることを確認してください (Port: 5432)。
+
+
+=== 前提条件
+
+* 次のステップへ進む前に、必ず以下のソフトウェアをインストールしてください。
+** Ubuntu 20.04 (v20.04.6 LTS にてテスト済み)
+** Python 3.10 (v3.10.12 にてテスト済み)
+** link:https://docs.docker.com/engine/install/ubuntu/[Install Docker Engine on Ubuntu^] (v26.1.4-1 にてテスト済み)
+*** Dockerのインストール後、ルート以外のユーザがDockerを設定するには、以下を参照してください。link:https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[Manage Docker as a non-root user^]
+** link:https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/getting-started-install.html[Install the AWS CLI v2 on Linux^] (v2.17.24でテスト済み)
+** link:https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating[Install Node using `nvm`^] (v20.12.1でテスト済み)
+** link:https://developer.hashicorp.com/terraform/install?product_intent=terraform#linux[Install Terraform^]  (v1.9.5 linux_amd64でテスト済み)
+** link:https://docs.aws.amazon.com/ja_jp/lightsail/latest/userguide/amazon-lightsail-install-software.html#install-lightsailctl-on-linux[Install Lightsail Plugin^] (v1.0.4でテスト済み)
+*** 'Permission Denied'でエラーが発生した場合は'sudo'で実行します。 
+** link:https://jqlang.github.io/jq/download/[Install `jq` JSON Processor Tool^] (1.6でテスト済み)
+* Cloud側で有効なAWSアカウントとAWSアクセス情報が必要となります。
+
+=== クラウド環境のセットアップ
+
+本章で実行するすべてのコマンドは `tools/cloud-setup/aws` を作業ディレクトリとして想定しています。
+
+[注記]
+====
+レポジトリを複製したもう一つのターミナルを開くと、以下のコマンドを実行できます。
+====
+
+==== 環境ファイル
+
+*  _.env_ ファイル内に以下の環境変数を更新してください。
+* PLACEHOLDER_*値を _.env_ ファイル内の実際の値に置き換えます。
+* 値の例を含む _.env.example_ ファイルを参照してください。
+* AWSの既存のリソースとの競合を避けるために、`.env` ファイル内のすべてのフィールドに一意な値を使用することを推奨します。
+* 以下の表で、値の例と共に使用される環境変数について説明します。
+
+[cols="1,2,2,1"]
+|===
+|変数 |使用法 |有効な文字セット | 値の例
+
+|APP_NAME
+|AWSクラウドサービスを命名する際には、本アプリケーション名が使用されます。名前は必ず一意の名前にしてください。
+
+| `A-Z`,`a-z`,`0-9` +
+長さ: 4-35 文字 +
+| aat2024
+
+|REGION
+|このリージョン用にCloudインスタンスが作成されます。
+|このコマンドを実行すると、可能なすべての値がリストアップされます。 +
+`aws ssm get-parameters-by-path --path /aws/service/global-infrastructure/regions --query "Parameters[].Value" --output table --region us-east-1` +
+ +
+東京リージョンは ap-northeast-1で対応します
+| ap-northeast-1, ap-south-1
+
+|BACKEND_NAME
+|この名前はLightsailのBackendServerを作成する際に使用され、以下のように表示されます　 `https://BACKEND_NAME.<RandomGUID>.REGION.cs.amazonlightsail.com`. ご使用中のLightsailサービス内の各AWS Regionで固有である必要があります。
+| `a-z`,`0-9`, `-` +
+長さ: 2-63 文字 +
+link:https://docs.aws.amazon.com/ja_jp/lightsail/latest/userguide/amazon-lightsail-creating-container-services.html[コンテナサーの名前付け^]
+| aatbackend, aatbackendserver, aatbackendapp.
+
+|WEBAPP_NAME
+|この名前はAWS S3バケットにContractorAppを作成する際に使用されます。 しかしながら、最終的なContractorApp URL は以下のように表示されます `https://<RandomGUID>.cloudfront.net`. 
+| `a-z`,`0-9`, `-` +
+長さ: 3-63 文字 +
+link:https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/bucketnamingrules.html?icmpid=docs_amazons3_console#bucketnamingrules-directorybucket[バケットの名前付け^]
+| aat-web-app, aatcontractor, aatcontractorapp.
+
+|WEBADMIN_NAME
+|この名前はAWS S3バケット内にAdminAppを作成する際に使用されます。 しかしながら、最終的な管理者アプリURLは以下のように表示されます `https://<RandomGUID>.cloudfront.net`. 
+| `a-z`,`0-9`, `-` +
+長さ: 3-63 文字 +
+link:https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/bucketnamingrules.html?icmpid=docs_amazons3_console#bucketnamingrules-directorybucket[バケットの名前付け^]
+| aat-web-admin, aatadminapp, aatadmin.
+
+|APP_SECRET_KEY
+|英数字のみを含む32文字の強力なキーです。本キーはJWTのサインおよび認証情報の暗号化・復号化に使用されます。 +
+| `A-Z`, `a-z`, `0-9` +
+以下のコマンドを実行して作成します: +
+`openssl rand -base64 24` +
+| "hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
+
+|POSTGRES_DATABASE_PASSWORD
+|データベース管理者用の強力なパスワードです。
+| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%` +
+長さ: 8-128 文字 +
+| "V3ry5tr0ngP05tgresPa55"
+
+|===
+
+* 以下の通り、`.env` からの値を使用してAWS Cloudサービスを命名します。
+
+
+[cols="1,1"]
+|===
+|リソースタイプ | リソース名
+
+|管理者アプリのS3バケット
+| `WEBADMIN_NAME`
+
+|コントラクターアプリのS3バケット
+| `WEBAPP_NAME`
+
+|管理アプリのCloudFrontディストリビューションID
+|自動生成されたランダムテキスト  +
+（アプリの特定するための説明をご覧ください）
+
+|コントラクターアプリのCloudFrontディストリビューションID
+|自動生成されたランダムテキスト  +
+（アプリの特定するための説明をご覧ください）
+
+|管理アプリのCloudFrontオリジンアクセスコントロール設定 (OAC)
+| `oac-admin-s3-cloudfront-APP_NAME`
+
+|コントラクターアプリのCloudFrontオリジンアクセスコントロール設定 (OAC)
+| `oac-contractor-s3-cloudfront-APP_NAME`
+
+|Lightsail コンテナ Backend
+| `BACKEND_NAME`
+
+|Lightsail Database
+| `lsdbAPP_NAME`
+
+|===
+
+[NOTE]
+====
+`tools/cloud-setup/aws/.env` の値は、クラウド上でAATをセットアップするまで、同じでなければなりません。
+====
+
+==== クラウドのセットアップ
+
+[注記]
+====
+* 必ずリソースの作成に十分な権限を持っている状態で、AWS CLI内のAWSアカウントへログインしてください。
+* AWS CLIへのログインは以下のリンクを参照してください。
+
+- link:https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-methods[AWS CLI を使用したアクセスキーによるサインイン^]
+====
+
+* 以下のコマンドを実行してログインが成功すること、及びAWSアカウントの詳細がアウトプットに表示されていることを確認してください。
+
+[source,shell]
+----
+$ aws account get-contact-information --region us-east-1
+----
+
+[注記]
+====
+管理者アプリユーザーセッションはデフォルトで1440分間維持されます。時間を変更する場合は、 `tools/cloud-setup/aws/source-build.sh` で編集してください。DEFAULT_JWT_EXPIRED_MINUTESのフィールドを確認して値を分単位で更新します。
+====
+
+* AWS Cloud設定を開始する前に、（以前のCloud設定から）すべてのterraform関連ファイルを確実に削除してください。 +
+- tools/cloud-setup/aws/.terraform
+- tools/cloud-setup/aws/.terraform.lock.hcl
+- tools/cloud-setup/aws/terraform.tfstate
+- tools/cloud-setup/aws/tfplan
+- tools/cloud-setup/aws/terraform.tfstate.backup
+
+* AWSでCloudインスタンスを作成するには `cloud-setup.sh` を実行します。Cloudインスタンスの作成には15分程度かかる場合があります。
+
+[source,shell]
+----
+# from tools/cloud-setup/aws
+$ bash cloud-setup.sh
+----
+
+スクリプトの実行に成功すると、cloud インスタンスとリソースが作成されます。
+AWSコンソールを開いて確認してください。

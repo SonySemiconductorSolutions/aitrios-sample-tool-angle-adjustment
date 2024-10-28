@@ -18,10 +18,13 @@
 File: backend/src/api/customers.py
 """
 
+from datetime import timedelta
+
 from flask import Blueprint
 from flask_login import current_user, login_required
 from flask_pydantic import validate
 from requests import RequestException
+from src.config import DB_TRANSACTION_MAX_WAIT_SECONDS, DB_TRANSACTION_TIMEOUT_SECONDS
 from src.core import db
 from src.exceptions import APIException, ErrorCodes, InvalidAuthTokenException, InvalidBaseURLException
 from src.libs.auth import check_resource_authorization
@@ -133,6 +136,8 @@ def update_console_credentials(customer_id: int, body: CustomerUpdateRequestSche
         raise APIException(ErrorCodes.INVALID_BASE_URL) from _base_exec
     except RequestException as _req_exec:
         raise APIException(ErrorCodes.INVALID_BASE_URL) from _req_exec
+    except APIException as _api_exec:
+        raise _api_exec
     except Exception as _exec:
         raise APIException(ErrorCodes.CONSOLE_VERIFICATION_FAILED) from _exec
 
@@ -144,9 +149,16 @@ def update_console_credentials(customer_id: int, body: CustomerUpdateRequestSche
     )
 
     # Update the customer record.
-    with db.tx() as transaction:
+    # max_wait and timeout is added overriding the default, because, in case of Azure SQL DB
+    # if the transaction takes more than 5s  and there is a timeout of 5s default, which results in failed transaction.
+    # This is unlikely to occur in customer update transaction, but added for safety
+    with db.tx(
+        max_wait=timedelta(seconds=DB_TRANSACTION_MAX_WAIT_SECONDS),
+        timeout=timedelta(seconds=DB_TRANSACTION_TIMEOUT_SECONDS),
+    ) as transaction:
         transaction.customer.update(
-            where={"id": customer_id}, data={**customer_data, "last_updated_at_utc": datetime.utcnow()}
+            where={"id": customer_id},
+            data={**customer_data, "last_updated_at_utc": datetime.utcnow()},
         )
     response_data = {"message": "Successfully updated"}
     return ResponseHTTPSchema(**response_data).make_response()

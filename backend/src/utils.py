@@ -14,23 +14,21 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
-import re
-
 from datetime import date, datetime
 from typing import Callable, List
-
 from werkzeug.exceptions import BadRequest
+from src.exceptions import APIException, ErrorCodes
 from src.core import fernet
-
+from cryptography.fernet import InvalidToken
 
 
 def serialize_date(date_field: date = None):
     """
     Serializes a date object.
-    
+
     Args:
         date_field (date): A date object to be serialized. Defaults to None.
-    
+
     Returns:
         str: ISO formatted date string or None if date_field is None.
     """
@@ -43,10 +41,10 @@ def serialize_date(date_field: date = None):
 def serialize_datetime(datetime_field: datetime = None):
     """
     Serializes a datetime object to an ISO formatted string with seconds precision.
-    
+
     Args:
         datetime_field (datetime): A datetime object to be serialized. Defaults to None.
-    
+
     Returns:
         str: ISO 8601 formatted datetime string with seconds precision or None if datetime_field is None.
     """
@@ -61,7 +59,7 @@ def add_to_nested_dict(_dict: dict, key: str, value: any):
     """
     Adds a key-value pair to a nested dictionary. If the key already exists and the value
     is a dictionary, it merges the dictionaries recursively.
-    
+
     Args:
         _dict (dict): The dictionary to which the key-value pair will be added.
         key (str): The key for the value to be added.
@@ -83,17 +81,17 @@ def add_to_nested_dict(_dict: dict, key: str, value: any):
 
 def to_list(field: List[str] | str, split_char: str = ",", cast: Callable = str):
     """
-    Converts a comma-separated string or a list of strings into a list of values, 
+    Converts a comma-separated string or a list of strings into a list of values,
     applying an optional type casting function to each element.
-    
+
     Args:
         field (List[str] | str): The input field to be converted to a list. Can be a string or a list of strings.
         split_char (str): The character used to split the string if field is a string. Defaults to ",".
         cast (Callable): A function to cast each element in the list. Defaults to str.
-    
+
     Returns:
         List[Any]: A list of values obtained by splitting and casting the input field.
-    
+
     Raises:
         BadRequest: If the cast function fails to convert any element.
     """
@@ -108,10 +106,12 @@ def to_list(field: List[str] | str, split_char: str = ",", cast: Callable = str)
         # Raise an exception if casting fails
         raise BadRequest("Bad request")
 
+
 # Commenting as the management_id is changed to facility_id.
 # Valid format: ATS-[7 digits]-[8 random characters]
 # def validate_store_management_id(management_id: str):
 #     return bool(re.match("ATS-\d{7}-[\w\s]{8}", management_id))
+
 
 def encrypt_data(plain_data: str) -> str:
     """
@@ -123,7 +123,8 @@ def encrypt_data(plain_data: str) -> str:
     """
     plain_data_in_bytes = plain_data.encode("utf-8")
     # decode the bytes data returned from fernet into string
-    return fernet.encrypt(plain_data_in_bytes).decode('utf-8')
+    return fernet.encrypt(plain_data_in_bytes).decode("utf-8")
+
 
 def decrypt_data(encrypted_data: str) -> str:
     """
@@ -133,7 +134,18 @@ def decrypt_data(encrypted_data: str) -> str:
     Return:
         str: decrypted string
     """
-    return fernet.decrypt(encrypted_data).decode("utf-8")
+    try:
+        return fernet.decrypt(encrypted_data).decode("utf-8")
+    except InvalidToken:
+        # When fernet couldn't decrypt the console credentials
+        raise APIException(ErrorCodes.INVALID_CREDENTIAL_DATA)
+    except TypeError:
+        # Fernet may raise TypeError during decryption
+        raise APIException(ErrorCodes.INVALID_CREDENTIAL_DATA)
+    except Exception:
+        # Catch if general exception is raised.
+        raise APIException(ErrorCodes.INVALID_CREDENTIAL_DATA)
+
 
 def dict_has_non_null_values(d: dict, exempt_key: str) -> bool:
     """

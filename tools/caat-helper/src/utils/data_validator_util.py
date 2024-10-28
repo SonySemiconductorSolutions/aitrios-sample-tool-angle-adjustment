@@ -16,6 +16,7 @@
 
 """General Data Validator util"""
 
+import imghdr
 import math
 import os
 import re
@@ -52,15 +53,34 @@ def validate_local_url(input_local_path: str) -> bool:
     Returns:
         bool: True if the path is correct
     """
-    if not input_local_path.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")):
+    # Check if the given image has one of the extensions
+    if not input_local_path.lower().endswith((".png", ".jpg", ".jpeg")):
+        logger.error(
+            f"Error: Unsupported file extension for '{input_local_path}'. Please provide a .jpg, .jpeg, or .png image."
+        )
         return False
 
+    # Check if input image file exists in local system
     if not os.path.exists(input_local_path):
-        logger.error(f"{input_local_path} file doesn't exist")
-
+        logger.error(f"Error: {input_local_path} file doesn't exist")
         return False
 
+    # Check for file size 0 and return False if so
     if os.path.getsize(input_local_path) == 0:
+        logger.error(f"Error: {input_local_path} file size is 0 bytes. Please provide valid file.")
+        return False
+
+    # Check if image size is 1MB or less
+    if os.path.getsize(input_local_path) > 1 * 1024 * 1024:
+        logger.error(
+            f"Error: {input_local_path} file size is more than {1024*1024} bytes. Please reduce the file size."
+        )
+        return False
+
+    # Check if image is actually the png/jpeg
+    image_type = imghdr.what(input_local_path)
+    if image_type not in ["jpeg", "png"]:
+        logger.error(f"Error: {input_local_path} file is not a valid PNG or JPEG image. Please provide valid file.")
         return False
 
     return True
@@ -151,3 +171,15 @@ def validate_password(input_str: str) -> bool:
 # Function to check if a value is NaN
 def is_nan(value):
     return isinstance(value, float) and math.isnan(value)
+
+
+def confirm_alert(alert_text):
+    """
+    Shows the confirmation alert with yes no
+    """
+    while True:
+        response = input(alert_text + " (y/n): ").lower()
+        if response in ["y", "n"]:
+            return response == "y"
+        else:
+            logger.info(f"Please respond with 'y' or 'n'.")

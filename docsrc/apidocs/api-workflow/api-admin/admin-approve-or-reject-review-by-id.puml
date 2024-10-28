@@ -12,6 +12,7 @@ else (no)
     : Send HTTP status 401, unauthorized;
     kill
 endif
+->no(valid token);
 : Validate parameters;
 note right
     1. review_id (mandatory)
@@ -20,23 +21,28 @@ if (Parameters are not valid?) then (yes)
     : Send HTTP status 400 error;
     kill
 endif
+->no;
 : Find the review by ID in the database;
 if (Review does not exist?) then (yes)
     : Send HTTP status 404 Not found error;
     kill
 endif
+->no;
 if (Review is not authorized?) then (yes)
     : Send HTTP status 403 Permission error;
     kill
 endif
+->no;
 if (Provided review status is "rejected" and comment not given?) then (yes)
     : Send HTTP status 400 sends "When review is rejected, please write comment";
     kill
 endif
+->no;
 if (Current review is not the latest review?) then (yes)
     : Send HTTP status 400 sends "Review approval/rejection failed as the current review is not the latest one.";
     kill
 endif
+->no;
 : Update the review status and comment in the DB;
 : Send HTTP status 200 with updated status as the response;
 stop

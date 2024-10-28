@@ -4,24 +4,29 @@
 本ページではクラウドにAATアプリケーションをセットアップする際の手順を説明します。
 
 
-- Azureクラウド環境のセットアップには link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces の概要^] の使用を推奨します。また、Ubuntuマシンでも可能です。
+- Azureクラウド環境のセットアップには link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces^] の使用を推奨します。また、Ubuntuマシンでも可能です。
 - ホストマシンがAzureにアクセスできること、そしてデータベースポートに接続できることを確認してください (Port: 1443)。
 
+[注記]
+====
+前バージョンからの既存のAATインスタンスのアップグレードは、 <<version-upgrade, バージョンアップグレード>> セクションを開いてください。
+====
 
+[[prerequisites]]
 === 前提条件
 
 * 次のステップへ進む前に、必ず以下のソフトウェアをインストールしてください。
 ** Ubuntu 20.04 (v20.04.6 LTS にてテスト済み)
 ** Python 3.10 (v3.10.12 にてテスト済み)
 ** link:https://docs.docker.com/engine/install/ubuntu/[Install Docker Engine on Ubuntu^] (v26.1.4-1 にてテスト済み)
-*** Dockerのインストール後、ルート以外のユーザがDockerを設定するには、以下を参照してください。link:https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[Manage Docker as a non-root user]
+*** Dockerのインストール後、ルート以外のユーザがDockerを設定するには、以下を参照してください。link:https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[Manage Docker as a non-root user^]
 ** link:https://learn.microsoft.com/ja-jp/cli/azure/install-azure-cli-linux?pivots=apt[Linux に Azure CLI をインストールする^] (v2.60.0  にてテスト済み)
 ** link:https://jqlang.github.io/jq/download/[Install `jq` JSON Processor Tool^] (v1.6  にてテスト済み)
 * クラウド側には、有効なAzureサブスクリプションを含むAzureログイン認証情報が必要です。
 
 === クラウド環境のセットアップ
 
-本章で実行するすべてのコマンドは`tools/cloud-setup/scripts`を作業ディレクトリとして想定しています。
+本章で実行するすべてのコマンドは `tools/cloud-setup/azure` を作業ディレクトリとして想定しています。
 
 [注記]
 ====
@@ -33,6 +38,7 @@
 *  _.env_ ファイル内に以下の環境変数を更新してください。
 * PLACEHOLDER_*値を _.env_ ファイル内の実際の値に置き換えます。
 * 値の例を含む _.env.example_ ファイルを参照してください。
+* Azureの既存のリソースとの競合を避けるために、`.env` ファイル内のすべてのフィールドに一意な値を使用することを推奨します。
 * 以下の表で、値の例と共に使用される環境変数について説明します。
 
 [cols="1,2,2,1"]
@@ -42,7 +48,7 @@
 |APP_NAME
 |クラウドサービスを命名する際には、本アプリケーション名が使用されます。名前は必ず一意の名前にしてください。
 | `A-Z`,`a-z`,`0-9` +
-長さ: 4-50文字 +
+長さ: 4-40文字 +
 | cameratool2024, caat2024
 
 |LOCATION
@@ -53,20 +59,23 @@
 
 |BACKEND_NAME
 |この名前はアプリサービス内のバックエンドサーバーを作成する際に使用され、 https://BACKEND_NAME.azurewebsites.net. として表示されます。この値は必ずAzure全般にわたって一意のものにしてください。
-| `A-Z`,`a-z`,`0-9`, `.`, `_` +
+| `A-Z`,`a-z`,`0-9`, '-' +
 長さ: 2-60 文字 +
+名には、英数字とハイフンのみを使用でき、ハイフンで開始または終了することはできません。
 | caatbackend, caatbackendserver, caatbackendapp.
 
 |WEBAPP_NAME
 |この名前はアプリサービス内のコントラクターアプリを作成する際に使用され、 https://WEBAPP_NAME.azurewebsites.net　として表示されます。この値は必ずAzure全般にわたって一意のものにしてください。
-| `A-Z`,`a-z`,`0-9`, `.`, `_` +
+| `A-Z`,`a-z`,`0-9`, '-' +
 長さ: 2-60 文字 +
+名には、英数字とハイフンのみを使用でき、ハイフンで開始または終了することはできません。
 | caatwebapp, caatcontractor, caatcontractorapp.
 
 |WEBADMIN_NAME
 |この名前はアプリサービス内の管理者アプリを作成する際に使用され、 https://WEBADMIN_NAME.azurewebsites.net　として表示されます。この値は必ずAzure全般にわたって一意のものにしてください。
-| `A-Z`, `a-z`, `0-9`, `.`, `_` +
+| `A-Z`, `a-z`, `0-9`, '-' +
 長さ: 2-60 文字 +
+名には、英数字とハイフンのみを使用でき、ハイフンで開始または終了することはできません。
 | caatwebadmin, caatadminapp, caatadmin.
 
 |APP_SECRET_KEY
@@ -89,6 +98,49 @@
 
 |===
 
+* 以下の通り、 `.env` からの値を使用してAzure Cloudサービスを命名します。
+
+[cols="1,1"]
+|===
+|リソースタイプ | リソース名
+
+| リソースグループ
+| `rg-APP_NAME`
+
+| Virtual Network
+| `vnet-APP_NAME`
+
+| SQL Serverのサブネット
+| `subnet-APP_NAME`
+
+| SQL Server
+| `sqlserver-APP_NAME`
+
+| SQL Database
+| `dbAPP_NAME`
+
+| App Service Plan
+| `asp-APP_NAME`
+
+| Azure Container Registry
+| `crAPP_NAME`
+
+| Backend ServerのApp Service
+| `BACKEND_NAME`
+
+| 管理者アプリのApp Service
+| `WEBADMIN_NAME`
+
+| コントラクターアプリのApp Service
+| `WEBAPP_NAME`
+
+|===
+
+[NOTE]
+====
+`tools/cloud-setup/azure/.env` の値は、クラウド上でAATをセットアップするまで、同じでなければなりません。
+====
+
 ==== クラウドのセットアップ
 
 [注記]
@@ -109,22 +161,27 @@ $ az account show
 
 [注記]
 ====
-管理者アプリユーザーセッションはデフォルトで1440分間維持されます。時間を変更する場合は、 `tools/cloud-setup/scripts/azure/arm-template-caat.json`で編集してください。DEFAULT_JWT_EXPIRED_MINUTESのフィールドを確認して値を分単位で更新します。
+管理者アプリユーザーセッションはデフォルトで1440分間維持されます。時間を変更する場合は、 `tools/cloud-setup/azure/arm-template-caat.json` で編集してください。DEFAULT_JWT_EXPIRED_MINUTESのフィールドを確認して値を分単位で更新します。
 ====
 
-* Azureにクラウドインスタンスを作成するには、`cloud-setup.sh`を実行してください。クラウドインスタンスの作成には10分ほどかかる場合があります。
+* Azureにクラウドインスタンスを作成するには、 `cloud-setup.sh` を実行してください。クラウドインスタンスの作成には10分ほどかかる場合があります。
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash cloud-setup.sh
 ----
 
 スクリプトの実行が成功すると、クラウドインスタンスとリソースが作成されます
 Azureポータルを開いて確認してください。
 
-参照テーブルは以下の通りです。`値の例` 列の最初の値が例として表示されています。
+参照テーブルは以下の通りです。 `値の例` 列の最初の値が例として表示されています。
 
 **リソースグループ:** rg-cameratool2024
 
 image::images/resource-group-contents-after-setup.png[resource-group-contents-after-setup]
+
+[注記]
+====
+* リソースが Azure で作成された場合、リソースの自動スケーリングは有効になりません。
+====

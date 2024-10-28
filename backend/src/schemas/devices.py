@@ -59,7 +59,7 @@ class DeviceSchema(BaseModel):
 
 
 class DeviceStatusSchema(BaseModel):
-    device_id: str
+    device_id: str | int
     connection_status: str
 
 
@@ -69,6 +69,10 @@ class DeviceStatusListSchema(ListResponseHTTPSchema):
 
 class DeviceGetResponseSchema(BaseGetResponseSchema, DeviceSchema):
     pass
+
+
+class UpdateDeviceTypeReferenceImageSchema(BaseModel):
+    reference_image: str
 
 
 class Status(str, Enum):

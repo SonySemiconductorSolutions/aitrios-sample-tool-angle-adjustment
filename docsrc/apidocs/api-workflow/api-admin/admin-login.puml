@@ -12,11 +12,13 @@ if (Parameters are not valid?) then (yes)
         :Send HTTP status code 401 Login failed error;
         kill
     endif
+    ->no;
     :Validate the password provided by the user;
     if (Password didn't match?) then (yes)
         :Send HTTP status code 401 Login failed error;
         kill
     endif
+    ->no;
     :Generate JWT token;
     note right
         Generate auth token
