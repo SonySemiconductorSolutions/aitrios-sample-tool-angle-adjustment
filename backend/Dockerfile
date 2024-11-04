@@ -1,11 +1,13 @@
 FROM caat-backend-base:latest
 
-# Argument to check if the build is for cloud or local environment
-# By default, docker image is build for cloud
-ARG BUILD_ENV=cloud
-ENV BUILD_ENV=${BUILD_ENV}
+# Argument to check if the build is for azure, aws or local environment
+# By default, docker image is build for Azure cloud
+# if set to 'local' or 'aws' -> postgres DB will be used.
+# if set to 'azure' -> SQL Server DB will be used.
+ARG APP_ENV=azure
+ENV APP_ENV=${APP_ENV}
 
-RUN echo "Building the application for ${BUILD_ENV} ..."
+RUN echo "Building the application for ${APP_ENV} ..."
 
 # Set the user to 'caatuser'
 USER caatuser
@@ -23,13 +25,13 @@ COPY --chown=caatuser:caatuser ./src ./src
 COPY --chown=caatuser:caatuser ./prisma ./prisma
 COPY --chown=caatuser:caatuser ./main.py ./main.py
 
-# Generate prisma client for Postgres Server if BUILD_ENV is for local/codespaces
-# Generate prisma client for SQL Server if BUILD_ENV is for cloud
-RUN if [ "$BUILD_ENV" = "local" ]; then \
-        echo "Generating prisma client for local"; \
-        python -m  prisma generate --schema=./prisma/schema.local.prisma; \
+# Generate prisma client for Postgres Server if APP_ENV is local/aws
+# Generate prisma client for SQL Server if APP_ENV is azure
+RUN if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "aws" ]; then \
+        echo "Generating Postgres prisma client for $APP_ENV environment."; \
+        python -m  prisma generate --schema=./prisma/schema.postgres.prisma; \
     else \
-        echo "Generating prisma client for cloud"; \
+        echo "Generating SQL server prisma client for $APP_ENV environment."; \
         python -m  prisma generate --schema=./prisma/schema.prisma; \
     fi
 

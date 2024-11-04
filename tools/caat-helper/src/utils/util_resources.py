@@ -58,15 +58,16 @@ def image_to_base64(image_path):
 
 def get_prisma_file():
     """
-    Check if BUILD_ENV is set
-    If set to 'local', use local prisma (postgres), otherwise use cloud prisma (sqlserver)
+    Check if APP_ENV is set
+    if set to local/aws -> postgres prisma
+    if set to azure -> sqlserver prisma
     """
 
-    build_env = os.getenv("BUILD_ENV", "cloud")
-    if build_env.lower() == "local":
-        logger.info("BUILD_ENV is local, using prisma with postgres DB")
-        prisma_file = "data/prisma/schema.local.prisma"
+    app_env = os.getenv("APP_ENV", "azure")
+    if app_env.lower() == "local" or app_env.lower() == "aws":
+        logger.info("APP_ENV is %s, using prisma with postgres DB", app_env)
+        prisma_file = "data/prisma/schema.postgres.prisma"
     else:
-        logger.info("BUILD_ENV is cloud, using prisma with sqlserver DB")
+        logger.info("APP_ENV is azure, using prisma with sqlserver DB")
         prisma_file = "data/prisma/schema.prisma"
     return prisma_file

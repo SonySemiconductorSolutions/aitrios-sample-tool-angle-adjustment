@@ -24,7 +24,7 @@ Whitelist the host machine IP, before running caat-helper commands.
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash allow-host-ip-db.sh
 ----
 
@@ -35,7 +35,7 @@ Run following commands to create virtual environment and install `caat-helper` p
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ python3 -m venv .venv
 ----
 
@@ -44,7 +44,7 @@ $ python3 -m venv .venv
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ source .venv/bin/activate
 ----
 
@@ -52,7 +52,7 @@ $ source .venv/bin/activate
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 # Upgrade pip
 $ pip install -U pip
 
@@ -78,7 +78,7 @@ Make sure to execute set environment variable script, before running caat-helper
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ source set-env-var.sh
 ----
 
@@ -91,7 +91,7 @@ WARNING: Please make sure to execute this command first before any other caat-he
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 (.venv) $ caat-helper-init
 ----
 
@@ -145,7 +145,7 @@ include::excel-readme.adoc[Excel Instructions]
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 (.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.prisma
 ----
 

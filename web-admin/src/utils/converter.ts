@@ -32,20 +32,6 @@ export const statusToString = (
   return mapping[status] || "initialState";
 };
 
-// Gets the color associated with a device connection status
-export const getDeviceStatusColor = (
-  status: string
-) => {
-  switch (status) {
-    case "Connected":
-      return "green";
-    case "Disconnected":
-      return "red";
-    default:
-      return "grey";
-  }
-};
-
 // Formats a date string into a Japanese date and time format
 export const formatDatetime = (
   dateString: string | undefined,

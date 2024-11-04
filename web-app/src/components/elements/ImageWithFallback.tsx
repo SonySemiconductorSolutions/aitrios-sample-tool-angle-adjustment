@@ -18,21 +18,29 @@ limitations under the License.
 
 // Import packages
 import { useEffect, useState } from "react";
-// Import assets
-import errorLoading from "../../assets/images/error-load.svg";
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+// Import components
+import { GridOverlay } from "src/components";
+// Import helpers
+import { useGlobalState } from "src/contexts/GlobalProvider";
 
 type ImageWithFallbackProps = {
   src: string;
   alt: string;
-  fallbackSrc?: string;
+  gridRows: number;
+  gridColumns: number;
 };
 
 // ImageWithFallback component displayed to show error image if actual image load failed
 export const ImageWithFallback = ({
   src,
   alt,
-  fallbackSrc,
+  gridRows,
+  gridColumns
 }: ImageWithFallbackProps) => {
+  const gridLineColor = useGlobalState((s) => s.gridLineProps.color);
+  const gridLineVisibility = useGlobalState((s) => s.gridLineProps.visibility);
+
   const [imageSrc, setImageSrc] = useState(src);
   const [isError, setIsError] = useState(false);
 
@@ -40,27 +48,26 @@ export const ImageWithFallback = ({
     setImageSrc(src);
   }, [src]);
 
-  const handleError = () => {
-    if (fallbackSrc) {
-      setImageSrc(fallbackSrc);
-      setIsError(true);
-    } else {
-      setImageSrc(errorLoading);
-      setIsError(true);
-    }
-  };
-
   return (
     <>
-      <img
-        src={imageSrc}
-        style={{
-          width: "100%",
-          objectFit: `${isError ? "scale-down" : "contain"}`,
-        }}
-        alt={alt}
-        onError={handleError}
-      />
+      {isError ? (
+        <ImageNotSupportedOutlinedIcon sx={{fontSize: 200}} />
+      ) : (
+        <>
+          <img
+            src={imageSrc}
+            style={{
+              width: "100%",
+              objectFit: `${isError ? "scale-down" : "contain"}`,
+            }}
+            alt={alt}
+            onError={() => setIsError(true)}
+          />
+          {gridLineVisibility ? (
+            <GridOverlay gridColor={gridLineColor} gridRows={gridRows} gridColumns={gridColumns} />
+          ) : null}
+        </>
+      )}
     </>
   );
 };

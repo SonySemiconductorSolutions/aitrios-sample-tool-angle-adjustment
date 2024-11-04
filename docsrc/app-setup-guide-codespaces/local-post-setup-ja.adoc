@@ -2,7 +2,7 @@
 [[post-setup]]
 == セットアップ後
 
-* `caat-helper`コマンドを実行する前に、以下を確認してください:
+* `caat-helper` コマンドを実行する前に、以下を確認してください:
 ** <<activate-virtual-environment, Activate virtual environment>>
 ** <<set-environment-variables, Execute set environment variable script>>
 
@@ -12,7 +12,7 @@
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash verify-modules.sh
 ----
 
@@ -26,7 +26,7 @@ $ bash verify-modules.sh
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash print-local-app-url.sh
 ----
 
@@ -38,26 +38,26 @@ $ bash print-local-app-url.sh
 * コントラクターアプリはQRコードをスキャンすることによってのみ開くことができます。
 
 * コントラクターアプリおよび選択可能な施設のQRコードの作成には、以下のコマンドを使用してください。+
-このコマンドを使用することで、'QRコード'ディレクトリ内にすべての施設のQRコードを一度に作成することができます。
+このコマンドを使用することで、'QRCodes'ディレクトリ内にすべての施設のQRコードを一度に作成することができます。
 
 * 以下のコマンド内の前のコマンドアウトプットからコントラクターアプリURLを置き換えます。
 
 [source,shell]
 ----
-# # from tools/local-setup-codespaces
+# # from tools/cloud-setup/codespaces
 (.venv) $ caat-helper qr generate -u {PLACEHOLDER_CONTRACTOR_APP_URL}
 ----
 
 ==== アプリユーザーガイド
 
-* 管理者アプリの使用方法については、 -  `管理者ユーザーガイド`メニューを参照してください。
+* 管理者アプリの使用方法については、 -  `管理者ユーザーガイド` メニューを参照してください。
 
-* コントラクターアプリの使用方法については、 - `コントラクターユーザーガイド`メニューを参照してください。
+* コントラクターアプリの使用方法については、 - `コントラクターユーザーガイド` メニューを参照してください。
 
 
 [注記]
 ====
-URLをブラウザで開くと、ユーザーにはポートアクセスを確認するためのプロンプト (初回のみ)が表示されます。`続行`ボタンをクリックして進めてください。
+URLをブラウザで開くと、ユーザーにはポートアクセスを確認するためのプロンプト (初回のみ)が表示されます。 `続行` ボタンをクリックして進めてください。
 
 image::images/codespaces-port-access-confirmation.png[Codespaces Port Access Confirmation]
 ====
@@ -78,7 +78,7 @@ image::images/codespaces-port-access-confirmation.png[Codespaces Port Access Con
 
 [注記]
 ====
-* 既存のデータの更新は`caat-helper`ではサポートされていません。
+* 既存のデータの更新は `caat-helper` ではサポートされていません。
 * 例：初期データを追加。管理者１はカスタマー１に関連付けられている +
 次に、管理者２が追加され、それをユーザーがカスタマー１にアサインしたい場合 +
 それはサポートされていません。
@@ -88,7 +88,7 @@ image::images/codespaces-port-access-confirmation.png[Codespaces Port Access Con
 
 * .最初にデータベースに入力するために使用したエクセルファイル内の各シート (施設、カスタマー、デバイス) へデータを追加し、以下のコマンドを実行します。
 
-* `caat-helper`コマンドを実行する前に、以下のことを確認してください:
+* `caat-helper` コマンドを実行する前に、以下のことを確認してください:
     ** <<activate-virtual-environment, Activate virtual environment>>
     ** <<set-environment-variables, Execute set environment variable script>>
 
@@ -103,7 +103,7 @@ $ (.venv) caat-helper db populate --excel-path '/path/to/excel'
 * 管理者パスワードをリセットするためにcaat-helperはコマンドライン機能を提供します。
 * 以下のコマンドを使用して管理者とそのログインIDのリストを作成します。
 
-* `caat-helper`コマンドを実行する前に、以下のことを確認してください:
+* `caat-helper` コマンドを実行する前に、以下のことを確認してください:
     ** <<activate-virtual-environment, Activate virtual environment>>
     ** <<set-environment-variables, Execute set environment variable script>>
 
@@ -120,7 +120,7 @@ $ (.venv) caat-helper db populate --excel-path '/path/to/excel'
 
 === データベースからのデータの消去
 
-* `caat-helper`コマンドを実行する前に、以下のことを確認してください:
+* `caat-helper` コマンドを実行する前に、以下のことを確認してください:
     ** <<activate-virtual-environment, Activate virtual environment>>
     ** <<set-environment-variables, Execute set environment variable script>>
 
@@ -147,7 +147,7 @@ $ (.venv) caat-helper db populate --excel-path '/path/to/excel'
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash caat-local-stop.sh
 ----
 
@@ -157,6 +157,6 @@ $ bash caat-local-stop.sh
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ bash caat-local-start.sh
 ----

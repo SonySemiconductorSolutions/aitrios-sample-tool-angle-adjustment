@@ -12,13 +12,13 @@
 CAAT Helperにより、ローカル (開発中) およびクラウド (プロダクション中/実際のセットアップ)上にDBを入力することができます。
 
 === インストレーション
-以下のコマンドを実行して仮想環境を作成し、`caat-helper`パッケージをインストールします。
+以下のコマンドを実行して仮想環境を作成し、 `caat-helper` パッケージをインストールします。
 
 ==== 仮想環境の作成
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ python3 -m venv .venv
 ----
 
@@ -27,20 +27,20 @@ $ python3 -m venv .venv
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ source .venv/bin/activate
 ----
 
-==== `caat-helper`パッケージのインストール
+==== `caat-helper` パッケージのインストール
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 # Upgrade pip
 $ pip install -U pip
 
 # Install CAAT helper package
-$ pip install ../caat-helper/
+$ pip install ../../caat-helper/
 ----
 
 [[set-environment-variables]]
@@ -61,7 +61,7 @@ $ pip install ../caat-helper/
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 $ source set-env-var.sh
 ----
 
@@ -74,7 +74,7 @@ WARNING: caat-helper以外のコマンドを実行する前に、必ず初めに
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
+# from tools/cloud-setup/codespaces
 (.venv) $ caat-helper-init
 ----
 
@@ -90,8 +90,8 @@ WARNING: caat-helper以外のコマンドを実行する前に、必ず初めに
 ----
 
 * 上記のエクスポートコマンドにより２つのファイルがアウトプットされます。
-  ** `SIerData_template.xlsx`: データを入力するエクセルテンプレートファイル
-  ** `SIerData_template.xlsx`: 参照用のエクセルにサンプルデータが入ったエクセルサンプルファイル
+  ** `SIerData_template.xlsx` : データを入力するエクセルテンプレートファイル
+  ** `SIerData_template.xlsx` : 参照用のエクセルにサンプルデータが入ったエクセルサンプルファイル
 
 === エクセルファイルの準備
 
@@ -128,8 +128,8 @@ include::local-excel-readme-ja.adoc[Excel Instructions]
 
 [source,shell]
 ----
-# from tools/local-setup-codespaces
-(.venv) $ prisma studio --schema=../caat-helper/src/data/prisma/schema.local.prisma
+# from tools/cloud-setup/codespaces
+(.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.postgres.prisma
 ----
 
 * Webブラウザでスタジオビューアーを開くためには、上記のコマンドの開く・プロンプトを実行します。

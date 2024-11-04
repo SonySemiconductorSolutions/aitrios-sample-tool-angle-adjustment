@@ -19,7 +19,10 @@
 import sys
 
 import pandas as pd
+from src.service.aitrios_service import verify_customer_credentials
 from src.utils.data_validator_util import (
+    confirm_alert,
+    is_nan,
     validate_date,
     validate_local_url,
     validate_loginid,
@@ -29,6 +32,7 @@ from src.utils.data_validator_util import (
 from src.utils.logger import get_json_logger
 
 logger = get_json_logger()
+
 
 def verify_admin_data(csv_file_path: str):
     """Validates the admin data by Sier in csv.
@@ -103,7 +107,6 @@ def verify_admin_data(csv_file_path: str):
             logger.error(f"Row {adjusted_index}: Invalid login ID: {row['login_id']}")
         sys.exit(1)
 
-
     # ADMIN_CRITERIA_03
     are_password_valid = dataframe["admin_password"].apply(validate_password)
     if not are_password_valid.all():
@@ -128,10 +131,7 @@ def verify_customer_data(csv_file_path: str, valid_admin_list: list):
     CUSTOMER_CRITERIA_01: Verify values are present for all columns
     CUSTOMER_CRITERIA_02: Verify customer name AlphaNumeric Characters only
     CUSTOMER_CRITERIA_03: Verify admin login id is present in admin data
-    CUSTOMER_CRITERIA_04: Verify auth_url and base_url are valid URLs
-    CUSTOMER_CRITERIA_05: Verify client id is in valid format
-    CUSTOMER_CRITERIA_06: Verify client secret is in valid format
-    CUSTOMER_CRITERIA_07: Verify application ID is in valid format
+    CUSTOMER_CRITERIA_04: Validate customer credentials for each row
 
     Returns:
         bool: True if customer data is valid, False otherwise.
@@ -214,6 +214,33 @@ def verify_customer_data(csv_file_path: str, valid_admin_list: list):
             )
             sys.exit(1)
 
+    # CUSTOMER_CRITERIA_04
+    for index, row in cust_dataframe.iterrows():
+        logger.info(f"\nVerifying customer credentials for customer {row['customer_name']}. This may take some time.")
+        customer_data = {
+            "customer_name": row["customer_name"] if not is_nan(row["customer_name"]) else "",
+            "auth_url": row["auth_url"] if not is_nan(row["auth_url"]) else "",
+            "base_url": row["base_url"] if not is_nan(row["base_url"]) else "",
+            "client_id": row["client_id"] if not is_nan(row["client_id"]) else "",
+            "client_secret": row["client_secret"] if not is_nan(row["client_secret"]) else "",
+            "application_id": row["application_id"] if not is_nan(row["application_id"]) else "",
+        }
+
+        try:
+            if not verify_customer_credentials(customer_data):
+                adjusted_index = index + 2
+                logger.error(f"\nError occurred in customer")
+                logger.error(
+                    f"Row {adjusted_index}: Invalid customer credentials for customer {row['customer_name']}, please verify the customer sheet"
+                )
+                sys.exit(1)
+        except Exception:
+            adjusted_index = index + 2
+            logger.error(
+                f"Row {adjusted_index}: Error while validating customer credentials for the customer {customer_data['customer_name']}, please verify the customer sheet"
+            )
+            sys.exit(1)
+
     return {"is_valid": True, "customer_data": cust_dataframe}
 
 
@@ -268,7 +295,7 @@ def verify_device_type_data(csv_file_path: str, valid_customer_list: list):
         adjusted_index = index + 2
         null_fields = row["null_fields"]
         for field in null_fields:
-            logger.error(f"\nError occurred in device_type")
+            logger.error("\nError occurred in device_type")
             logger.error(f"Row {adjusted_index}: Empty field: {field}")
             sys.exit(1)
 
@@ -278,29 +305,29 @@ def verify_device_type_data(csv_file_path: str, valid_customer_list: list):
         invalid_names = devicetype_dataframe[~are_names_valid]
         for index, row in invalid_names.iterrows():
             adjusted_index = index + 2
-            logger.error(f"\nError occurred in device_type")
-            logger.error(f"\nRow {adjusted_index}: Invalid device type name in device_type: {row['name']}")
+            logger.error("\nError occurred in device_type")
+            logger.error(f"\nRow {adjusted_index}: Invalid name in device_type: {row['name']}")
             sys.exit(1)
 
     # DEVICE_TYPE_CRITERIA_03
     are_local_url_valid = devicetype_dataframe["sample_image_path"].apply(validate_local_url)
     if not are_local_url_valid.all():
         invalid_local_urls = devicetype_dataframe[~are_local_url_valid]
-        logger.error(f"Some device type local URLs are incorrect:")
+        logger.error("Some device type sample images are incorrect:")
+        logger.error("\nError occurred in device_type")
         for index, row in invalid_local_urls.iterrows():
             adjusted_index = index + 2
-            logger.error(f"\nError occurred in device_type")
-            logger.error(f"\nRow {adjusted_index}: Invalid device type local URL in device_type: {row['sample_image_path']}")
-            sys.exit(1)
+            logger.error(f"Row {adjusted_index}: Invalid sample image in device_type: {row['sample_image_path']}")
+        sys.exit(1)
 
     # DEVICE_TYPE_CRITERIA_04
     are_custnames_valid = devicetype_dataframe["customer_name"].isin(valid_customer_list)
     if not are_custnames_valid.all():
         invalid_custnames = devicetype_dataframe[~are_custnames_valid]
-        logger.error(f"Some customer names do not match customer data:")
+        logger.error("Some customer names do not match customer data:")
         for index, row in invalid_custnames.iterrows():
             adjusted_index = index + 2
-            logger.error(f"\nError occurred in device_type")
+            logger.error("\nError occurred in device_type")
             logger.error(
                 f"\nRow {adjusted_index}: Invalid customer name in device_type: {row['customer_name']}. "
                 f"Please check if customer_name '{row['customer_name']}' exists in the customer table."

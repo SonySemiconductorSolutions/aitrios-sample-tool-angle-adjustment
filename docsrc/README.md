@@ -9,9 +9,15 @@ Following documents are available:
 * [Admin App User Guide](./user-guide/CAAT-Admin-App-User-Guide.adoc)
 * [Contractor App User Guide](./user-guide/CAAT-Contractor-App-User-Guide.adoc)
 * [App Setup Guide (Azure Cloud)](./app-setup-guide-azure/index.adoc)
+* [App Setup Guide (AWS Cloud)](./app-setup-guide-aws/index.adoc)
 * [How to run the app on Codespaces](./app-setup-guide-codespaces/index.adoc)
 * [API Docs](./apidocs/README.md)
 
+## Prerequisites
+
+* [Install Java Runtime Environment](https://ubuntu.com/tutorials/install-jre#2-installing-openjdk-jre) (Tested on v11.0.24)
+* Python 3.10 (Tested on v3.10.12)
+* [Install Node with nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating) (Tested on v20.12.1)
 
 ## Installation
 
@@ -30,6 +36,8 @@ Install asciidoctor and other packages to build the Asciidocs and OpenAPI docs.
 
 3. Install Asciidoctor and multipage extension
    ```shell
+   $ sudo gem install css_parser -v 1.17.1
+   $ sudo gem install public_suffix -v 5.1.1
    $ sudo gem install asciidoctor asciidoctor-diagram asciidoctor-multipage asciidoctor-pdf
    ```
 

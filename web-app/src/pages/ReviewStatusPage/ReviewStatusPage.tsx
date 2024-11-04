@@ -48,7 +48,7 @@ export const ReviewStatusPage = () => {
   const selectedDevice = useGlobalState((s) => s.selectedDevice);
 
   const [resultStatus, setResultStatus] = useState<number>(
-    DEVICE_PROGRESS_STATUS.APPLIED,
+    DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW,
   );
   const [reviewComment, setReviewComment] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -64,9 +64,9 @@ export const ReviewStatusPage = () => {
     })
       .then((data) => {
         setErrorMessage("");
-        setResultStatus(data?.status || DEVICE_PROGRESS_STATUS.APPLIED);
+        setResultStatus(data?.status || DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW);
         setReviewComment(data?.review_comment);
-        if (data?.status !== DEVICE_PROGRESS_STATUS.APPLIED) {
+        if (data?.status !== DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW) {
           stopPolling.current = true;
           clearInterval(intervalId);
         }
@@ -115,6 +115,10 @@ export const ReviewStatusPage = () => {
     navigate(path, { replace: true });
   };
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <div className={styles.container}>
@@ -124,9 +128,9 @@ export const ReviewStatusPage = () => {
         />
         <div className={styles.content}>
           <div className={styles.description}>
-            {resultStatus === DEVICE_PROGRESS_STATUS.APPLIED ? (
+            {resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW ? (
               <>
-                <div style={{ textAlign: "center" }}>
+                <div className={styles.deviceNameContainer}>
                   <span>{t("camera") + ": "}</span>
                   <span style={{ fontWeight: "bold" }}>
                     {selectedDevice?.device_name}
@@ -135,7 +139,7 @@ export const ReviewStatusPage = () => {
                 <LoadingIcons.SpinningCircles style={{ marginTop: 20 }} />
               </>
             ) : (
-              <div style={{ textAlign: "center" }}>
+              <div className={styles.deviceNameContainer}>
                 {t("camera") + ": "}
                 <span style={{ fontWeight: "bold" }}>
                   {selectedDevice?.device_name}
@@ -144,13 +148,13 @@ export const ReviewStatusPage = () => {
             )}
           </div>
           <p className={styles.descriptionDetail}>
-            {resultStatus === DEVICE_PROGRESS_STATUS.APPLIED
+            {resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
               ? t("review_status_page.des2_p1")
               : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
                 ? t("review_status_page.reject_des1_p1")
                 : t("review_status_page.approval_des1_p1")}
             <br />
-            {resultStatus === DEVICE_PROGRESS_STATUS.APPLIED
+            {resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
               ? t("review_status_page.des2_p2")
               : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
                 ? t("review_status_page.reject_des1_p2")

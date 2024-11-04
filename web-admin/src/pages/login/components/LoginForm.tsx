@@ -146,6 +146,7 @@ export const LoginForm = () => {
                 <Input
                   type="text"
                   name="userId"
+                  slotProps={{ "input": { maxLength: 255 } }}
                   required
                   onChange={onChange}
                   startDecorator={<Person />}

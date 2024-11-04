@@ -18,4 +18,5 @@ limitations under the License.
 export * from "./reviews";
 export * from "./customers";
 export * from "./devices";
+export * from "./deviceTypes";
 export * from "./login";

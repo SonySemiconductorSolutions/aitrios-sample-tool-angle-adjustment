@@ -1,0 +1,41 @@
+
+[[version-upgrade]]
+== Version Upgrade
+
+* Version upgrade summarizes the changes in Cloud Setup, DB Design or Source Code.
+|===
+^|Version ^| Cloud Setup ^| DB Design ^| Source Code
+
+^|1.0.0 ^|Initial release ^|Initial release ^|Initial release
+
+^|1.4.0 
+^|No Change
+^|No Change
+^|Updated
+|===
+
+=== Upgrade v1.0.0 to v1.4.0
+
+* Confirm <<prerequisites,Prerequisites>> are met before proceeding
+* Get `v1.4.0` tagged Source Code 
+
+==== Cloud Changes
+None
+
+==== DB Design Changes
+None
+
+==== Source Code Changes
+* There are changes in source code which includes new features and bug fixes. Following are the steps to apply these changes:
+
+**Step 1:** Make sure the `tools/cloud-setup/azure/.env` file has the same values as used during AAT Azure Cloud Setup and Azure account is logged in.
+
+**Step 2:** Build the source code and deploy to Azure Cloud.
+
+[source,shell]
+----
+$ cd tools/cloud-setup/azure
+$ bash source-build.sh
+----
+
+**Step 3:** Confirm the deployment by checking the version in Admin and Contractor application is changed to `v1.4.0`.

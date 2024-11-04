@@ -1,0 +1,79 @@
+@startuml Contractor gets images
+title Contractor get devices connection status
+
+: Start;
+: Check contractor authorization token;
+if (Contractor token is provided?) then (yes (Token available in header))
+    if (Contractor token is expired?) then (yes)
+        : Send HTTP status 401 Token has expired;
+        kill
+    endif
+    ->no;
+    if (Facility ID is not valid?) then (yes)
+        : Send HTTP status 401 Facility ID is not valid;
+        kill
+    endif
+    ->no;
+    if (Start time is not valid?) then (yes)
+        : Send HTTP status 401 Token is not yet valid;
+        kill
+    endif
+    ->no;
+    if (Token exp is not valid?) then (yes)
+        : Send HTTP status 401 exp is not valid;
+        kill
+    endif
+    ->no;
+else (no (Token not available in header))
+    : Send HTTP status 401 Invalid authorization header format;
+    kill
+endif
+->Token is valid;
+: Validate parameters;
+note right
+    Taken from the contractor token
+    1. facility_id (mandatory)
+    2. image_type (mandatory)
+end note
+
+: Get facility record by facility and customer ID;
+if (Facility doesn't exists?) then (yes)
+    : Send HTTP status 401 Invalid facility;
+    kill
+endif
+->no;
+:Get the devices associated with the facility;
+:Make the device IDs as a comma separated list;
+
+:Get customer details;
+if (Customer details are having NULL values?) then (yes)
+    : Send HTTP status 500, Invalid console credentails;
+    kill
+endif
+->no;
+
+:Decrypt customer credentials;
+#LightSkyBlue:Get AITRIOS token;
+note right
+    Color indicates API call to AITRIOS REST API.
+end note
+if (Could not retreive the token?) then (yes)
+    : Send HTTP status 403, Invalid Auth token URL / Client ID / Client secret provided;
+    kill
+endif
+->no(Token retreived);
+#LightSkyBlue:Get devices AITRIOS API;
+if (Base URL is invalid?) then (yes (Invalid base URL))
+    : Send HTTP status 403, Invalid base URL;
+    kill
+endif
+->no;
+if (Could not retreive the expected result?) then (yes (Unexpected results))
+    : Send HTTP status 500, Internal error;
+    kill
+endif
+->no (Expected results);
+:Parse the output and map with the Db device IDs;
+:Send HTTP status 200, with device connection status output;
+stop
+@enduml

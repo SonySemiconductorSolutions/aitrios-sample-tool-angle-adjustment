@@ -16,7 +16,7 @@ limitations under the License.
 ------------------------------------------------------------------------
 */
 import { LogoutRounded, AccountCircleRounded, LanguageRounded } from "@mui/icons-material";
-import { Box, IconButton, Typography, Select, Option } from "@mui/joy";
+import { Box, IconButton, Typography, Select, Option, Tooltip } from "@mui/joy";
 import { useStore } from "../store";
 import { useTranslation } from "react-i18next";
 
@@ -26,11 +26,24 @@ export const Navigator = () => {
 
   // Logout function
   const logout = () => {
-    // Clear local storage and redirect to root
-    localStorage.clear();
-    location.href = "/";
+    // Application store is managed by zustand package which uses the localStorage.
+    // Please make necessary changes to the JSON object if zustand version is
+    // upgrade and it has changes in the application store data structure.
+    const currentState = JSON.parse(localStorage.getItem("storage") || "{}")?.state;
+    if (currentState) {
+      // Preserve 'currentLanguage' and 'gridLine'
+      const preservedState = {
+        currentLanguage: currentState.currentLanguage,
+        gridLine: currentState.gridLine,
+      };
+      // Overwrite the state with only the preserved properties
+      localStorage.setItem("storage", JSON.stringify({ state: preservedState }));
+    } else {
+      localStorage.clear();
+    }
+    location.replace("/");
   };
-  
+
   // Handles language change
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
@@ -46,10 +59,10 @@ export const Navigator = () => {
         top: 0,
         py: 2,
         px: "48px",
-        marginBot: "40px",
+        marginBottom: "40px",
         zIndex: 999,
         right: 0,
-        width: "calc(100% - 230px)",
+        width: "calc(100% - 255px)",
         backgroundColor: "#fbfcfe",
         borderBottom: "1px solid",
         borderColor: "divider",
@@ -61,30 +74,32 @@ export const Navigator = () => {
         onChange={(_, value) => handleLanguageChange(value!)}
         variant="soft"
         size="sm"
-        sx={{ padding: "8px 12px" }}
+        sx={{
+          padding: "8px 12px",
+          maxHeight: 48,
+        }}
       >
         <Option value="jp">日本語</Option>
         <Option value="en">English</Option>
       </Select>
-      <Box sx={{ display: "flex", alignItems: "center" }}>
-        <Typography
-          sx={{
-            maxWidth: 240,
-            wordBreak: "break-all",
-            fontSize: 14,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <AccountCircleRounded />
+        <Tooltip
+          title={currentAccount?.login_id}
+          variant="outlined"
+          sx={{ maxWidth: 300, zIndex: 12000 }}
         >
-          <AccountCircleRounded /> {currentAccount?.login_id}
-        </Typography>
+          <Typography sx={{ maxWidth: 240, fontSize: 14 }} noWrap>
+            {currentAccount?.login_id}
+          </Typography>
+        </Tooltip>
       </Box>
       <IconButton
         sx={{
           display: "flex",
           justifyContent: "space-between",
           padding: "8px 12px",
+          maxHeight: 48,
           gap: 1,
         }}
         size="sm"

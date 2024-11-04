@@ -3,8 +3,8 @@
 :doctype: book
 :data-uri:
 :title: Angle Adjustment Tool (AAT) - Admin App User Guide
-:revdate: 2024 - 07 - 02
-:revnumber: 1.0.0-RC
+:revdate: 2024 - 10 - 30
+:revnumber: 1.4.0
 :toc: left
 :toclevels: 3
 :toc-title: Table of Contents
@@ -64,8 +64,11 @@ To log in to AAT Admin Portal, please enter valid `Login ID` and `Password` then
 
 The **Dashboard** page is displayed after logging in. It contains the application list for the devices.
 
-.Dashboard
-image::./admin-app-images/application_list.png[Admin Dashboard Page <3>]
+.Dashboard Listview
+image::./admin-app-images/dashboard_list.png[Admin Dashboard List <3>]
+
+.Dashboard Tiledview
+image::./admin-app-images/dashboard_tiled.png[Admin Dashboard Tiled <4>]
 
 1. **Name and Version:** The application's name and current version (AAT: Angle Adjustment Tool).
 2. **Sidebar options:** Navigation links to Dashboard & Console Configuration.
@@ -109,35 +112,71 @@ image::./admin-app-images/application_list.png[Admin Dashboard Page <3>]
 1. **Application Status Checkboxes:** Select the checkboxes to display application list based on their status.
 2. **Details Button:** Click `Details` to view the latest review details of a specific device.
 3. **Device Connection State:** Device connection is indicated left to the Device ID in the `Device ID` column.
-  * Green dot: Device is connected to AITRIOS
-  * Red dot: Device is disconnected from AITRIOS
-  * Grey dot: Device connection state unknown
+  * Green dot: Device is connected to AITRIOS.
+  * Red cross: Device is disconnected from AITRIOS or state is unknown.
+4. **List/Tiled view:** Dashboard has 2 viewing options.
+  * List View: The list view presents application list in row-by-row format.
+  * Tiled View: The tiled View arranges application list in columns, providing preview of submitted camera image. The preview size varies based on the selected tile size:
+    ** Small: Shows more items with smaller thumbnails.
+    ** Medium: Balances the number of items with thumbnail size.
+    ** Large: Shows fewer items with larger thumbnails.
 
 === Review Page
 
 .Review Details
-image::./admin-app-images/review_details.png[Review Details <4>]
+image::./admin-app-images/review_details.png[Review Details <5>]
+
+.Grid Line Color Picker
+image::./admin-app-images/grid_line_color_picker.png[Grid Line Color Picker <6>]
 
 1. **Device and Review Details:** Displays details about the device under review.
 2. **Application Status:** Displays the current application status.
-3. **Submitted Image:** Image submitted by the contractor for verification.
-4. **Reference Image:** Reference image to compare against the submitted image during review.
-5. **Approve Button:** Click `Approve` to approve the review request after verification.
-6. **Reject Button:** Enter the rejection reason in the provided field, then click `Reject` to reject the review request.
-7. **View History:** Click `View History` to see the history of review data for the selected device.
+3. **Image Grid Lines:** The `Show Grid Lines` checkbox allows user to toggle the visibility of grid lines on the submitted and reference image. The palette button next to grid line checkbox opens a color picker to customize the grid line color.
+4. **Submitted Image:** Image submitted by the contractor for verification.
+5. **Reference Image:** Reference image to compare against the submitted image during review.
+6. **Preserve Aspect Ratio:** When enabled, the reference image maintains its original dimensions. If disabled, the reference image will be resized to match the dimensions of the submitted image, which may result in distortion or stretching of the image.
+7. **Approve Button:** Click `Approve` to approve the review request after verification.
+8. **Reject Button:** Enter the rejection reason in the provided field, then click `Reject` to reject the review request.
+9. **Update Reference Image Button:** Click `Update Reference Image` to open a pop-up window where user can drag and adjust the submitted image, then save it as the new reference image.
+10. **Restore Reference Image Button:** Click `Restore Reference Image` to reset the reference image to the last saved version, discarding any changes made.
+11. **View History:** Click `View History` to see the history of review data for the selected device.
+
+==== Adjust Submitted image to save as Reference image
+
+Users can reject the review by making adjustments to submitted image and saving it as the reference image.
+
+.Adjust Submitted Image
+image::./admin-app-images/adjust_submitted_image.png[Adjust Submitted Image <7>]
+
+* This interface allows users to drag and adjust the submitted image before saving it as the reference image.
+* Grid lines are enabled in this window to assist with precise adjustments.
+* Once the user has made the desired adjustments to the submitted image, clicking the `Update Reference Image` button will provide the preview of the adjusted image as the new reference image.
+* If the reject comment field is empty, a default comment will be automatically added to the text area when updating the reference image. The user can then modify this comment as needed before rejecting.
+
+[NOTE]
+====
+* Updating the reference image will disable the option to approve the review. This is to ensure that the user can approve the review once submitted image aligns with the updated reference image.
+* If the review is rejected, the updated reference image will permanently overwrite the existing reference image. This means that the previous reference image will no longer be available.
+====
+
+.Updated Reference Image
+image::./admin-app-images/updated_reference_image.png[Updated Reference Image <8>]
+
+* The user can reset the reference image to the last saved version if they choose to discard the adjustments.
+* On rejecting the review, the updated reference image will be permanently saved, replacing the previous reference image.
 
 ==== Review History
 
 All the reviews of the selected device are listed here.
 
 .Review History
-image::./admin-app-images/review_history_main.png[Review History <5>]
+image::./admin-app-images/review_history_main.png[Review History <9>]
 
 * **Review Image:** Click thumbnail to view larger previews of images associated with each review.
 * **Review Comment:** Review comment if any.
 
 .Review Image Preview
-image::./admin-app-images/review_history_image_preview.png[Review Image Preview <6>]
+image::./admin-app-images/review_history_image_preview.png[Review Image Preview <10>]
 
 == Console Configuration
 
@@ -145,7 +184,7 @@ Console configuration page displays the list of customers for the logged in Admi
 The page has an option to edit the console credentials for the selected Customer.
 
 .Configuration List
-image::./admin-app-images/configuration_list.png[Configuration List <7>]
+image::./admin-app-images/configuration_list.png[Configuration List <11>]
 
 1. **Edit Button:** Click `Edit` to modify the console credentials for a selected customer.
 
@@ -154,7 +193,7 @@ image::./admin-app-images/configuration_list.png[Configuration List <7>]
 Admin can view/edit console credentials of the selected customer.
 
 .Edit Configuration
-image::./admin-app-images/edit_configuration.png[Edit Configuration <8>]
+image::./admin-app-images/edit_configuration.png[Edit Configuration <12>]
 
 To change the credentials, please edit as applicable and click Save.
 

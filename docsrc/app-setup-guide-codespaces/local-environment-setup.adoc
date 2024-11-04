@@ -3,7 +3,7 @@
 
 This page provides instructions to setup the AAT Application in GitHub Codespaces.
 
-- Visit the link:https://docs.github.com/en/codespaces/overview[GitHub Codespaces overview^] to know more about Codespaces.
+- Visit the link:https://docs.github.com/en/codespaces/overview[GitHub Codespaces^] to know more about Codespaces.
 - GitHub Codespaces usage will be charged to the user. Please see: link:https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces[About billing for GitHub Codespaces^]
 - Choose 4-Core, 16GB RAM, 32 GB Storage as Codespaces configuration. See link:https://docs.github.com/en/codespaces/getting-started/quickstart[Quickstart for GitHub Codespaces^] or link:https://docs.github.com/en/codespaces/developing-in-a-codespace/creating-a-codespace-for-a-repository[Creating a codespace for a repository^]
 
@@ -13,19 +13,19 @@ This page provides instructions to setup the AAT Application in GitHub Codespace
 [NOTE]
 ====
 This Codespaces setup is suitable if the total number of Cameras to Setup are less than 10.
-For more number of Cameras, Cloud Setup with Azure is recommended.
+For more number of Cameras, Cloud Setup with Azure/AWS is recommended.
 ====
 
 === Prerequisites
 
 * Make sure to install following softwares in GitHub Codespaces before proceeding to next steps.
 
-- link:https://docs.docker.com/engine/install/ubuntu/[Docker CLI^]
-- Python 3.10.x
+- link:https://docs.docker.com/engine/install/ubuntu/[Docker CLI^] (Tested on v26.1.4-1)
+- Python 3.10.x (Tested on v3.10.12)
 
 === Local Environment Setup
 
-All the commands executed in this document assumes `tools/local-setup-codespaces` as working directory.
+All the commands executed in this document assumes `tools/cloud-setup/codespaces` as working directory.
 
 ==== Environment File
 
@@ -47,8 +47,8 @@ Run following command to generate: +
 
 |DATABASE_PASSWORD
 |A Strong Password for the DB Server Admin.
-| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%`, `@` +
-Recommended Length: 8-128 Characters  +
+| `A-Z`, `a-z`, `0-9`, `!`, `$`, `#`, `%` +
+Recommended Length: 8-96 Characters  +
 | "V3ry5tr0ndbServerPa55"
 
 |===

@@ -3,6 +3,7 @@ Pipfile.lock
 *.html
 *.pdf
 *.csv
+*.dump
 
 **/build/**
 **/*.egg-info/**
@@ -14,3 +15,9 @@ caat-workspace
 **/__pycache__/**
 
 **/caatdbdata/**
+
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+tfplan
+terraform.tfstate.backup

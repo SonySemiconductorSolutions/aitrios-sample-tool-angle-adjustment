@@ -8,7 +8,7 @@ A: Before deploying AAT application using setup scripts, ensure you have the fol
     * Familiarity with basic Azure concepts such as resource groups, virtual networks, App Service, Database.
 
 Q: Can I customize the ARM template for my specific needs?::
-A: Yes, it is possible to customize the ARM Template. Please make changes to `tools/cloud-setup/scripts/azure/arm-template-caat.json` with care.
+A: Yes, it is possible to customize the ARM Template. Please make changes to `tools/cloud-setup/azure/arm-template-caat.json` with care.
 
 Q: How can I delete the cloud instance that I created using scripts?::
 A: There is no scripts provided to delete the cloud instance via scripts. However, please visit Azure Portal and delete the resource group to delete all created resources.
@@ -57,6 +57,6 @@ A: Using `allow-host-ip-db.sh` script, Host Machine IP Address can be whiteliste
 
 [source,shell]
 ----
-# from tools/cloud-setup/scripts
+# from tools/cloud-setup/azure
 $ bash allow-host-ip-db.sh
 ----

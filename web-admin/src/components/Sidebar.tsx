@@ -48,6 +48,7 @@ export const Sidebar = () => {
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        width: "255px",
         borderRight: "1px solid",
         borderColor: "divider",
         transition: "width 0.3s ease-in-out",

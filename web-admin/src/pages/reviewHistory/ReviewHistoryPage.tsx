@@ -30,13 +30,14 @@ import {
   Typography,
 } from "@mui/joy";
 import { Backdrop, IconButton, Pagination } from "@mui/material";
-import { ArrowBackIosRounded, ImageSearch, ImageNotSupportedOutlined } from "@mui/icons-material";
+import { ArrowBackIosRounded, ImageSearch } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getBase64ImageUrl, formatDatetime, statusToString } from "../../utils";
+import { formatDatetime, statusToString } from "../../utils";
 import { getDeviceReviewsHistory } from "../../services";
 import { TableCell } from "../../components/TableCell";
 import { useTranslation } from "react-i18next";
+import { ImageWithFallback } from "src/components/ImageWithFallback";
 
 const TABLE_HEIGHT = "500px";
 const PER_PAGE = 10;
@@ -80,15 +81,17 @@ interface Review {
   image_blob: string;
 }
 
+const IMAGE_NOT_SUBMITTED = "NoImageSubmitted";
+
 export const ReviewHistoryPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { t } = useTranslation();
 
   const TABLE_HEADERS = [
-    { label: t("reviewHistoryPage.slNo"), width: "60px" },
-    { label: t("reviewHistoryPage.deviceApplicationStatus"), width: "80px" },
-    { label: t("reviewHistoryPage.applicationDateTime"), width: "150px" },
+    { label: t("reviewHistoryPage.slNo"), width: "50px" },
+    { label: t("reviewHistoryPage.deviceApplicationStatus"), width: "150px" },
+    { label: t("reviewHistoryPage.applicationDateTime"), width: "180px" },
     { label: t("reviewHistoryPage.reviewDateTime"), width: "150px" },
     { label: t("reviewHistoryPage.reviewImage"), width: "100px" },
     { label: t("reviewHistoryPage.reviewComment"), width: "200px" },
@@ -126,19 +129,24 @@ export const ReviewHistoryPage = () => {
     try {
       const reviewsHistory = await getDeviceReviewsHistory(deviceId, currentPage, PER_PAGE);
       if (reviewsHistory) {
-        setData(reviewsHistory?.reviews.map((value: Review) => ({
-          id: value.id,
-          result: value.result,
-          facility: {
-            name: value.facility.facility_name,
-            type: value.facility.facility_type.name,
-          },
-          imageDate: value.image_date_utc,
-          requested: value.created_at_utc,
-          answered: value.last_updated_at_utc,
-          imageBlob: value.image_blob,
-          reviewComment: value.review_comment,
-        })));
+        setData(reviewsHistory?.reviews.map((value: Review) => {
+          const submittedImageBlob = [2, 3, 4].includes(value?.result)
+            ? (value?.image_blob ?? "") : IMAGE_NOT_SUBMITTED;
+
+          return {
+            id: value.id,
+            result: value.result,
+            facility: {
+              name: value.facility.facility_name,
+              type: value.facility.facility_type.name,
+            },
+            imageDate: value.image_date_utc,
+            requested: value.created_at_utc,
+            answered: value.last_updated_at_utc,
+            imageBlob: submittedImageBlob,
+            reviewComment: value.review_comment,
+          }
+        }));
         setDeviceInfo({
           id: reviewsHistory.device.id,
           deviceId: reviewsHistory.device.device_id,
@@ -147,7 +155,9 @@ export const ReviewHistoryPage = () => {
           sampleImageBlob: reviewsHistory.device.device_type.sample_image_blob,
         });
         setTotalReviews(reviewsHistory.total);
-        setTotalPages(Math.ceil(reviewsHistory.total / PER_PAGE));
+        const newTotalPages = Math.ceil(reviewsHistory.total / PER_PAGE);
+        setTotalPages(newTotalPages);
+        setCurrentPage(Math.max(Math.min(currentPage, newTotalPages), 1));
       }
     } catch (err) {
       handleError(err);
@@ -178,8 +188,7 @@ export const ReviewHistoryPage = () => {
           mt: { xs: 2, md: 0 },
           mb: 1,
           gap: 1,
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "start", sm: "center" },
+          alignItems: "center",
           flexWrap: "wrap",
           justifyContent: "start",
         }}
@@ -383,76 +392,35 @@ export const ReviewHistoryPage = () => {
               gap: 2,
               borderRadius: "md",
               boxShadow: "lg",
-              maxHeight: { xs: 360, md: 480, lg: 720 },
+              maxHeight: "80dvh",
               overflow: "auto",
             }}
           >
             <ModalClose variant="plain" size="sm" />
-            <Box sx={{ display: "flex", flexGrow: 1, columnGap: 2, mx: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, flexGrow: 1, gap: 2, mx: 2 }}>
               <Card variant="outlined" sx={{ flex: 1 }}>
                 <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}>
                   {t("reviewRequestPage.submittedImage")}
                 </Typography>
-                {![2, 3, 4].includes(selectedRow?.result) ? (
-                  <Stack
-                    justifyContent="center"
-                    alignItems="center"
-                    width="100%"
-                    height="100%"
-                    bgcolor="rgba(221, 231, 238, 0.5)"
-                  >
-                    <ImageNotSupportedOutlined sx={{ fontSize: 75 }} />
-                    <Typography textAlign="center" fontSize="sm">{t("reviewRequestPage.notSubmitted")}</Typography>
-                  </Stack>
-                ) : !(selectedRow?.imageBlob) ? (
-                  <Stack
-                    justifyContent="center"
-                    alignItems="center"
-                    width="100%"
-                    height="100%"
-                    bgcolor="rgba(221, 231, 238, 0.5)"
-                  >
-                    <ImageNotSupportedOutlined sx={{ fontSize: 75 }} />
-                    <Typography textAlign="center" fontSize="sm">{t("reviewRequestPage.submittedImageNotFound")}</Typography>
-                  </Stack>
-                ) : (
-                  <Card
-                    sx={{
-                      backgroundImage: getBase64ImageUrl(selectedRow.imageBlob),
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      backgroundSize: "contain",
-                      blockSize: { xs: 100, md: 250 },
-                    }}
-                    variant="plain"
-                  />)}
+                <ImageWithFallback
+                  src={selectedRow.imageBlob}
+                  alt={t("reviewRequestPage.submittedImage")}
+                  height="240px"
+                  aspectRatio={4 / 3}
+                  fallbackIconSize={80}
+                />
               </Card>
               <Card variant="outlined" sx={{ flex: 1 }}>
                 <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}>
                   {t("reviewRequestPage.referenceImage")}
                 </Typography>
-                {!(deviceInfo?.sampleImageBlob) ? (
-                  <Stack
-                    justifyContent="center"
-                    alignItems="center"
-                    width="100%"
-                    height="100%"
-                    bgcolor="rgba(221, 231, 238, 0.5)"
-                  >
-                    <ImageNotSupportedOutlined sx={{ fontSize: 75 }} />
-                    <Typography textAlign="center" fontSize="sm">{t("reviewRequestPage.referenceImageNotFound")}</Typography>
-                  </Stack>
-                ) : (
-                  <Card
-                    sx={{
-                      backgroundImage: getBase64ImageUrl(deviceInfo.sampleImageBlob),
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      backgroundSize: "contain",
-                      blockSize: { xs: 100, md: 250 },
-                    }}
-                    variant="plain"
-                  />)}
+                <ImageWithFallback
+                  src={deviceInfo?.sampleImageBlob}
+                  alt={t("reviewRequestPage.referenceImage")}
+                  height="240px"
+                  aspectRatio={4 / 3}
+                  fallbackIconSize={80}
+                />
               </Card>
             </Box>
             <Card variant="outlined" sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, mx: 2 }}>

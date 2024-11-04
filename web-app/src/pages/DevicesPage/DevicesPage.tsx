@@ -31,13 +31,14 @@ import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 // Import components
 import { Header } from "src/components";
 import { Loading } from "src/components/blocks/Loading/Loading";
+import DeviceConnectionState from "src/components/elements/DeviceConnectionState";
 // Import helpers
 import {
   useGlobalState,
   useGlobalDispatch,
   setSelectedDevice,
 } from "src/contexts/GlobalProvider";
-import { fetchFacilityDevices } from "src/repositories/api";
+import { fetchFacilityDevices, getDevicesStatus } from "src/repositories/api";
 // Import assets, styles
 import EN from "../../assets/locales/English";
 import styles from "./DevicesPage.module.css";
@@ -45,6 +46,7 @@ import styles from "./DevicesPage.module.css";
 const PER_PAGE = 10; // Load 10 devices at a time
 const POLLING_INTERVAL = 1000 * 10; // 10 seconds interval
 const PAGINATION_LOAD_TIME = 500; // Load more data after waiting for 0.5 sec
+const LANDSCAPE_MODE = "landscape-primary"; // Landscape mode name
 
 // Devices Page displayed to show list of all devices associated with the facility with status filter
 export const DevicesPage = () => {
@@ -68,7 +70,12 @@ export const DevicesPage = () => {
     device_name: string;
     submission_status: number;
   };
+  // Type of DeviceStatusMap for mapping device status by device ID
+  type DeviceStatusMap = {
+    [key: string]: string;
+  }
   const selectedDevice = useGlobalState((s) => s.selectedDevice);
+  const facilityDetails = useGlobalState((s) => s.facility); // Used to fetch facility details from global variable
 
   const [selectedFilter, setSelectedFilter] = useState<number[]>([]);
   const [allDevices, setAllDevices] = useState<device[]>([]);
@@ -83,7 +90,32 @@ export const DevicesPage = () => {
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout>();
   const [navigatingToImagePage, setNavigatingToImagePage] = useState<boolean>(false);
   const [loadingPaginatedDevices, setLoadingPaginatedDevices] = useState<boolean>(false);
-  const facilityDetails = useGlobalState((s) => s.facility); // Used to fetch facility details from global variable
+  const [deviceStatus, setDeviceStatus] = useState<DeviceStatusMap | undefined>();
+
+  const getOrientation = () => window.screen.orientation.type;
+
+  const useScreenOrientation = () => {
+    const [orientation, setOrientation] = useState(getOrientation());
+
+    const updateOrientation = () => {
+      setOrientation(getOrientation());
+    }
+
+    useEffect(() => {
+      window.addEventListener(
+        'orientationchange',
+        updateOrientation
+      );
+      return () => {
+        window.removeEventListener(
+          'orientationchange',
+          updateOrientation
+        );
+      }
+    }, []);
+
+    return orientation;
+  }
 
   // Method to update selected filter with array of numbers or an empty array
   const updateSelectedFilter = (val: number[]) => {
@@ -106,6 +138,7 @@ export const DevicesPage = () => {
       .then((data) => {
         if (data.devices) {
           setDeviceFacility(data.devices);
+          if (initial) fetchDevicesStatus();
         }
       })
       .catch((err) => {
@@ -164,6 +197,20 @@ export const DevicesPage = () => {
     return true;
   };
 
+  // Fetches devices connection status
+  const fetchDevicesStatus = async () => {
+    await getDevicesStatus().then((responseData) => {
+      setDeviceStatus(responseData?.reduce(
+        (statusMap: DeviceStatusMap, device: any) => {
+          statusMap[device.device_id] = device.connection_status;
+          return statusMap;
+        },
+      {}));
+    }).catch((err) => {
+      setErrorMessage(err);
+    });
+  };
+
   // Method to refresh the devices list by calling the devices API again
   const refreshDevices = () => {
     setButtonClicked(true);
@@ -218,6 +265,7 @@ export const DevicesPage = () => {
 
   // Called once during component load, to get the devices of the facility
   useEffect(() => {
+    window.scrollTo(0, 0);
     const { devices } = location.state || {
       devices: [],
     };
@@ -336,8 +384,8 @@ export const DevicesPage = () => {
         <div className={styles.devices}>
           <InfiniteScroll
             threshold={10}
-            useWindow={false}
             loadMore={getMorePaginatedDevices}
+            useWindow={useScreenOrientation() === LANDSCAPE_MODE}
             hasMore={paginatedDevices?.length < filteredDevices?.length || false}
             loader={
               <LoadingIcons.ThreeDots className={styles.loader}
@@ -367,6 +415,7 @@ export const DevicesPage = () => {
                       </span>
                     ) : null}
                   </div>
+                  {deviceStatus && <DeviceConnectionState state={deviceStatus[device.id]} />}
                   <div className={styles.buttonsContainer}>
                     <button
                       className={styles.setupButton}

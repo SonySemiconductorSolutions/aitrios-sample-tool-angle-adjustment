@@ -22,3 +22,6 @@ export * from "./elements/Button/Button";
 export * from "./elements/CheckListIcon/CheckListIcon";
 export * from "./elements/Button/MainButton";
 export * from "./blocks/Header/elements/Step/Step";
+export * from "./elements/GridColorPicker";
+export * from "./elements/GridOverlay";
+export * from "./elements/ImageWithFallback";

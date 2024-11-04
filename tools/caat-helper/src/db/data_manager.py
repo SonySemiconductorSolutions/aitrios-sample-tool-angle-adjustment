@@ -160,8 +160,6 @@ def add_customer_data(customer_dataframe: pd.DataFrame) -> bool:
     for index in range(len(customer_dataframe)):
         row = customer_dataframe.iloc[index]
 
-        # print(row['admin_login_id']) + row['customer_name'] + row['auth_url'] + row['base_url'] +
-        #       row['client_id'] + row['client_secret'] + row['application_id'])
         admin_id_for_customer = None
         for admin in existing_admins:
             if admin.login_id == row["admin_login_id"]:
@@ -445,7 +443,7 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
     return True
 
 
-def clear_all_data() -> bool:
+async def clear_all_data() -> bool:
     """Clears All table data from database if tables exist.
 
     Returns:

@@ -16,5 +16,5 @@ limitations under the License.
 ------------------------------------------------------------------------
 */
 export * from "./converter";
-export * from "./images";
+export * from "./status";
 export * from "./string";

@@ -65,7 +65,7 @@ Postgres Database is used for local development.
 
    ```shell
    # from backend
-   $ pipenv shell
+   $ pipenv shell --python 3.10
    $ pipenv install
 
    # Install dev packages
@@ -79,7 +79,7 @@ Postgres Database is used for local development.
    ```
 
 3. Apply schema changes into the database. (run for the first time or only whenever there is change in Database schema)
-    * Define database schema in [schema.local.prisma](./prisma/schema.local.prisma). [Reference](https://www.prisma.io/docs/concepts/components/prisma-schema)
+    * Define database schema in [schema.postgres.prisma](./prisma/schema.postgres.prisma). [Reference](https://www.prisma.io/docs/concepts/components/prisma-schema)
     * Apply schema changes into the database.
 
    ```
@@ -124,14 +124,14 @@ Utility scripts are provided to perform following:
    ```
 
    > Alternatively,  [CAAT Helper](./../tools/caat-helper/README.md) can be used to populate the initial data to Database. <br>
-   > If caat-helper is used for local development/hosting, please set BUILD_ENV variable before using any caat-helper commands. <br>
-   > `$ export BUILD_ENV=local`
+   > If caat-helper is used for local development/hosting, please set APP_ENV variable before using any caat-helper commands. <br>
+   > `$ export APP_ENV=local`
 
    * View the populated data using prisma studio
 
    ```
    # from backend
-   $ prisma studio --schema=./prisma/schema.local.prisma
+   $ prisma studio --schema=./prisma/schema.postgres.prisma
    ```
 
 2. Generate QR codes

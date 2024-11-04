@@ -21,9 +21,12 @@ import throttle from "lodash/throttle";
 // API call to fetch the device connection state of all the devices associated to a customer
 export const getDeviceStatus = async (
   customerId: number | null,
+  currentPage: number,
+  perPage: number,
   facilityName?: string,
   prefecture?: string | null,
-  municipality?: string | null,
+  municipality?: string,
+  status?: string | null,
 ) => {
   try {
     if (customerId === null) return null;
@@ -32,9 +35,12 @@ export const getDeviceStatus = async (
     const res = await client.get("devices/status", {
       params: {
         customer_id: customerId,
+        page: currentPage,
+        page_size: perPage,
         facility_name: facilityName,
         prefecture: prefecture,
         municipality: municipality,
+        status: status,
       },
     });
     return res.data;

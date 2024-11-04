@@ -9,7 +9,7 @@
     - [Software requirements](#software-requirements)
 - [Documentation](#documentation)
     - [Release Artifact](#release-artifact)
-    - [Build documentation (Optional)](build-documentation-optional)
+    - [Build documentation (Optional)](#build-documentation-optional)
 - [Tested on](#tested-on)
 - [License](#license)
 - [Get support](#get-support)
@@ -55,8 +55,10 @@ AAT involves following components:
 Documentation contains following:
 * Instructions to setup the development environment
 * User Guide for both Contractor and Admin App
-* Hosting App in Azure Cloud
-* Hosting App in GitHub Codespaces
+* Instructions to host app in Azure Cloud
+* Instructions to host app in AWS Cloud
+* Instructions to host app in GitHub Codespaces
+
 
 ### Release Artifact
 
@@ -70,7 +72,7 @@ Documentation contains following:
 
 ## Tested on
 
-AAT is tested on AITRIOS DirectDeveloper_ed_v1.8.0 and Enterprise_ed_v1.7.0.
+AAT is tested on AITRIOS DirectDeveloper_ed_v1.8.1 and Enterprise_ed_v1.7.0.
 
 ## License
 

@@ -24,6 +24,13 @@ limitations under the License.
   height: calc(100% - 120px); /* Header Height: 120px */
 }
 
+@media (orientation: landscape) {
+  .container {
+    height: auto;
+    min-height: calc(100dvh - 24px);
+  }
+}
+
 .refreshButtonContainer {
   width: calc(100% - 15px);
   display: flex;
@@ -36,6 +43,8 @@ limitations under the License.
 
 .facilityContainer {
   font-size: 12px;
+  padding-right: 10px;
+  word-break: break-all;
 }
 
 .refreshButton {
@@ -93,6 +102,7 @@ limitations under the License.
 }
 
 .devices .device {
+  width: 100vw;
   display: flex;
   padding: 0.5rem 0;
   font-size: 0.75rem;
@@ -114,11 +124,14 @@ limitations under the License.
   display: flex;
   padding: 0 1rem;
   align-items: center;
+  width: calc(75% - 3rem - 24px); /* Total width - 25% button width - 3rem for paddings - 24px for connection status */
   justify-content: space-between;
 }
 
 .nameContainer > .name {
   color: #dadada;
+  word-break: break-word;
+  width: calc(100% - 80px); /* Total width - 24px - 80px for device status */
 }
 
 .buttonsContainer {
@@ -143,12 +156,9 @@ limitations under the License.
 
 .deviceIcon {
   width: 70px;
-  height: 10px;
   padding: 5px;
-  display: flex;
-  align-items: center;
   font-size: small;
-  justify-content: center;
+  text-align: center;
 }
 
 .filterIcon {
@@ -186,6 +196,7 @@ limitations under the License.
 .emptyDevicesList {
   height: 100%;
   display: flex;
+  min-height: 60px;
   align-items: center;
   justify-content: center;
 }

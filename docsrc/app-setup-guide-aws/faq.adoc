@@ -1,0 +1,66 @@
+
+== FAQ
+
+Q: What prerequisites are needed to deploy AAT application using setup scripts?::
+A: Before deploying AAT application using setup scripts, ensure you have the following prerequisites:
+    * An active AWS account with sufficient permissions to create resources.
+    * AWS CLI installed on your local machine for executing the shell script.
+    * Familiarity with AWS concepts such as Cloudfront, Lightsail, S3 buckets.
+
+Q: Can I customize the Cloud Setup script for my specific needs?::
+A: Yes, it is possible to customize the Cloud setup script. Please make changes to `tools/cloud-setup/aws/cloud-setup.sh` with care.
+
+Q: How can I delete the cloud instance that I created using scripts?::
+A: There is no scripts provided to delete the cloud instance via scripts. However, please visit AWS Console and delete all created resources.
+
+Q: Can I apply other security configuration measures to AAT application?::
+A: Yes, you can apply other security configuration measures such as AWS GuardDuty. Please note that the provided cloud scripts does not support such operation. Make changes manually in the AWS Console or create custom scripts.
+
+Q: How can I troubleshoot common errors during deployment?::
+A: If you encounter errors during deployment:
+    * Check the AWS CLI output or deployment logs for specific error messages.
+    * Ensure all required parameters are correctly provided and formatted.
+    * Verify AWS service status and availability in your region.
+    * Review AWS documentation or community forums for troubleshooting guidance related to specific errors.
+
+
+Q: How do I reset Admin Password ?::
+A: Using caat-helper, the Admin password can be reset by providing the Login ID. +
+
+Use the following command, to list the admin and their Login ID
+
+[source,shell]
+----
+(.venv) $ caat-helper db list-admin
+----
+
+Use the following command to reset the password
+
+[source,shell]
+----
+(.venv) $ caat-helper db reset-pass --login-id {admin-login-id} --password {new-pasword-value}
+----
+
+Q: How do I clear data from the database to start fresh or in case of wrong details entered?::
+A: Using caat-helper, all the data from the database can be deleted at once. +
+At present, caat-helper doesn't support clearing the selective data.
+
+Use the following command, to clear the database.
+
+[source,shell]
+----
+(.venv) $ caat-helper db clear
+----
+
+Q: How do I enable the public access for Database for performing Database operations post setup ?::
+A: Using `enable-db-public-access.sh` script, public access for the database can be enabled. +
+
+[source,shell]
+----
+# from tools/cloud-setup/aws
+$ bash enable-db-public-access.sh
+----
+
+Q: How do I use the caat-helper for different Cloud environments (Azure/AWS)?::
+A: Make sure to execute the script `set-env-var.sh` from respective directory before using caat-helper.
+For azure use `tools/cloud-setup/azure/set-env-var.sh` and for AWS use `tools/cloud-setup/aws/set-env-var.sh`.

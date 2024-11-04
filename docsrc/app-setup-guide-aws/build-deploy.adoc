@@ -1,0 +1,25 @@
+
+== Build and Deploy
+
+=== Source Code build and Deploy
+
+* Once the cloud environment is successfully created, build and deploy the source code.
+* Backend Source code will be built as docker images, docker images are pushed to Lightsail containers. Admin App and Contractor App source code is built and uploaded to the S3 bucket.
+* `source-build.sh` script will build all the source code and push/upload the code.
+* Run the Build Deploy Script with the following command. Build and deploy may take around 10 minutes.
+
+[source,shell]
+----
+# from tools/cloud-setup/aws
+$ bash source-build.sh
+----
+
+Upon successful build and deployment of modules, following docker image must be seen in Lightsail Container `Images` tab.
+
+Image: `aatbackend.caat-backend-service.x`
+
+In addition, please confirm that the S3 Buckets created for Admin and Contractor app, along with respective CloudFront Distributions for both the web applications..
+
+* At this point, all services are deployed.
+* Although URLs are accessible, please note that apps cannot be used as Data in the Database is still empty.
+* Populating the Data into Database in explained in next chapter.

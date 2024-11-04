@@ -23,14 +23,15 @@ from flask.sessions import SecureCookieSessionInterface
 from flask_login import LoginManager, current_user
 from jwt import InvalidTokenError
 from src.core import db
+from src.logger import get_json_logger
 from src.schemas import ResponseHTTPSchema
 
 from ..config import APP_SECRET_KEY
 from ..exceptions import APIException, APIMissingFieldException, ErrorCodes
 from ..models.accounts import Account
-from src.logger import get_json_logger
 
 logger = get_json_logger()
+
 
 class CustomSessionInterface(SecureCookieSessionInterface):
     """Disable default cookie generation."""
@@ -49,10 +50,10 @@ class CustomSessionInterface(SecureCookieSessionInterface):
 
 def user_loader_callback(request):
     authorization_header = request.headers.get("Authorization")
-    if not authorization_header:
-        return None
+    if not authorization_header or not authorization_header.startswith("Bearer "):
+        raise APIException(ErrorCodes.INVALID_AUTH_HEADER)
 
-    token = authorization_header.replace("Bearer ", "", 1)
+    token = authorization_header[len("Bearer ") :]
     try:
         user_data = jwt.decode(token, APP_SECRET_KEY, algorithms=["HS256"])
         login_id = user_data.get("login_id")
@@ -177,6 +178,31 @@ def validate_auth_token(f):
         return f(*args, **kwargs)
 
     return auth_decorator_function
+
+
+def check_device_authorization(device_id: int, payload: dict):
+    """
+    Function to check the existence and authorize the device for a given facility ID.
+    Args:
+        device_id:  Device ID
+        payload:    Dict contains facility_id and customer_id.
+    Raises:
+        APIException: DEVICE_NOT_FOUND, PERMISSION_DENIED
+    Returns:
+        None
+    """
+    if device_id:
+        facility_id = payload.get("facility_id")
+        device = db.device.find_first(where={"id": device_id})
+        # Check whether the device exists in the DB.
+        # If not, raise device not found error
+        if not device:
+            raise APIException(ErrorCodes.DEVICE_NOT_FOUND)
+
+        # Check if the facility has access to the device
+        # If not, raise Permission denied error
+        if device.facility_id != facility_id:
+            raise APIException(ErrorCodes.PERMISSION_DENIED)
 
 
 def init_app(app: Flask):

@@ -93,7 +93,7 @@ If the secret key is changed, the data already signed/encrypted will be of no us
 [source,shell]
 ----
 # from backend
-$ pipenv shell
+$ pipenv shell --python 3.10
 $ pipenv install
 
 # Install dev packages
@@ -171,8 +171,8 @@ $ python scripts/seed.py
 [NOTE]
 ====
 * Alternatively, CAAT Helper (see: tools/caat-helper/README.md) can be used to populate the initial data to Database.
-* If `caat-helper` is used for local development/hosting, please set BUILD_ENV variable before using any caat-helper commands. +
-`$ export BUILD_ENV=local`
+* If `caat-helper` is used for local development/hosting, please set APP_ENV variable before using any caat-helper commands. +
+`$ export APP_ENV=local`
 ====
 
 * View the populated data using prisma studio
@@ -180,7 +180,7 @@ $ python scripts/seed.py
 [source,shell]
 ----
 # from backend
-$ prisma studio --schema=./prisma/schema.local.prisma
+$ prisma studio --schema=./prisma/schema.postgres.prisma
 ----
 
 ===== Generate QR codes

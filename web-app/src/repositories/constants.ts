@@ -17,9 +17,9 @@ limitations under the License.
 */
 // Device Status
 export enum DEVICE_PROGRESS_STATUS {
-  NOT_APPLIED = 0,
-  APPLYING = 1,
-  APPLIED = 2,
+  NOT_USED = 0,
+  INITIAL_STATE = 1,
+  REQUESTING_FOR_REVIEW = 2,
   REJECTED = 3,
   APPROVED = 4,
 }
