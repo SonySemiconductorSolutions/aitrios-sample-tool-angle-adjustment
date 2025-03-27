@@ -72,7 +72,7 @@ Documentation contains following:
 
 ## Tested on
 
-AAT is tested on AITRIOS DirectDeveloper_ed_v1.8.1 and Enterprise_ed_v1.7.0.
+AAT is tested on AITRIOS DirectDeveloper_ed (AITRIOS Console API V1, V2).
 
 ## License
 

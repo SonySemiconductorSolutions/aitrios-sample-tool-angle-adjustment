@@ -28,7 +28,7 @@ type LoadingProps = {
 // Loading component displayed to show a loader to the user while any request is being processed
 export const Loading = ({ loaderText }: LoadingProps) => {
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid="icon-loader">
       <LoadingIcons.TailSpin className={styles.loader} />
       {loaderText && <p style={{ marginTop: 10 }}>{loaderText}...</p>}
     </div>

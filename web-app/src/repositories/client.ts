@@ -21,7 +21,3 @@ export const client = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
   timeout: 60000, // API requests timeout set to 60 seconds
 });
-
-if (process.env.REACT_APP_API_MOCK === "enabled") {
-  require("./mock/mock");
-}

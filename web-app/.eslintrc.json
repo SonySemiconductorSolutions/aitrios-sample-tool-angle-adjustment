@@ -9,7 +9,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:react-hooks/recommended"
   ],
-  "ignorePatterns": ["dist"],
+  "ignorePatterns": ["dist", "tests"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["react-refresh"],
   "rules": {

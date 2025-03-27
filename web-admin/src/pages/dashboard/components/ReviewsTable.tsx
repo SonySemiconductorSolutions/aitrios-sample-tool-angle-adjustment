@@ -359,6 +359,7 @@ export default function ReviewsTable() {
               key={props.label}
               checked={checkboxState[props.state_key]}
               onChange={(e: ChangeEvent<{ checked: boolean }>) => handleCheckboxChange(e, props.state_key)}
+              data-testid={`${props.state_key}-checkbox`}
             />
           ))}
         </Box>
@@ -382,8 +383,8 @@ export default function ReviewsTable() {
               + t("dashboardPage.items") + t("dashboardPage.outOf")
               + reviewStatistics.totalReviews + t("dashboardPage.items")}
           </Typography>
-          <Tab color="primary" value="list"><List />{t("dashboardPage.list")}</Tab>
-          <Tab color="primary" value="grid"><Apps />{t("dashboardPage.tiled")}</Tab>
+          <Tab color="primary" value="list" data-testid="listview-tab"><List />{t("dashboardPage.list")}</Tab>
+          <Tab color="primary" value="grid" data-testid="tiledview-tab"><Apps />{t("dashboardPage.tiled")}</Tab>
         </TabList>
 
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -394,9 +395,9 @@ export default function ReviewsTable() {
             sx={{ mt: 1 }}
             onChange={(_, value) => handleGridTypeChange(value as GridType)}
           >
-            <Button value="small">{t("dashboardPage.small")}</Button>
-            <Button value="medium">{t("dashboardPage.medium")}</Button>
-            <Button value="large">{t("dashboardPage.large")}</Button>
+            <Button value="small" data-testid="small-tiles-tab">{t("dashboardPage.small")}</Button>
+            <Button value="medium" data-testid="medium-tiles-tab">{t("dashboardPage.medium")}</Button>
+            <Button value="large" data-testid="large-tiles-tab">{t("dashboardPage.large")}</Button>
           </ToggleButtonGroup>}
         </Box>
 

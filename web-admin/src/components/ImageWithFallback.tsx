@@ -90,6 +90,7 @@ export const ImageWithFallback = ({
     draggable = false,
     preserveAspectRatio = true,
     fallbackWithIconOnly = false,
+    ...props
 }: ImageWithFallbackProps) => {
     const { gridLine } = useStore();
     const { t } = useTranslation();
@@ -216,6 +217,7 @@ export const ImageWithFallback = ({
                 cursor: draggable ? dragCursor : "default",
                 objectFit: preserveAspectRatio ? "contain" : "fill",
             }}
+            {...props}
         />
     );
 
@@ -255,7 +257,7 @@ export const ImageWithFallback = ({
                 renderImage()
             )}
             {showGrid && gridLine.visibility && (
-                <GridOverlay gridcolor={gridLine.color} gridrows={GRID_ROWS} gridcolumns={GRID_COLUMNS}>
+                <GridOverlay gridcolor={gridLine.color} gridrows={GRID_ROWS} gridcolumns={GRID_COLUMNS} data-testid="grid-overlay">
                     {Array.from({ length: GRID_ROWS * GRID_COLUMNS }).map((_, index) => (
                         <Box key={index} />
                     ))}

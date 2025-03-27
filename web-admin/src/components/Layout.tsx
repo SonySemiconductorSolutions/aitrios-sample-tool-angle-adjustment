@@ -53,12 +53,21 @@ export const Layout = () => {
   };
 
   useEffect(() => {
-      fetchCustomers();
+    fetchCustomers();
   }, [currentAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Redirects to login if no currentAccount and not on login page
-    if (!currentAccount && location.pathname !== "login") navigate("login");
+    // Redirect to login if no currentAccount and not on the login page
+    if (!currentAccount) {
+      // Add the redirect query param to login if exists
+      const redirectUrl = location.pathname !== "/" ? location.pathname : null;
+
+      if (redirectUrl) {
+        navigate(`/login?redirect=${redirectUrl}`);
+      } else {
+        navigate("/login");
+      }
+    }
   }, [location.pathname, currentAccount, navigate]);
 
   if (!currentAccount) {

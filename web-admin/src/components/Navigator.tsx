@@ -78,6 +78,7 @@ export const Navigator = () => {
           padding: "8px 12px",
           maxHeight: 48,
         }}
+        data-testid="language-select-dropdown"
       >
         <Option value="jp">日本語</Option>
         <Option value="en">English</Option>
@@ -105,6 +106,7 @@ export const Navigator = () => {
         size="sm"
         variant="soft"
         onClick={logout}
+        data-testid="logout-btn"
       >
         <Typography>{ t("navigator.logOut") }</Typography>
         <LogoutRounded />

@@ -115,7 +115,7 @@ export const GridView = ({
           md={view === "small" ? 3 : view === "medium" ? 4 : 6}
           lg={view === "small" ? 2.4 : view === "medium" ? 3 : 4}
         >
-          <Card sx={{ height: "100%" }}>
+          <Card sx={{ height: "100%" }} data-testid="tileview-card">
             <CardContent>
               <Tooltip
                 title={
@@ -226,11 +226,8 @@ export const GridView = ({
                     variant="solid"
                     size={view === "small" ? "sm" : view === "medium" ? "md" : "lg"}
                     sx={{ width: 90, mt: "auto" }}
-                    onClick={() => {
-                      navigate("/review", {
-                        state: { reviewId: row.latestReviewId },
-                      });
-                    }}
+                    onClick={() => navigate(`/reviews/${row.latestReviewId}`)}
+                    data-testid={`tiledview-details-btn-${index + 1}`}
                   >
                     {t("dashboardPage.details")}
                   </Button>}

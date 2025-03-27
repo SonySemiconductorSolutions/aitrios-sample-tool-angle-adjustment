@@ -16,21 +16,30 @@ limitations under the License.
 ------------------------------------------------------------------------
 */
 import react from "@vitejs/plugin-react-swc";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: true,
-    port: 3001,
-  },
-  resolve: {
-    alias: {
-      src: "/src",
+export default ({ mode }) => {
+  // Load app-level env vars to node-level env vars.
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return defineConfig({
+    plugins: [react()],
+    server: {
+      host: true,
+      port: 3001,
     },
-  },
-  build: {
-    outDir: "build",
-  },
-});
+    resolve: {
+      alias: {
+        src: "/src",
+      },
+    },
+    build: {
+      outDir: "build",
+    },
+    // Expose environment variables to the client
+    define: {
+      "process.env.VITE_API_URL": JSON.stringify(env.VITE_API_URL),
+    },
+  });
+};

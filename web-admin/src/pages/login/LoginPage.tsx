@@ -27,8 +27,15 @@ export const LoginPage = () => {
 
   // Effect hook to redirect to Dashboard page on successful login
   useEffect(() => {
-    if (currentAccount) navigate("/");
-  }, [currentAccount, navigate]);
+    if (currentAccount) {
+      // Check for the redirect query parameter
+      const params = new URLSearchParams(location.search);
+
+      // Fallback to dashboard if no redirect query parameter is found
+      const redirectParam = params.get("redirect") || "/";
+      navigate(redirectParam);
+    }
+  }, [currentAccount, location.search, navigate]);
 
   return (
     <BackgroundContainer>

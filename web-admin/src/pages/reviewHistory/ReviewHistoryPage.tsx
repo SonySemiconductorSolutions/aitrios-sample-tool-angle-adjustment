@@ -32,9 +32,10 @@ import {
 import { Backdrop, IconButton, Pagination } from "@mui/material";
 import { ArrowBackIosRounded, ImageSearch } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { formatDatetime, statusToString } from "../../utils";
 import { getDeviceReviewsHistory } from "../../services";
+import { NotFound } from "../../components/NotFound";
 import { TableCell } from "../../components/TableCell";
 import { useTranslation } from "react-i18next";
 import { ImageWithFallback } from "src/components/ImageWithFallback";
@@ -82,10 +83,11 @@ interface Review {
 }
 
 const IMAGE_NOT_SUBMITTED = "NoImageSubmitted";
+const DEVICE_NOT_FOUND_ERROR = 40403;
 
 export const ReviewHistoryPage = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const deviceId = Number(useParams().deviceId);
   const { t } = useTranslation();
 
   const TABLE_HEADERS = [
@@ -109,6 +111,7 @@ export const ReviewHistoryPage = () => {
   const [totalReviews, setTotalReviews] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [deviceNotFound, setDeviceNotFound] = useState(false);
 
   // Handles showing image preview
   const handleOpenModal = (row: TableRow) => {
@@ -169,18 +172,36 @@ export const ReviewHistoryPage = () => {
   // Handles errors during data fetching
   const handleError = (error: any) => {
     if (error?.error_code && error.error_code in errorCodes) {
+      if (error.error_code === DEVICE_NOT_FOUND_ERROR) {
+        setDeviceNotFound(true);
+      }
       setErrorMessage(`errorCodes.${error.error_code}`);
     } else {
       setErrorMessage("errorCodes.10000");
     }
   };
 
-  // Effect hook to fetch data initially or when current page changes 
-  useEffect(() => {
-    fetchDeviceReviewsHistory(state.deviceId);
-  }, [state, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Handles back navigation
+  const handleBackNavigate = () => {
+    if (data.length > 0) {
+      navigate(`/reviews/${data[0].id}`);
+    } else {
+      navigate("/");
+    }
+  };
 
-  return (
+  // Effect hook to fetch data initially or when current page changes
+  useEffect(() => {
+    if (isNaN(deviceId)) {
+      handleError({ error_code: DEVICE_NOT_FOUND_ERROR });
+    } else {
+      fetchDeviceReviewsHistory(deviceId);
+    }
+  }, [deviceId, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return deviceNotFound ? (
+    <NotFound errorMessage={"invalidPage.reviewHistoryNotFound"} />
+  ) : (
     <>
       <Box
         sx={{
@@ -193,7 +214,7 @@ export const ReviewHistoryPage = () => {
           justifyContent: "start",
         }}
       >
-        <IconButton onClick={() => navigate(-1)}>
+        <IconButton onClick={handleBackNavigate}>
           <ArrowBackIosRounded />
         </IconButton>
         <Typography level="h2" component="h1">
@@ -293,7 +314,10 @@ export const ReviewHistoryPage = () => {
                       <TableCell>{[3, 4].includes(row.result) ? formatDatetime(row.answered) : "-"}</TableCell>
                       <TableCell>
                         {[2, 3, 4].includes(row.result) ? (
-                          <IconButton onClick={() => handleOpenModal(row)}>
+                          <IconButton
+                            onClick={() => handleOpenModal(row)}
+                            data-testid={`show-image-btn-${index + 1}`}
+                          >
                             <ImageSearch />
                           </IconButton>
                         ) : (
@@ -408,6 +432,7 @@ export const ReviewHistoryPage = () => {
                   height="240px"
                   aspectRatio={4 / 3}
                   fallbackIconSize={80}
+                  data-testid="submitted-image"
                 />
               </Card>
               <Card variant="outlined" sx={{ flex: 1 }}>
@@ -420,6 +445,7 @@ export const ReviewHistoryPage = () => {
                   height="240px"
                   aspectRatio={4 / 3}
                   fallbackIconSize={80}
+                  data-testid="reference-image"
                 />
               </Card>
             </Box>

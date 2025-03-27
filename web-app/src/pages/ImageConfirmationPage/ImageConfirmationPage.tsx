@@ -285,10 +285,14 @@ export const ImageConfirmationPage = () => {
         <div className={styles.gridLineContainer}>
           <FormControlLabel
             onChange={toggleGridLineVisibility}
-            control={<Checkbox checked={gridLineVisibility} />}
+            control={<Checkbox data-testid="grid-line-toggler" checked={gridLineVisibility} />}
             label={t("image_confirmation_page.show_grid_lines")}
           />
-          <div className={styles.gridLineColorBox} style={{ backgroundColor: gridLineColor }} onClick={handleGridColorPickerOpen}>
+          <div
+            data-testid="grid-color-picker-btn"
+            className={styles.gridLineColorBox}
+            onClick={handleGridColorPickerOpen}
+            style={{ backgroundColor: gridLineColor }}>
             <ColorLensOutlinedIcon sx={{ fill: getContrastColor(gridLineColor) }} />
           </div>
           <GridColorPicker
@@ -304,6 +308,7 @@ export const ImageConfirmationPage = () => {
               src={placeHolder}
               style={{ width: "100%" }}
               alt={t("image_confirmation_page.facility_img")}
+              data-testid="fetched-device-image"
             />
           ) : (
             cameraImageBase64 === DEVICE_IMAGE_NOT_FOUND ? (
@@ -327,6 +332,7 @@ export const ImageConfirmationPage = () => {
           <p
             className={`${styles.tab} ${!isIntervalCapture && styles.selected}`}
             onClick={() => setIsIntervalCapture(false)}
+            data-testid="single-capture-tab"
           >
             {t("image_confirmation_page.single_capture")}
           </p>
@@ -337,6 +343,7 @@ export const ImageConfirmationPage = () => {
               `${!isIntervalCapture && fetchingImage && styles.disabled}`
             }
             onClick={() => !fetchingImage && setIsIntervalCapture(true)}
+            data-testid="interval-capture-tab"
           >
             {t("image_confirmation_page.interval_capture")}
           </p>
@@ -344,6 +351,7 @@ export const ImageConfirmationPage = () => {
         <MainButton
           onClick={() => !fetchingImage && fetchDeviceImage()}
           disabled={isIntervalCapture || fetchingImage}
+          data-testid="fetch-device-image-btn"
         >
           {t("image_confirmation_page.reacquisition_img")}
         </MainButton>
@@ -420,6 +428,7 @@ export const ImageConfirmationPage = () => {
           <div className={styles.reportSubmit}>
             <MainButton
               type="submit"
+              data-testid="submit-report-btn"
               disabled={
                 !cameraImageBase64 ||
                 cameraImageBase64 === DEVICE_IMAGE_NOT_FOUND ||

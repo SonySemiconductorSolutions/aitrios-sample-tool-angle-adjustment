@@ -19,6 +19,7 @@
 import sys
 
 import pandas as pd
+from src.config import SUPPORTED_PREFECTURES_LIST
 from src.service.aitrios_service import verify_customer_credentials
 from src.utils.data_validator_util import (
     confirm_alert,
@@ -39,10 +40,11 @@ def verify_admin_data(csv_file_path: str):
 
     ADMIN_CRITERIA_01: Verify login id, name, pass all fields are present for all rows
     ADMIN_CRITERIA_02: Verify login_id has AlphaNumeric Characters only without space
-    ADMIN_CRITERIA_03: Verify pass has\n
+    ADMIN_CRITERIA_03: Verify pass has valid characters
                           a. AlphaNumeric Characters Only\n
-                          b. length more than 8 characters\n
-                          c. No space allowed
+                          b. length limit between 1-255 characters\n
+                          c. Special Characters allowed are Underscore '_' and Hyphen '-'\n
+                          d. No space allowed
 
     Returns:
         bool: True if admin data is valid, False otherwise.
@@ -98,8 +100,8 @@ def verify_admin_data(csv_file_path: str):
     if not are_loginid_valid.all():
         invalid_login_ids = dataframe[~are_loginid_valid]
         logger.error(
-            f"Admin login ID should contain only Alpha Numeric Characters. "
-            f"Special characters allowed are Underscore (_), Hyphen(-), At (@), and Dot (.)"
+            f"Admin login ID should contain only English AlphaNumeric characters without Space and Japanese Characters except 。"
+            f"Special characters allowed are Underscore (_), Hyphen(-) without at start or end."
         )
         logger.error(f"Following admin login IDs are incorrect:")
         for index, row in invalid_login_ids.iterrows():
@@ -112,9 +114,13 @@ def verify_admin_data(csv_file_path: str):
     if not are_password_valid.all():
         invalid_passwords = dataframe[~are_password_valid]
         logger.error(
-            f"Admin password should contain only Alpha Numeric Characters. "
-            f"Special characters allowed are Underscore (_).\n"
-            f"The password length should be more than 8."
+            f"Admin password should contain only Alpha Numeric Characters and Special Characters\n"
+            f"The password length should be 8-255 characters.\n"
+            f"Password should be combination of any 3 categories:\n"
+            f"1. Lowercase (a-z)\n"
+            f"2. Uppercase (A-Z)\n"
+            f"3. Digits (0-9)\n"
+            f"4. Special Characters ('_', '-', '!', '$', '#', '%', '@').\n"
         )
         logger.error(f"Following admin passwords are incorrect:")
         for index, row in invalid_passwords.iterrows():
@@ -198,7 +204,7 @@ def verify_customer_data(csv_file_path: str, valid_admin_list: list):
         for index, row in invalid_names.iterrows():
             adjusted_index = index + 2
             logger.error(f"\nError occurred in customer")
-            logger.error(f"Row {adjusted_index}: Invalid customer name in customer: {row['customer_name']}")
+            logger.error(f"Row {adjusted_index}: Invalid customer name in customer: '{row['customer_name']}'")
             sys.exit(1)
 
     # CUSTOMER_CRITERIA_03
@@ -306,7 +312,7 @@ def verify_device_type_data(csv_file_path: str, valid_customer_list: list):
         for index, row in invalid_names.iterrows():
             adjusted_index = index + 2
             logger.error("\nError occurred in device_type")
-            logger.error(f"\nRow {adjusted_index}: Invalid name in device_type: {row['name']}")
+            logger.error(f"\nRow {adjusted_index}: Invalid name in device_type: '{row['name']}'")
             sys.exit(1)
 
     # DEVICE_TYPE_CRITERIA_03
@@ -398,7 +404,7 @@ def verify_facility_type_data(csv_file_path: str):
         for index, row in invalid_names.iterrows():
             adjusted_index = index + 2
             logger.error(f"\nError occurred in facility_type")
-            logger.error(f"\nRow {adjusted_index}: Invalid facility type name in facility_type: {row['name']}")
+            logger.error(f"\nRow {adjusted_index}: Invalid facility type name in facility_type: '{row['name']}'")
             sys.exit(1)
 
     return {"is_valid": True, "facilitytype_data": facilitytype_dataframe}
@@ -413,6 +419,9 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
     FACILITY_CRITERIA_04: Verify effective start date is valid date and in future
     FACILITY_CRITERIA_05: Verify effective end is valid date and in future
     FACILITY_CRITERIA_06: Verify facility type is valid and existing or not
+    FACILITY_CRITERIA_07: Verify prefecture is in valid format and from supported list
+    FACILITY_CRITERIA_08: Verify municipality is in valid format
+    FACILITY_CRITERIA_09: Verify facility, prefecture and municipality combination is unique
 
     Returns:
         bool: True if facility data is valid, False otherwise.
@@ -478,7 +487,7 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
         for index, row in invalid_names.iterrows():
             adjusted_index = index + 2
             logger.error(f"\nError occurred in facility")
-            logger.error(f"\nRow {adjusted_index}: Invalid facility name in facility: {row['facility_name']}")
+            logger.error(f"\nRow {adjusted_index}: Invalid facility name in facility: '{row['facility_name']}'")
             sys.exit(1)
 
     # FACILITY_CRITERIA_03
@@ -495,22 +504,23 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
             sys.exit(1)
 
     # FACILITY_CRITERIA_04
-    # are_start_dates_valid = facility_dataframe['effective_start_jst'].apply(
-    #     validate_date)
-    # if not are_start_dates_valid.all():
-    #     invalid_start_dates = facility_dataframe[~are_start_dates_valid]
-    #     logger.error("Some facility effective start dates are incorrectly formatted or time has passed:")
-    #     for index, row in invalid_start_dates.iterrows():
-    #         adjusted_index = index + 2
-    #         logger.error(
-    #             f"Row {adjusted_index}: Invalid effective start date in facility: {row['effective_start_jst']}")
-    #         sys.exit(1)
+    are_start_dates_valid = facility_dataframe['effective_start_jst'].apply(validate_date)
+    if not are_start_dates_valid.all():
+        invalid_start_dates = facility_dataframe[~are_start_dates_valid]
+        logger.error("Some facility effective start dates are incorrectly formatted:")
+        for index, row in invalid_start_dates.iterrows():
+            adjusted_index = index + 2
+            logger.error(
+                f"Row {adjusted_index}: Invalid effective start date in facility: {row['effective_start_jst']}")
+            sys.exit(1)
 
     # FACILITY_CRITERIA_05
-    are_end_dates_valid = facility_dataframe["effective_end_jst"].apply(validate_date)
+    are_end_dates_valid = facility_dataframe["effective_end_jst"].apply(
+        lambda x: validate_date(x, True)
+    )
     if not are_end_dates_valid.all():
         invalid_end_dates = facility_dataframe[~are_end_dates_valid]
-        logger.error(f"Some facility effective end dates are incorrectly formatted or time has passed:")
+        logger.error(f"Some facility effective end dates are incorrect:")
         for index, row in invalid_end_dates.iterrows():
             adjusted_index = index + 2
             logger.error(f"\nError occurred in facility")
@@ -530,11 +540,59 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
             )
             sys.exit(1)
 
+    # FACILITY_CRITERIA_07
+    are_prefectures_format_valid = facility_dataframe["prefecture"].apply(validate_name)
+    if not are_prefectures_format_valid.all():
+        invalid_prefectures = facility_dataframe[~are_prefectures_format_valid]
+        logger.error(f"Some facility prefectures are incorrect:")
+        for index, row in invalid_prefectures.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility")
+            logger.error(f"\nRow {adjusted_index}: Invalid facility prefecture in facility: '{row['prefecture']}'")
+            sys.exit(1)
+
+    are_prefectures_supported = facility_dataframe["prefecture"].isin(SUPPORTED_PREFECTURES_LIST)
+    if not are_prefectures_supported.all():
+        not_supported_prefectures = facility_dataframe[~are_prefectures_supported]
+        logger.error(f"Some facility prefectures are not supported:")
+        logger.error(f"Supported prefectures are:" + str(SUPPORTED_PREFECTURES_LIST))
+        for index, row in not_supported_prefectures.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility")
+            logger.error(f"\nRow {adjusted_index}: Unsupported prefecture in facility: '{row['prefecture']}'")
+            sys.exit(1)
+
+    # FACILITY_CRITERIA_08
+    are_municipalities_format_valid = facility_dataframe["municipality"].apply(validate_name)
+    if not are_municipalities_format_valid.all():
+        invalid_municipalities = facility_dataframe[~are_municipalities_format_valid]
+        logger.error(f"Some facility municipalities are incorrect:")
+        for index, row in invalid_municipalities.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility")
+            logger.error(f"\nRow {adjusted_index}: Invalid facility municipality in facility: '{row['municipality']}'")
+            sys.exit(1)
+
+    # FACILITY_CRITERIA_09
+    facility_dataframe["facility_details"] = facility_dataframe["customer_name"] + " " + facility_dataframe["facility_name"] + " " + facility_dataframe[
+        "prefecture"] + " " + facility_dataframe["municipality"]
+    are_facility_details_unique = facility_dataframe["facility_details"].duplicated()
+    if are_facility_details_unique.any():
+        duplicated_facility_details = facility_dataframe[are_facility_details_unique]
+        logger.error(f"Some facility names, prefectures and municipalities are not unique:")
+        for index, row in duplicated_facility_details.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility")
+            logger.error(
+                f"\nRow {adjusted_index}: Customer Name, Facility name, prefecture and municipality combination is not unique in facility: '{row['customer_name']}', '{row['facility_name']}', '{row['prefecture']}', '{row['municipality']}'"
+            )
+            sys.exit(1)
+
     return {"is_valid": True, "facility_data": facility_dataframe}
 
 
 def verify_device_data(
-    csv_file_path: str, valid_customer_list: list, valid_facility_list: list, valid_devicetype_list: list
+    csv_file_path: str, valid_customer_list: list, valid_facility_dataframe: pd.DataFrame, valid_devicetype_list: list
 ):
     """Validates the device data by Sier in csv
 
@@ -543,6 +601,7 @@ def verify_device_data(
     DEVICE_CRITERIA_03: Verify facility name existing or not
     DEVICE_CRITERIA_04: Verify device type existing or not
     DEVICE_CRITERIA_05: Verify customer name existing or not
+    DEVICE_CRITERIA_06: Verify facility details are valid
 
     Returns:
         bool: True if device type data is valid, False otherwise.
@@ -600,11 +659,11 @@ def verify_device_data(
         for index, row in invalid_names.iterrows():
             adjusted_index = index + 2
             logger.error(f"\nError occurred in device")
-            logger.error(f"\nRow {adjusted_index}: Invalid device name in device: {row['device_name']}")
+            logger.error(f"\nRow {adjusted_index}: Invalid device name in device: '{row['device_name']}'")
             sys.exit(1)
 
     # DEVICE_CRITERIA_03
-    are_facility_valid = device_dataframe["facility_name"].isin(valid_facility_list)
+    are_facility_valid = device_dataframe["facility_name"].isin(list(valid_facility_dataframe["facility_name"]))
     if not are_facility_valid.all():
         invalid_facilities = device_dataframe[~are_facility_valid]
         logger.error(f"Some facility names do not match available data:")
@@ -639,5 +698,29 @@ def verify_device_data(
                 f"\nRow {adjusted_index}: Invalid customer name in device: {row['customer_name']}, so please check customer_name: {row['customer_name']} exists in the customer table"
             )
             sys.exit(1)
+
+    # DEVICE_CRITERIA_06
+    merged_df = device_dataframe.merge(
+        valid_facility_dataframe,
+        left_on=["customer_name", "facility_name", "facility_prefecture", "facility_municipality"],
+        right_on=["customer_name", "facility_name", "prefecture", "municipality"],
+        how="left",
+        indicator=True
+    )
+
+    # Check for matches
+    merged_df["Valid"] = merged_df["_merge"] == "both"
+
+    # Find missing records
+    missing_records = merged_df[merged_df["_merge"] == "left_only"]
+
+    # Raise an error if any device record is missing from valid facilities
+    if not missing_records.empty:
+        missing_records_info = missing_records[["customer_name", "facility_name", "facility_prefecture", "facility_municipality"]]
+        logger.error(f"\nError occurred in device")
+        logger.error(
+            f"Error: The following device records are not present in valid facilities:\n{missing_records_info}"
+        )
+        sys.exit(1)
 
     return {"is_valid": True, "device_data": device_dataframe}

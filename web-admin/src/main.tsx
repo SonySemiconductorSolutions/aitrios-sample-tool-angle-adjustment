@@ -21,6 +21,7 @@ import "./index.css"; // Import global styles
 import "./i18n"; // Import internationalization configurations
 
 import { Layout } from "./components/Layout";
+import { NotFound } from "./components/NotFound";
 import { LoginPage } from "./pages/login/LoginPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
@@ -29,19 +30,29 @@ import { ReviewDetailsPage } from "./pages/reviewDetails/ReviewDetailsPage";
 import { ReviewHistoryPage } from "./pages/reviewHistory/ReviewHistoryPage";
 import { ConsoleConfigurationPage } from "./pages/consoleConfiguration/ConsoleConfigurationPage";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/review" element={<ReviewDetailsPage />} />
-          <Route path="/review/history" element={<ReviewHistoryPage />} />
-          <Route path="/console-configuration" element={<ConsoleConfigurationPage />} />
-          <Route path="/console-configuration/edit" element={<EditConfigurationPage />} />
-        </Route>
-        <Route path="/login" element={<LoginPage />} />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>,
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/reviews/:reviewId" element={<ReviewDetailsPage />} />
+            <Route path="/reviews/devices/:deviceId/history" element={<ReviewHistoryPage />} />
+            <Route path="/console-configuration" element={<ConsoleConfigurationPage />} />
+            <Route path="/console-configuration/customers/:customerId/edit" element={<EditConfigurationPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </BrowserRouter>
+    </React.StrictMode>
+  );
+};
+
+// Render the App component only if this file is the entry point
+if (document.getElementById("root")) {
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<App />);
+}
+
+export default App;

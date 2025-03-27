@@ -133,6 +133,14 @@ def get_device_review_history(device_id: int):
         List of reviews for a device ID.
     """
     check_resource_authorization(device_id=device_id)
+
+    # Get device by ID
+    device = db.device.find_first(where={"id": device_id})
+
+    # Check whether the device exists
+    if not device:
+        raise APIException(ErrorCodes.DEVICE_NOT_FOUND)
+
     try:
         # Handle pagination
         page = max(int(request.args.get("page", 1)), 1)

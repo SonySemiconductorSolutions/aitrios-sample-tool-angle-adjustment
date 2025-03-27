@@ -101,6 +101,7 @@ export const LoginForm = () => {
           onChange={(_, value) => handleLanguageChange(value!)}
           variant="soft"
           size="sm"
+          data-testid="language-select-dropdown"
           sx={{ padding: "8px 12px", minWidth: 120, }}
         >
           <Option value="jp">日本語</Option>
@@ -149,12 +150,14 @@ export const LoginForm = () => {
                   slotProps={{ "input": { maxLength: 255 } }}
                   required
                   onChange={onChange}
+                  data-testid="login-id-input"
                   startDecorator={<Person />}
                 />
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   name="pass"
                   slotProps={{ "input": { maxLength: 255 } }}
+                  data-testid="login-pass-input"
                   startDecorator={<Key />}
                   endDecorator={
                     <InputAdornment position="end">
@@ -206,10 +209,8 @@ export const LoginForm = () => {
                 <Button
                   type="submit"
                   size="lg"
-                  sx={{
-                    width: 400,
-                    height: 50,
-                  }}
+                  sx={{ width: 400, height: 50 }}
+                  data-testid="login-btn"
                 >
                   {isLoading ? <CircularProgress variant="soft" /> : t("loginPage.login")}
                 </Button>

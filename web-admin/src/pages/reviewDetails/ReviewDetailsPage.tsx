@@ -44,8 +44,9 @@ import {
 import { HexColorPicker } from "react-colorful";
 import { Backdrop, IconButton } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { approveReview, getReviewById, rejectReview, updateDeviceTypeReferenceImage } from "../../services";
+import { NotFound } from "../../components/NotFound";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import { formatDatetime, statusToString } from "../../utils";
 import { useStore } from "../../store";
@@ -103,6 +104,7 @@ const CHECKBOX_SX = { fontSize: 14 }; // Styling for checkboxes
 // Constants
 const CHARACTER_LIMIT = 255;
 const NOT_LATEST_REVIEW_ERROR = [40303, 40304];
+const REVIEW_NOT_FOUND_ERROR = 40404;
 const NAVIGATE_TIMEOUT = 3000;
 const IMAGE_NOT_SUBMITTED = "NoImageSubmitted";
 
@@ -110,7 +112,7 @@ export const ReviewDetailsPage = () => {
   const { gridLine, setGridLineColor, setGridLineVisibility } = useStore();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const reviewId = Number(useParams().reviewId);
   const { t } = useTranslation();
 
   const errorCodes: Record<number, string> = t("errorCodes", { returnObjects: true });
@@ -137,6 +139,7 @@ export const ReviewDetailsPage = () => {
   const [preserveAspectRatio, setPreserveAspectRatio] = useState<boolean>(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [startAdjust, setStartAdjust] = useState(false);
+  const [reviewNotFound, setReviewNotFound] = useState(false);
 
   // Handles input change for Rejection comment
   const onRejectReasonChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -149,6 +152,9 @@ export const ReviewDetailsPage = () => {
   // Handles errors during data fetching or submission
   const handleError = (error: any) => {
     if (error?.error_code && error.error_code in errorCodes) {
+      if (error.error_code === REVIEW_NOT_FOUND_ERROR) {
+        setReviewNotFound(true);
+      }
       setErrorMessage(`errorCodes.${error.error_code}`);
     } else {
       setErrorMessage("errorCodes.10000");
@@ -165,7 +171,7 @@ export const ReviewDetailsPage = () => {
       if (referenceImageBase64 && referenceImageBase64 !== initialReferenceImageBase64) {
         await updateDeviceTypeReferenceImage(reviewData?.device.typeId, referenceImageBase64 ?? "");
       }
-      await rejectReview(state.reviewId, 3, rejectReason.trim()); // 3 means reject
+      await rejectReview(reviewId, 3, rejectReason.trim()); // 3 means reject
       setIsReviewDone(true);
       setOpenSnackbar(true);
       setInitialRejectReason(rejectReason.trim());
@@ -190,7 +196,7 @@ export const ReviewDetailsPage = () => {
   const onApprove = () => {
     setOpenSnackbar(false);
     setIsApproving(true);
-    approveReview(state.reviewId, 4) // 4 mean approval
+    approveReview(reviewId, 4) // 4 mean approval
       .then(() => {
         setIsReviewDone(true);
         setOpenSnackbar(true);
@@ -324,8 +330,12 @@ export const ReviewDetailsPage = () => {
 
   // Effect hook to fetch data initially
   useEffect(() => {
-    fetchReviewDetails(state.reviewId)
-  }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isNaN(reviewId)) {
+      handleError({ error_code: REVIEW_NOT_FOUND_ERROR });
+    } else {
+      fetchReviewDetails(reviewId);
+    }
+  }, [reviewId]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   return (
@@ -343,6 +353,8 @@ export const ReviewDetailsPage = () => {
         >
           <CircularProgress variant="soft" />
         </Backdrop>
+      ) : reviewNotFound ? (
+        <NotFound errorMessage={errorMessage} />
       ) : (
         <>
           <Stack
@@ -366,7 +378,7 @@ export const ReviewDetailsPage = () => {
               }}
             >
               <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <IconButton onClick={() => navigate(-1)}>
+                <IconButton onClick={() => navigate("/")}>
                   <ArrowBackIosRounded />
                 </IconButton>
                 <Typography level="h2" component="h1">
@@ -386,9 +398,10 @@ export const ReviewDetailsPage = () => {
                     color: '#1e40af',
                   },
                 }}
-                onClick={() => navigate("history", {
-                  state: { deviceId: reviewData?.device?.id }
-                })}
+                onClick={() => navigate(
+                  `/reviews/devices/${reviewData?.device?.id}/history`
+                )}
+                data-testid="review-history-link"
               >
                 {t("reviewRequestPage.viewHistory")}
               </Typography>
@@ -474,6 +487,7 @@ export const ReviewDetailsPage = () => {
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setGridLineVisibility(e.target.checked)
                   }
+                  data-testId="grid-line-toggler"
                 />
                 <Box
                   display="flex"
@@ -487,6 +501,7 @@ export const ReviewDetailsPage = () => {
                     border: "1px solid #ccc",
                   }}
                   onClick={() => setShowColorPicker(!showColorPicker)}
+                  data-testid="grid-color-picker-btn"
                 >
                   <ColorLensOutlined sx={{ fill: getContrastingColor(gridLine.color) }} />
                 </Box>
@@ -512,11 +527,12 @@ export const ReviewDetailsPage = () => {
                   position="absolute"
                   marginLeft={{ md: "255px" }}
                 >
-                  <HexColorPicker color={gridLine.color} onChange={setGridLineColor} />
+                  <HexColorPicker color={gridLine.color} onChange={setGridLineColor} data-testid="hex-color-picker" />
                   <Button
                     size="lg"
                     sx={{ width: 125, maxHeight: 20 }}
                     onClick={() => setShowColorPicker(false)}
+                    data-testid="close-color-picker-btn"
                   >
                     {t("reviewRequestPage.close")}
                   </Button>
@@ -547,6 +563,7 @@ export const ReviewDetailsPage = () => {
                       aspectRatio={aspectRatio}
                       fallbackIconSize={100}
                       showGrid
+                      data-testid="submitted-image-main"
                     />
                   </AspectRatio>
                 </Card>
@@ -559,6 +576,7 @@ export const ReviewDetailsPage = () => {
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         setPreserveAspectRatio(e.target.checked)
                       }
+                      data-testid="aspect-ratio-toggler"
                     />
                     <Typography sx={{ textAlign: "center", fontSize: 18, fontWeight: "bold", mt: "auto" }}>
                       {t("reviewRequestPage.referenceImage")}
@@ -578,6 +596,7 @@ export const ReviewDetailsPage = () => {
                       preserveAspectRatio={preserveAspectRatio}
                       fallbackIconSize={100}
                       showGrid
+                      data-testid="reference-image-main"
                     />
                   </AspectRatio>
                   <Box sx={{
@@ -609,6 +628,7 @@ export const ReviewDetailsPage = () => {
                         isReviewDone || isRejecting ||
                         referenceImageBase64 !== initialReferenceImageBase64
                       }
+                      data-testid="approve-review-btn"
                     >
                       {t("reviewRequestPage.approve")}
                     </Button>
@@ -627,6 +647,7 @@ export const ReviewDetailsPage = () => {
                   onClick={toggleAdjustMode}
                   size="lg"
                   sx={{ width: 230, maxHeight: 20 }}
+                  data-testid="update-reference-image-modal-toggler"
                   disabled={!submittedImageDimension?.width || !submittedImageDimension?.height}
                 >
                   {t("reviewRequestPage.updateReferenceImage")}
@@ -635,6 +656,7 @@ export const ReviewDetailsPage = () => {
                   onClick={restoreReferenceImage}
                   size="lg"
                   sx={{ width: 230, maxHeight: 20 }}
+                  data-testid="restore-reference-image-btn"
                   disabled={referenceImageBase64 === initialReferenceImageBase64}
                 >
                   {t("reviewRequestPage.restoreReferenceImage")}
@@ -680,6 +702,7 @@ export const ReviewDetailsPage = () => {
                         draggedPosition={position}
                         setDraggedPosition={setPosition}
                         setDraggedImage={setAdjustedImageBase64}
+                        data-testid="submitted-image-draggable"
                       />
                     </Card>
                     <Card variant="outlined" sx={{ flex: 1, width: { xs: "100%", md: 680 } }}>
@@ -694,6 +717,7 @@ export const ReviewDetailsPage = () => {
                         preserveAspectRatio={false}
                         fallbackIconSize={100}
                         showGrid
+                        data-testid="reference-image-preview"
                       />
                     </Card>
                   </Box>
@@ -722,6 +746,7 @@ export const ReviewDetailsPage = () => {
                       size="lg"
                       color="primary"
                       onClick={updateReferenceImage}
+                      data-testid="save-updated-reference-image-btn"
                       disabled={position.x === 0 && position.y === 0}
                     >
                       {t("reviewRequestPage.updateReferenceImage")}
@@ -731,6 +756,7 @@ export const ReviewDetailsPage = () => {
                       size="lg"
                       color="neutral"
                       onClick={toggleAdjustMode}
+                      data-testid="cancel-updated-reference-image-btn"
                     >
                       {t("reviewRequestPage.cancel")}
                     </Button>
@@ -752,6 +778,7 @@ export const ReviewDetailsPage = () => {
                 }
                 required
                 sx={{ flex: 1, p: 2 }}
+                data-testid="reject-reason-textarea"
               />
               {rejectReason.length >= CHARACTER_LIMIT &&
                 <FormHelperText sx={{ mx: 2, color: theme.palette.warning[400] }}>
@@ -772,6 +799,7 @@ export const ReviewDetailsPage = () => {
                     isReviewDone || isApproving || !rejectReason.trim()
                   }
                   onClick={onReject}
+                  data-testid="reject-review-btn"
                 >
                   {t("reviewRequestPage.reject")}
                 </Button>

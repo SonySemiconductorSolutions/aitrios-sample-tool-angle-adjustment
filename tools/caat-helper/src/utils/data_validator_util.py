@@ -28,20 +28,34 @@ logger = get_json_logger()
 # pylint: disable = line-too-long
 
 
-def validate_date(date_str: str) -> bool:
+def validate_date(date_str: str, check_expiry=False) -> bool:
     """Validates the input string if it is valid date or not
 
     Args:
-        input_str (str): input string
+        date_str (str): date in string format
+        check_expiry (bool) : flag indicating expiry time should be checked or not
 
     Returns:
         bool: True if valid date False otherwise
     """
-    input_date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S%z")
-    # Get the current time as an offset-aware datetime
-    current_time = datetime.now(timezone.utc)
-    # Compare the two dates
-    return bool(input_date > current_time)
+    try:
+        # Parse the date string with the given format
+        expiry_date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S%z")
+
+        if check_expiry:
+            # Get the current time in UTC
+            now = datetime.now(expiry_date.tzinfo)
+            
+            # Check if the expiry date is in the future
+            if expiry_date <= now:
+                logger.error(f"Error: Expiry date '{date_str}' is in the past.")
+                return False
+
+        return True
+    except ValueError:
+        # If parsing fails, the format is invalid
+        logger.error(f"Error: Date '{date_str}' does not match format 'YYYY-MM-DDTHH:MM:SS±HH:MM'.")
+        return False
 
 
 def validate_local_url(input_local_path: str) -> bool:
@@ -88,6 +102,13 @@ def validate_local_url(input_local_path: str) -> bool:
 
 def validate_loginid(input_str: str) -> bool:
     """Validates the input string if it is valid login_id or not
+    Criteria: \n
+        1. Length of 1-255 Characters\n
+        2. Contains letter from any of 3 categories\n
+            a. Lowercase (a-z)\n
+            b. Uppercase (A-Z)\n
+            c. Digits (0-9)\n
+            d. Special Characters ('_', '-') without at start/end
 
     Args:
         input_str (str): input string
@@ -95,14 +116,28 @@ def validate_loginid(input_str: str) -> bool:
     Returns:
         bool: True if valid login_id False otherwise
     """
-    return bool(re.fullmatch(r"^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_\-@.]+$", input_str))
+    if len(input_str) < 1 or len(input_str) > 255:
+        logger.error(f"'{input_str}' : doesn't meet the required length of 1-255 characters.")
+        return False
+
+    # Check if the string starts or ends with _, -
+    if re.fullmatch(r'^[_\- ].*|.*[_\- ]$', input_str):
+        logger.error(f"'{input_str}' : should not start/end with Underscore, hyphen, space.")
+        return False
+
+    # Check if the string contains only valid characters
+    if not re.fullmatch(r"^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_\-]+$", input_str):
+        logger.error(f"'{input_str}' : English Alphanumeric characters or Japanese characters except 。 are supported and allowed Special Characters are ('_', '-').")
+        return False
+
+    return True
 
 
 def validate_name(input_str: str) -> bool:
     """Validates the input string if it is valid name or not. \n
     Criteria: \n
-        1. AlphaNumeric Characters
-        2. Underscore and Space as special Character\n
+        1. English AlphaNumeric characters or Japanese Characters except 。 are supported.
+        2. Allowed Special characters are Space, Hyphen -, Underscore _ without at start/end.\n
 
     Args:
         input_str (str): input string
@@ -110,13 +145,27 @@ def validate_name(input_str: str) -> bool:
     Returns:
         bool: True if valid name False otherwise
     """
-    return bool(re.fullmatch(r"^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_ ]+$", input_str))
+    if len(input_str) < 1 or len(input_str) > 127:
+        logger.error(f"'{input_str}' : doesn't meet the required length of 1-127 characters.")
+        return False
+
+    # Check if the string starts or ends with _, -, or space
+    if re.fullmatch(r'^[_\-\s].*|.*[_\-\s]$', input_str):
+        logger.error(f"'{input_str}' : should not start/end with Underscore, hyphen or space.")
+        return False
+
+    # Check if the string contains only valid characters
+    if not re.fullmatch(r"^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_\- ]+$", input_str):
+        logger.error(f"'{input_str}' : English Alphanumeric characters or Japanese characters except 。 are supported. \n"
+                     f"Allowed Special characters are Space, Hyphen -, Underscore _ without at start/end.\n")
+        return False
+    return True
 
 
 def validate_password(input_str: str) -> bool:
     """Validates the input string if it is valid pass or not\n
     Criteria: \n
-        1. Length of 8 Characters\n
+        1. Length of 8-255 Characters\n
         2. Contains letter from any of 3 categories\n
             a. Lowercase (a-z)\n
             b. Uppercase (A-Z)\n
@@ -129,14 +178,14 @@ def validate_password(input_str: str) -> bool:
     Returns:
         bool: True if valid pass False otherwise
     """
-    if len(input_str) < 8:
-        logger.error(f"{input_str} : doesn't meet the required length of 8 characters.")
+    if len(input_str) < 8 or len(input_str) > 255:
+        logger.error(f"{input_str} : doesn't meet the required length of 8-255 characters.")
         return False
 
     error_message = "Password can contain AlphaNumeric characters only from (a-z) (A-Z) (0-9) \nor Special Characters ('_', '-', '!', '$', '#', '%', '@') without space.\n "
 
     if not bool(re.fullmatch(r"^[a-zA-Z0-9_\-!$#%@]+$", input_str)):
-        logger.error(f"{input_str} : {error_message}")
+        logger.error(f"'{input_str}' : {error_message}")
         return False
 
     categories = 0
@@ -161,7 +210,7 @@ def validate_password(input_str: str) -> bool:
     # Pass is valid if it contains characters from at least three categories
     if categories < 3:
         logger.error(
-            f"{input_str} : Password should be combination of any 3 categories: \n 1. Uppercase letters `A-Z` \n 2. Lowercase letters `a-z`\n 3. Digits `0-9`\n 4. Special Characters '_', '-', '!', '$', '#', '%', '@'."
+            f"'{input_str}' : Password should be combination of any 3 categories: \n 1. Uppercase letters `A-Z` \n 2. Lowercase letters `a-z`\n 3. Digits `0-9`\n 4. Special Characters '_', '-', '!', '$', '#', '%', '@'."
         )
         return False
 

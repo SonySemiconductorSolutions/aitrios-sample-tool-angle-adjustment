@@ -23,69 +23,65 @@ from src.utils import to_list
 from werkzeug.exceptions import BadRequest
 
 
-def build_review_query(connection: Prisma, parameters: ReviewListSchema):
-    """
-    Method to build review query
-    Args:
-        connection (Prisma connection)
-        parameters (ReviewListSchema): Query parameters
-    """
-    take = None
-    skip = None
-    where = dict()
-    # Include customer table
-    include = {"facility": {}, "customer": {}, "device": {}}
+# def build_review_query(connection: Prisma, parameters: ReviewListSchema):
+#     """
+#     Method to build review query
+#     Args:
+#         connection (Prisma connection)
+#         parameters (ReviewListSchema): Query parameters
+#     """
+#     take = None
+#     skip = None
+#     where = dict()
+#     # Include customer table
+#     include = {"facility": {}, "customer": {}, "device": {}}
 
-    if parameters.sort:
-        sort = [{parameters.sort.value: parameters.sort_order.value}]
-    else:
-        sort = [{"last_updated_by": "desc"}]
+#     sort = [{"last_updated_by": "desc"}]
 
-    if parameters.pagination:
-        take = parameters.page_size
-        if parameters.page > 0:
-            skip = (parameters.page - 1) * parameters.page_size
-            total_records = connection.review.count()
-            take = min(parameters.page_size, total_records - skip)
-            skip = skip if take > 0 else None
+#     if parameters.pagination:
+#         take = parameters.page_size
+#         if parameters.page > 0:
+#             skip = (parameters.page - 1) * parameters.page_size
+#             total_records = connection.review.count()
+#             take = min(parameters.page_size, total_records - skip)
+#             skip = skip if take > 0 else None
 
-    if any(
-        [
-            parameters.facility_name,
-            parameters.prefecture,
-            parameters.municipality,
-            parameters.status,
-            parameters.customer_id,
-            parameters.device_id,
-        ]
-    ):
-        and_conditions = []
+#     if any(
+#         [
+#             parameters.facility_name,
+#             parameters.prefecture,
+#             parameters.municipality,
+#             parameters.status,
+#             parameters.customer_id
+#         ]
+#     ):
+#         and_conditions = []
 
-        if parameters.facility_name:
-            facility_names = to_list(parameters.facility_name, split_char=" ")
-            for facility_name in facility_names:
-                and_conditions.append({"facility": {"some": {"facility_name": {"contains": facility_name}}}})
+#         if parameters.facility_name:
+#             facility_names = to_list(parameters.facility_name, split_char=" ")
+#             for facility_name in facility_names:
+#                 and_conditions.append({"facility": {"some": {"facility_name": {"contains": facility_name}}}})
 
-        if parameters.prefecture:
-            and_conditions.append({"facility": {"some": {"prefecture": {"in": to_list(parameters.prefecture)}}}})
+#         if parameters.prefecture:
+#             and_conditions.append({"facility": {"some": {"prefecture": {"in": to_list(parameters.prefecture)}}}})
 
-        if parameters.municipality:
-            and_conditions.append({"facility": {"some": {"municipality": {"contains": parameters.municipality}}}})
+#         if parameters.municipality:
+#             and_conditions.append({"facility": {"some": {"municipality": {"contains": parameters.municipality}}}})
 
-        if parameters.status:
-            and_conditions.append({"facility": {"some": {"status": {"in": status_to_list(parameters.status)}}}})
-        # Check if customer ID is provided and apply condition.
-        if parameters.customer_id:
-            and_conditions.append({"customer_id": int(parameters.customer_id)})
+#         if parameters.status:
+#             and_conditions.append({"facility": {"some": {"status": {"in": status_to_list(parameters.status)}}}})
+#         # Check if customer ID is provided and apply condition.
+#         if parameters.customer_id:
+#             and_conditions.append({"customer_id": int(parameters.customer_id)})
 
-        if and_conditions:
-            where["AND"] = and_conditions
+#         if and_conditions:
+#             where["AND"] = and_conditions
 
-    data = connection.review.find_many(take=take, skip=skip, where=where, include=include, order=sort)
+#     data = connection.review.find_many(take=take, skip=skip, where=where, include=include, order=sort)
 
-    count = connection.review.count(where=where)
+#     count = connection.review.count(where=where)
 
-    return data, count
+#     return data, count
 
 
 def build_device_query(connection: Prisma, customer_id: int, parameters: ReviewListSchema):

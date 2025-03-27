@@ -126,6 +126,7 @@ export const DevicesPage = () => {
   // Contractor navigated back to the Main page
   const backToHome = async () => {
     if (!buttonClicked) {
+      // Navigate to Home page
       navigate("/", { replace: true });
     }
   };
@@ -184,6 +185,7 @@ export const DevicesPage = () => {
     // Contractor navigated to Camera Image view page if device is
     // selected for setup and navigatingToImagePage is true
     if (navigatingToImagePage && selectedDevice) {
+      // Navigate to Image Confirmation page
       navigate("/image-confirmation");
     }
   }, [selectedDevice, navigatingToImagePage]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -321,6 +323,7 @@ export const DevicesPage = () => {
             className={styles.refreshButton}
             onClick={refreshDevices}
             disabled={buttonClicked}
+            data-testid="refresh-devices-btn"
           >
             <RefreshOutlinedIcon className={styles.refreshButtonIcon} />
             {t("devices_page.refresh_devices")}
@@ -394,9 +397,9 @@ export const DevicesPage = () => {
           >
             {paginatedDevices.map((device, i) => {
               return (
-                <div key={i} className={styles.device}>
+                <div key={i} className={styles.device} data-testid={`device-row-${i + 1}`}>
                   <div className={styles.nameContainer}>
-                    <span className={styles.name}>{device.device_name}</span>
+                    <span className={styles.name} data-testid={`device-name-${i + 1}`}>{device.device_name}</span>
                     {DEVICE_STATUS.TO_DO.includes(device.result) ? (
                       <span className={cx([styles.deviceIcon, styles.toDoIcon])}>
                         {t("devices_page.toDo")}
@@ -424,6 +427,7 @@ export const DevicesPage = () => {
                         buttonClicked
                       }
                       onClick={() => setupDevice(device)}
+                      data-testid={`device-setup-btn-${i + 1}`}
                     >
                       {t("devices_page.setup")}
                     </button>
@@ -445,6 +449,7 @@ export const DevicesPage = () => {
           severity="error"
           variant="filled"
           className={styles.errorMsg}
+          data-testid="alert-error-message"
           onClose={() => setErrorMessage("")}
         >
           {errorMessage in EN.error_code
