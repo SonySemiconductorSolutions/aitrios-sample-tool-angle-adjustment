@@ -274,24 +274,31 @@ def generate_qr_codes(url):
                 qr_generator.exp = facility.effective_end_utc
 
                 # Generate JWT token
-                token_url = qr_generator.generate_jwt_token()
-                if token_url:
-                    web_app_url_payload = f"{url}?authenticate={token_url}"
+                facility_token = qr_generator.generate_jwt_token()
+                if facility_token:
+                    web_app_url_payload = f"{url}?authenticate={facility_token}"
                     logger.info("\n%s", "-" * 50)
                     logger.info("%s -> %s", customer.customer_name, facility.facility_name)
                     logger.info("%s", "-" * 50)
-                    logger.info("URL token:\n%s", token_url)
+                    logger.info("URL token:\n%s", facility_token)
                     logger.info("Web App URL:\n%s", web_app_url_payload)
 
                     file_name = (
                         f"QRCode+"
                         f"{customer.customer_name}+"
                         f"{facility.facility_name}+"
+                        f"{facility.id}+"
                         f"{qr_generator.fetch_device_count(facility.id)}+app-url.png"
                     )
                     output_file = f"{customer_name_directory}/{file_name}"
                     qr_generator.generate_qr_code(web_app_url_payload, output_file)
                     logger.info("QR Code of Web App URL stored at:\n%s", os.path.abspath(output_file))
+
+                    # Write the token URL in File
+                    with open(f"{customer_name_directory}/FacilityTokenURL_" + str(facility.facility_name) +
+                            str(facility.id) + ".txt", 'w', encoding='utf-8') as token_file:
+                        # Write a string to the file
+                        token_file.write(web_app_url_payload)
                 else:
                     logger.error("Failed to generate tokens.")
 

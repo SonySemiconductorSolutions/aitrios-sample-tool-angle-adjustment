@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
   language: "English",
-  version: "1.4.0",
+  version: "1.7.0",
   app_title: "Angle Adjustment Tool",
   camera: "Camera",
 

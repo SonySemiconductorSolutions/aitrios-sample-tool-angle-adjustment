@@ -51,7 +51,7 @@ The `customer` sheet contains following columns.
 |------------------|--------------------|--------------------|------------------------|-----------------------|------------------------|------------------------|------------------------------------------|
 | **Description**  | **Mandatory field**</br> Customer name | **Mandatory field**</br> Verify admin login id is present in admin data | **Optional field**</br> Add a valid auth URL | **Optional field**</br> Add a valid base URL | **Optional field**</br> Add a valid client ID | **Optional field**</br> Add a valid client secret | **Optional field**</br> Verify application ID is in valid format |
 |**Character details** | English AlphaNumeric characters and Japanese Characters except `。` are supported.<br> Allowed Special characters are Space, Hyphen `-`, Underscore `_`.<br> Length: 1-127 Characters |As mentioned in `admin` data |As supported in AITRIOS |As supported in AITRIOS |As supported in AITRIOS |As supported in AITRIOS |As supported in AITRIOS
-| **Sample Values**| 顧客A        | test-caat-dev      | Example: </br> AITRIOS Developer Edition: </br> `https://auth.aitrios.sony-semicon.com/oauth2/default/v1/token` (Portal Endpoint) </br> AITRIOS Enterprise Edition: </br> `https://login.microsoftonline.com/TENANT_ID` (Change the TENANT_ID section) | Example: </br> https://console.aitrios.sony-semicon.com/api/v1 | aum12d4cp2jbcfl12112 | df457d4cp2jbcfl12154 | Empty for developer edition and `Application ID` in case of enterprise edition |
+| **Sample Values**| 顧客A        | test-caat-dev      | Example: </br> AITRIOS Developer Edition: </br> `https://auth.aitrios.sony-semicon.com/oauth2/default/v1/token` (Portal Endpoint) </br> AITRIOS Enterprise Edition: </br> `https://login.microsoftonline.com/TENANT_ID` (Change the TENANT_ID section) | Example: </br> https://console.aitrios.sony-semicon.com/api/v1 </br> https://console.aitrios.sony-semicon.com/api/v2 | aum12d4cp2jbcfl12112 | df457d4cp2jbcfl12154 | Empty for developer edition and `Application ID` in case of enterprise edition |
 
 > * Customers are managed by SIer/Admin.
 > * Each customer can be managed ONLY by a single Admin.
@@ -128,3 +128,4 @@ The `device` sheet contains following columns.
 >   * SZP123S-001
 >   * AIH-lVRW2
 >   * CSV26
+>   * AIH-IPRSW

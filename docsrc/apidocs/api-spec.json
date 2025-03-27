@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "AAT-Backend-APIs",
-        "version": "v1.4.0"
+        "version": "v1.7.0"
     },
     "components": {
         "securitySchemes": {

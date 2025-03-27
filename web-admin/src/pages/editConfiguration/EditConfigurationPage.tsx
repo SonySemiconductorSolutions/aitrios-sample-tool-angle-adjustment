@@ -19,7 +19,8 @@ import { ChangeEvent, useState, useEffect } from "react";
 import { Alert, Button, CircularProgress, Card, FormHelperText, Typography, useTheme } from "@mui/joy";
 import { Backdrop, Box, FormGroup, TextField, Stack, IconButton } from "@mui/material";
 import { ArrowBackIosRounded, AssignmentTurnedInRounded, ErrorRounded } from "@mui/icons-material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { NotFound } from "../../components/NotFound";
 import { stringDifference } from "../../utils";
 import { getConsoleCredentials, updateConsoleCredentials } from "../../services";
 import { useTranslation } from "react-i18next";
@@ -30,17 +31,19 @@ interface ConsoleCredentials {
   baseUrl: string;
   clientId: string;
   clientSecret: string;
+  customerName: string;
   applicationId: string;
 }
 
 // Constants
 const CHARACTER_LIMIT = 255;
 const NAVIGATE_TIMEOUT = 3000;
+const CUSTOMER_NOT_FOUND_ERROR = 40407;
 
 export const EditConfigurationPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const customerId = Number(useParams().customerId);
   const { t } = useTranslation();
 
   const errorCodes: Record<number, string> = t("errorCodes", { returnObjects: true });
@@ -50,6 +53,7 @@ export const EditConfigurationPage = () => {
   const [updateSuccess, setUpdateSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const defaultFormData: ConsoleCredentials = {
+    customerName: "",
     authUrl: "",
     baseUrl: "",
     clientId: "",
@@ -60,6 +64,7 @@ export const EditConfigurationPage = () => {
   const [initialData, setInitialData] = useState<ConsoleCredentials>(defaultFormData);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [customerNotFound, setCustomerNotFound] = useState(false);
 
   // Fetches console credentials of a customer
   const fetchConsoleCredentials = async (customerId: number) => {
@@ -68,6 +73,7 @@ export const EditConfigurationPage = () => {
     try {
       const consoleCredentials = await getConsoleCredentials(customerId);
       const data = {
+        customerName: consoleCredentials.data.customer_name ?? "",
         clientId: consoleCredentials.data.client_id ?? "",
         clientSecret: consoleCredentials.data.client_secret ?? "",
         baseUrl: consoleCredentials.data.base_url ?? "",
@@ -85,8 +91,12 @@ export const EditConfigurationPage = () => {
 
   // Effect hook to fetch data initially
   useEffect(() => {
-    fetchConsoleCredentials(state.customerData.id);
-  }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isNaN(customerId)) {
+      handleError({ error_code: CUSTOMER_NOT_FOUND_ERROR });
+    } else {
+      fetchConsoleCredentials(customerId);
+    }
+  }, [customerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handles input change in form fields
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -117,7 +127,7 @@ export const EditConfigurationPage = () => {
 
   // Effect hook to clear alert if form data has changed
   useEffect(() => {
-    if (!hasFormDataChanged()) {
+    if (!isNaN(customerId) && !hasFormDataChanged()) {
       setShowAlert(false);
     }
   }, [formData]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -127,12 +137,12 @@ export const EditConfigurationPage = () => {
     event.preventDefault();
     setShowAlert(false);
     setIsSaving(true);
-    await updateConsoleCredentials(state.customerData.id, formData)
+    await updateConsoleCredentials(customerId, formData)
       .then(() => {
         setUpdateSuccess(true);
         setShowAlert(true);
         setTimeout(() => {
-          navigate(-1);
+          navigate("/console-configuration");
         }, NAVIGATE_TIMEOUT);
       })
       .catch((err) => {
@@ -153,6 +163,9 @@ export const EditConfigurationPage = () => {
   // Handles errors during data fetching or submission
   const handleError = (error: any) => {
     if (error?.error_code && error.error_code in errorCodes) {
+      if (error.error_code === CUSTOMER_NOT_FOUND_ERROR) {
+        setCustomerNotFound(true);
+      }
       setErrorMessage(`errorCodes.${error.error_code}`);
     } else {
       setErrorMessage("errorCodes.10000");
@@ -175,6 +188,8 @@ export const EditConfigurationPage = () => {
         >
           <CircularProgress variant="soft" />
         </Backdrop>
+      ) : customerNotFound ? (
+        <NotFound errorMessage={errorMessage} />
       ) : (
         <Stack
           sx={{
@@ -195,7 +210,7 @@ export const EditConfigurationPage = () => {
               justifyContent: "start",
             }}
           >
-            <IconButton onClick={() => navigate(-1)}>
+            <IconButton onClick={() => navigate("/console-configuration")}>
               <ArrowBackIosRounded />
             </IconButton>
             <Typography level="h2" component="h1">{t("sidebar.editConfiguration")}</Typography>
@@ -209,7 +224,8 @@ export const EditConfigurationPage = () => {
                       fullWidth
                       label={t("editConfigurationPage.customerName")}
                       name="customerName"
-                      defaultValue={state.customerData.customerName}
+                      defaultValue={formData.customerName}
+                      data-testid="customer-name-input"
                       disabled
                     />
                     <FormGroup>
@@ -221,6 +237,7 @@ export const EditConfigurationPage = () => {
                         helperText={formData.clientId.length >= CHARACTER_LIMIT && t("errorCodes.10001")}
                         sx={{ "& .MuiFormHelperText-root": { color: theme.palette.warning[400] } }}
                         onChange={handleInputChange}
+                        data-testid="client-id-input"
                         required
                       />
                       <FormHelperText>
@@ -243,6 +260,7 @@ export const EditConfigurationPage = () => {
                         helperText={formData.clientSecret.length >= CHARACTER_LIMIT && t("errorCodes.10001")}
                         sx={{ "& .MuiFormHelperText-root": { color: theme.palette.warning[400] } }}
                         onChange={handleInputChange}
+                        data-testid="client-secret-input"
                         required
                       />
                       <FormHelperText>
@@ -265,6 +283,7 @@ export const EditConfigurationPage = () => {
                         helperText={formData.authUrl.length >= CHARACTER_LIMIT && t("errorCodes.10001")}
                         sx={{ "& .MuiFormHelperText-root": { color: theme.palette.warning[400] } }}
                         onChange={handleInputChange}
+                        data-testid="auth-url-input"
                         required
                       />
                       <FormHelperText sx={{
@@ -295,6 +314,7 @@ export const EditConfigurationPage = () => {
                         helperText={formData.baseUrl.length >= CHARACTER_LIMIT && t("errorCodes.10001")}
                         sx={{ "& .MuiFormHelperText-root": { color: theme.palette.warning[400] } }}
                         onChange={handleInputChange}
+                        data-testid="base-url-input"
                         required
                       />
                       <FormHelperText>
@@ -310,6 +330,7 @@ export const EditConfigurationPage = () => {
                         value={formData.applicationId}
                         helperText={formData.applicationId.length >= CHARACTER_LIMIT && t("errorCodes.10001")}
                         sx={{ "& .MuiFormHelperText-root": { color: theme.palette.warning[400] } }}
+                        data-testid="application-id-input"
                         onChange={handleInputChange}
                       />
                       <FormHelperText>{t("editConfigurationPage.applicationIdNote")}</FormHelperText>
@@ -342,6 +363,7 @@ export const EditConfigurationPage = () => {
                           loadingPosition="start"
                           sx={{ width: 125, maxHeight: 20 }}
                           disabled={!hasFormDataChanged()}
+                          data-testid="save-credentials-btn"
                         >
                           {t("editConfigurationPage.save")}
                         </Button>
@@ -351,6 +373,7 @@ export const EditConfigurationPage = () => {
                           onClick={handleReset}
                           sx={{ width: 125, maxHeight: 20 }}
                           disabled={!hasFormDataChanged() || isSaving}
+                          data-testid="reset-credentials-btn"
                         >
                           {t("editConfigurationPage.reset")}
                         </Button>

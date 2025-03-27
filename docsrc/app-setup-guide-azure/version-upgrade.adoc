@@ -12,7 +12,77 @@
 ^|No Change
 ^|No Change
 ^|Updated
+
+^|1.7.0 
+^|No Change
+^|Updated
+^|Updated
+
 |===
+
+
+=== Upgrade v1.4.0 to v1.7.0
+
+* Confirm <<prerequisites,Prerequisites>> are met before proceeding
+* Get `v1.7.0` tagged Source Code 
+
+==== Cloud Changes
+None
+
+==== DB Design Changes
+* Unique constraint is removed from `facility_name` column in `facility` table.
+* Database needs to be synced with the new changes. Following are the steps to apply these changes:
+
+**Step 1:** Make sure the `tools/cloud-setup/azure/.env` file has the same values as used during AAT Azure Cloud Setup and Azure account is logged in.
+
+**Step 2:** Setup the caat-helper tool and run the following command to sync the database.
+
+[source,shell]
+----
+$ cd tools/cloud-setup/azure
+
+# Create a virtual environment
+$ python3 -m venv .venv
+
+# Activate the virtual environment
+$ source .venv/bin/activate
+
+# Upgrade pip
+(.venv) $ pip install -U pip
+
+# Install CAAT helper package
+(.venv) $ pip install ../../caat-helper/
+
+# Set environment variables
+(.venv) $ source set-env-var.sh
+
+(.venv) $ bash allow-host-ip-db.sh
+
+(.venv) $ export APP_ENV=azure
+
+# Initialise and Sync the database
+(.venv) $ caat-helper-init
+
+(.venv) $ bash remove-host-ip-db.sh
+
+----
+
+
+==== Source Code Changes
+* There are changes in source code which includes new features and bug fixes. Following are the steps to apply these changes:
+
+**Step 1:** Make sure the `tools/cloud-setup/azure/.env` file has the same values as used during AAT Azure Cloud Setup and Azure account is logged in.
+
+**Step 2:** Build the source code and deploy to Azure Cloud.
+
+[source,shell]
+----
+$ cd tools/cloud-setup/azure
+$ bash source-build.sh
+----
+
+**Step 3:** Confirm the deployment by checking the version in Admin and Contractor application is changed to `v1.7.0`.
+
 
 === Upgrade v1.0.0 to v1.4.0
 

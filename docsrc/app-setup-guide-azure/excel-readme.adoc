@@ -118,6 +118,7 @@ AITRIOS Enterprise Edition: +
 `https://login.microsoftonline.com/TENANT_ID` (Change the TENANT_ID section)
 | Example: +
 https://console.aitrios.sony-semicon.com/api/v1
+https://console.aitrios.sony-semicon.com/api/v2
 | aum12d4cp2jbcfl12112
 | df457d4cp2jbcfl12154
 | Empty for developer edition and `Application ID` in case of enterprise edition
@@ -227,15 +228,17 @@ Length: 1-127 Characters
 
 The `device` sheet contains following columns.
 
-[%noheader, cols="6"]
+[%noheader, cols="8"]
 |===
-| **Column** | _device_name_ | _device_id_ | _customer_name_ | _facility_name_ | _device_type_name_
+| **Column** | _device_name_ | _device_id_ | _customer_name_ | _facility_name_ | _device_type_name_ | _facility_prefecture_ | _facility_municipality_
 | **Description** | **Mandatory field** +
 Add a valid device name. | **Mandatory field** +
 Add a valid device_id | **Mandatory field** +
 Add customer name to link to the device and verify the customer name exists in the `customer` sheet | **Mandatory field** +
 Add facility name to link to the facility and verify the facility name is present in the `facility` sheet | **Mandatory field** +
-Add device type name to link to the device type and verify device type name is present in the `device_type` sheet
+Add device type name to link to the device type and verify device type name is present in the `device_type` sheet | **Mandatory field** +
+Facility location details - Prefecture | **Mandatory field** +
+Facility location details - Municipality
 
 |**Character details** 
 | English AlphaNumeric characters and Japanese Characters except `。` are supported. +
@@ -245,8 +248,10 @@ Length: 1-127 Characters
 |As mentioned in `customer` data
 |As mentioned in `facility` data
 |As mentioned in `device_type` data
+|As mentioned in `facility` data
+|As mentioned in `facility` data
 
-| **Sample Values** | DEVICE_SZP123S_0001 | Aid-00010004-0000-2000-0000-000000000000 | 顧客A | パーキング1 | GarageDevice
+| **Sample Values** | DEVICE_SZP123S_0001 | Aid-00010004-0000-2000-0000-000000000000 | 顧客A | パーキング1 | GarageDevice | 神奈川県 | 厚木市
 |===
 
 [NOTE]
@@ -260,4 +265,5 @@ Length: 1-127 Characters
     ** SZP123S-001
     ** AIH-lVRW2
     ** CSV26
+    ** AIH-IPRSW
 ====

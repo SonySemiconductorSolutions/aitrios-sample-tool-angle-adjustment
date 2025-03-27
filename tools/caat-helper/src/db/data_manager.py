@@ -341,8 +341,11 @@ def add_facility_data(facility_dataframe: pd.DataFrame) -> bool:
 
         try:
 
-            # Check if the customer already exists based on customer_name only
-            existing_facility = db.facility.find_first(where={"facility_name": row["facility_name"]})
+            # Check if the facility already exists based on facility_name, customer_id, prefecture and municipality.
+            existing_facility = db.facility.find_first(where={"facility_name": row["facility_name"], 
+                                                              "customer_id": customer.id,
+                                                              "prefecture": row["prefecture"],
+                                                              "municipality": row["municipality"]})
 
             if not existing_facility:
                 db.facility.create(
@@ -390,15 +393,27 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
     # Retrieve the list of devicetype objects
     existing_devicetypes = db.device_type.find_many()
 
+    # Retrieve the list of customer objects
+    existing_customers = db.customer.find_many()
+
     for index in range(len(device_dataframe)):
         row = device_dataframe.iloc[index]
 
         # print(row['device_name'] + row['device_id'] + row['facility_name'] +
         #       row['device_type_name'])
 
+        # Look up customer_id based on customer_name from the row
+        for customer in existing_customers:
+            if customer.customer_name == row["customer_name"]:
+                customer_id_for_row = customer.id
+                break
+
         facility_id_for_device = None
         for facility in existing_facilities:
-            if facility.facility_name == row["facility_name"]:
+            if (facility.facility_name == row["facility_name"] and
+                facility.customer_id == customer_id_for_row and
+                facility.prefecture == row["facility_prefecture"] and
+                facility.municipality == row["facility_municipality"]):
                 facility_id_for_device = facility.id
                 break
 

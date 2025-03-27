@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
     language: "English",
-    version: "v1.4.0",
+    version: "v1.7.0",
     appTitle: "Angle Adjustment Tool (Admin)",
     appTitleShort: "AAT (Admin)",
 
@@ -178,6 +178,13 @@ const translations = {
         loginId: "Login ID",
         pass: "Password",
         login: "Login",
+    },
+
+    // Invalid Page
+    invalidPage: {
+        pageNotFound: "Page not found.",
+        reviewHistoryNotFound: "Device Review History not found.",
+        returnToDashboard: "The requested page does not exist. Please return to the dashboard.",
     },
 
     // Prefectures Dropdown

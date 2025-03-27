@@ -51,7 +51,7 @@ model facility {
     status              Int           @default(1)
     prefecture          String?
     municipality        String?
-    facility_name       String        @unique
+    facility_name       String
     effective_start_utc String
     effective_end_utc   String
     created_by          String        @default("system") @db.VarChar(255)

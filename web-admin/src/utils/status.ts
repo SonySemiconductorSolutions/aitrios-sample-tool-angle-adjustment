@@ -46,7 +46,7 @@ export const getCheckboxState = (status: string | null) => {
 
   status.split(",").forEach((element) => {
     const key = mappingState[element.trim()];
-    newCheckboxStates[key] = true;
+    if (key) newCheckboxStates[key] = true;
   });
   return newCheckboxStates;
 };

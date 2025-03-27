@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,80 +19,41 @@ File: backend/src/services/aitrios_service.py
 """
 import msal
 import requests
-from retry import retry
-from src.config import HTTP_TIMEOUT, SSL_VERIFICATION
+from src.config import HTTP_TIMEOUT
+
+from src.services.aitrios_strategy import AitriosServiceStrategy
+from src.services.aitrios_service_v1 import AitriosServiceV1
+from src.services.aitrios_service_v2 import AitriosServiceV2
+from src.config import HTTP_TIMEOUT
 from src.exceptions import (
     APIException,
     ErrorCodes,
     InvalidAuthTokenException,
-    InvalidBaseURLException,
-    RetryAPIException,
 )
 from src.logger import get_json_logger
-from src.schemas.devices import DeviceStatusSchema
 from src.utils import decrypt_data
 
 logger = get_json_logger()
 
-BACKOFF_SECS = 1
-DELAY_SECS = 2  # initial delay between attempts
-RETRIES = 2
 
-
-class GetDeviceImage:
-    """
-    Class definition to get the latest device image.
-    """
-
-    def __init__(self, device_id, access_token, base_url):
-        self.device_id = device_id
-        self.access_token = access_token
-        self.base_url = base_url.rstrip("/")
-
-    @retry(exceptions=(RetryAPIException,), tries=RETRIES, delay=DELAY_SECS, backoff=BACKOFF_SECS)
-    def get_image(self):
-        """
-        Method to get the latest device image
-        """
-
-        headers = {"Authorization": "Bearer " + self.access_token}
-        params = {"grant_type": "client_credentials"}
-        try:
-            response = requests.get(
-                f"{self.base_url}/devices/{self.device_id}/images/latest",
-                headers=headers,
-                params=params,
-                timeout=HTTP_TIMEOUT,
-                verify=SSL_VERIFICATION,
-            )
-            # 404 will be raised when AITRIOS cannot find the given device ID
-            if response.status_code == 404:
-                raise APIException(ErrorCodes.DEVICE_NOT_FOUND_IN_AITRIOS)
-            response.raise_for_status()
-
-            data = response.json()
-        except requests.exceptions.Timeout:
-            raise RetryAPIException()
-        except requests.exceptions.JSONDecodeError as _js_decode_exec:
-            raise InvalidBaseURLException() from _js_decode_exec
-        except requests.exceptions.RequestException as _exec:
-            logger.exception(f"Failed to get images from AITRIOS server {_exec}")
-            raise requests.exceptions.RequestException from _exec
-
-        try:
-            content = data["contents"]
-        except KeyError:
-            # Sometimes, aitrios return warning with payload
-            # {'code': 'W.SC.API.0011007', 'message': 'Device responded with an error when requested.
-            # Result = Denied', 'result': 'WARNING', 'time': '2024-01-04T08:44:07.152393'}
-            logger.warning("Retry because of warning result from Aitrios...")
-            raise RetryAPIException()
-
-        # Aitrios always return jpeg image
-        return content
+# Factory Method to get the appropriate strategy
+def get_aitrios_service(base_url: str) -> AitriosServiceStrategy:
+    if base_url.endswith("/api/v1"):
+        return AitriosServiceV1()
+    elif base_url.endswith("/api/v2") or base_url.endswith("/api/v2-preview"):
+        return AitriosServiceV2()
+    raise APIException(ErrorCodes.INVALID_BASE_URL)
 
 
 def decrypt_customer_details(customer: dict) -> dict:
+    """Get the decrypted customer details
+
+    Args:
+        customer (dict): Customer details encrypted
+
+    Returns:
+        dict: Customer details decrypted
+    """
     customer["client_id"] = decrypt_data(customer["client_id"])
     customer["client_secret"] = decrypt_data(customer["client_secret"])
     if customer["application_id"]:
@@ -111,11 +72,12 @@ def fetch_images_by_device_id(device_id: str, customer: dict):
     """
     customer_decrypted = decrypt_customer_details(customer)
     access_token = get_aitrios_access_token(customer_decrypted)
+    service = get_aitrios_service(customer_decrypted["base_url"])
 
-    # Get latest image from the device
-    obj = GetDeviceImage(device_id, access_token, customer_decrypted["base_url"])
-    image = obj.get_image()
-    return f"data:image/jpeg;base64,{image}"
+    image = service.get_device_image(device_id, customer_decrypted["base_url"], access_token)
+    if image:
+        return f"data:image/jpeg;base64,{image}"
+    return None
 
 
 def get_aitrios_access_token(customer: dict) -> str:
@@ -183,41 +145,6 @@ def get_aitrios_access_token(customer: dict) -> str:
         raise InvalidAuthTokenException
 
 
-def get_all_devices(base_url: str, access_token: str):
-    """
-    Method to get all the devices associated to the user
-
-    Args:
-        base_url (str): AITRIOS Base URL
-        access_token (str): AITRIOS console Access Token
-    Returns:
-        devices list
-    """
-    try:
-        base_url = base_url.rstrip("/")
-
-        headers = {"Authorization": "Bearer " + access_token}
-        params = {"grant_type": "client_credentials"}
-
-        response = requests.get(
-            f"{base_url}/devices",
-            headers=headers,
-            params=params,
-            timeout=HTTP_TIMEOUT,
-            verify=SSL_VERIFICATION,
-        )
-        data = response.json()
-
-        if response.status_code == 200 and "devices" in data:
-            return True
-        return False
-    except requests.exceptions.Timeout:
-        raise RetryAPIException()
-    except requests.exceptions.RequestException as _exec:
-        logger.exception(f"Failed to get device list from AITRIOS server {_exec}")
-        raise InvalidBaseURLException from _exec
-
-
 def verify_customer_credentials(customer_data: dict):
     """
     Method to verify customer credentials
@@ -228,55 +155,13 @@ def verify_customer_credentials(customer_data: dict):
         Boolean value
         True if verified, False if not.
     """
-    base_url = customer_data["base_url"]
-
     access_token = get_aitrios_access_token(customer_data)
     if not access_token:
         raise InvalidAuthTokenException()
-    devices = get_all_devices(base_url, access_token)
-    if not devices:
-        return False
-    return True
 
-
-@retry(exceptions=(RetryAPIException,), tries=RETRIES, delay=DELAY_SECS, backoff=BACKOFF_SECS)
-def _get_devices(base_url: str, access_token: str, device_ids: str) -> str:
-    """
-    Method to get devices
-
-    Args:
-        base_url (str): AITRIOS Base URL
-        access_token (str): AITRIOS console Access Token
-        device_ids (str): Comma separated Device ID
-    Returns:
-        List of devices
-    """
-    base_url = base_url.rstrip("/")
-
-    headers = {"Authorization": "Bearer " + access_token}
-    params = {"grant_type": "client_credentials", "device_ids": device_ids}
-    try:
-        response = requests.get(
-            f"{base_url}/devices",
-            headers=headers,
-            params=params,
-            timeout=HTTP_TIMEOUT,
-            verify=SSL_VERIFICATION,
-        )
-        response.raise_for_status()
-
-        data = response.json()
-        return data["devices"]
-    except requests.exceptions.Timeout:
-        raise RetryAPIException()
-    except requests.exceptions.JSONDecodeError as _js_decode_exec:
-        raise InvalidBaseURLException() from _js_decode_exec
-    except requests.exceptions.RequestException as _exec:
-        logger.exception(f"Failed to get images from AITRIOS server {_exec}")
-        raise requests.exceptions.RequestException from _exec
-    except KeyError:
-        logger.warning("Retry because of warning result from Aitrios...")
-        raise RetryAPIException()
+    service = get_aitrios_service(customer_data["base_url"])
+    devices = service.get_devices(customer_data["base_url"], access_token, "")
+    return bool(devices)
 
 
 def get_device_status(customer: dict, access_token: str, device_ids: str):
@@ -289,12 +174,7 @@ def get_device_status(customer: dict, access_token: str, device_ids: str):
     Return:
         List of DeviceStatusSchema
     """
+    service = get_aitrios_service(customer["base_url"])
     # Call the API to get devices
-    devices = _get_devices(base_url=customer["base_url"], access_token=access_token, device_ids=device_ids)
-
-    # Prepare device ID and status schema
-    result = []
-    for device in devices:
-        temp = {"device_id": device["device_id"], "connection_status": device["connectionState"]}
-        result.append(DeviceStatusSchema(**temp))
+    result = service.get_devices(customer["base_url"], access_token, device_ids)
     return result

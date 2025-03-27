@@ -1,0 +1,76 @@
+
+[[version-upgrade]]
+== バージョンアップグレード
+
+*  バージョンアップグレードによるCloud設定、DB設計およびソースコードの変更点のまとめ
+|===
+^|バージョン ^| クラウド設定 ^| DB設計 ^| ソースコード
+
+^|1.4.0 ^|初回リリース ^|初回リリース ^|初回リリース
+
+^|1.7.0 ^|変更なし ^|更新済み ^|更新済み
+
+|===
+
+
+=== v1.4.0からv1.7.0へのアップグレード
+
+* 進める前に<<prerequisites,前提条件>> を満たしていることを確認してください
+* `v1.7.0` タグ済みソースコードを取得します 
+
+==== クラウドの変更
+なし
+
+==== DB設計の変更
+* `facility` テーブルの `facility_name` カラムから一意制約が削除されました。
+* データベースを新しい変更に同期する必要があります。これらの変更を適用する手順は以下の通りです：
+
+**ステップ 1:** `tools/cloud-setup/aws/.env` ファイルにはAAT AWS Cloud 設定およびAWSアカウントログイン時に使用したものと同じ値であることを確認します。
+
+**ステップ 2**: caat-helper ツールをセットアップし、データベースを同期するために以下のコマンドを実行します。
+
+[source,shell]
+----
+$ cd tools/cloud-setup/aws
+
+# 仮想環境を作成
+$ python3 -m venv .venv
+
+# 仮想環境をアクティブ化
+$ source .venv/bin/activate
+
+# pipをアップグレード
+(.venv) $ pip install -U pip
+
+# CAATヘルパーパッケージをインストール
+(.venv) $ pip install ../../caat-helper/
+
+# 環境変数を設定
+(.venv) $ source set-env-var.sh
+
+(.venv) $ bash enable-db-public-access.sh
+
+(.venv) $ export APP_ENV=aws
+
+# データベースを初期化して同期
+(.venv) $ caat-helper-init
+
+(.venv) $ bash disable-db-public-access.sh
+
+----
+
+==== ソースコードの変更
+* 新機能及びバグの修正などソースコードに変更があります。 これらの変更を適用する手順は以下の通りです。
+
+**ステップ 1:** `tools/cloud-setup/aws/.env` ファイルにはAAT AWS Cloud 設定およびAWSアカウントログイン時に使用したものと同じ値であることを確認します。
+
+
+**ステップ 2:** ソースコードをビルドし、 AWS Cloudへデプロイします。
+
+[source,shell]
+----
+$ cd tools/cloud-setup/aws
+$ bash source-build.sh
+----
+
+**ステップ 3:** 管理者でバージョンを確認してデプロイを確認することで、コントラクターアプリケーションが `v1.7.0` に変更されます。
