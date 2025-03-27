@@ -38,6 +38,6 @@ export function fetchWorkProgressStatus(params: ReqParams) {
     .get<ResPayload>(`facility/devices/${params.deviceId}/status`)
     .then((response) => response?.data)
     .catch((err) => {
-      throw err.response.data.error_code || 10000;
+      throw (err?.response?.data?.error_code || 10000);
     });
 }

@@ -39,8 +39,8 @@ export const GridColorPicker = ({ open, handleClose, color, onChange }: GridColo
       sx={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "50px", zIndex: (theme) => theme.zIndex.drawer + 1 }}
     >
       <>
-        <HexColorPicker style={{ width: "100%" }} color={color} onChange={onChange} />
-        <MainButton style={{ marginTop: "15px" }} onClick={handleClose}>{t("image_confirmation_page.close")}</MainButton>
+        <HexColorPicker style={{ width: "100%" }} color={color} onChange={onChange} data-testid="hex-color-picker" />
+        <MainButton style={{ marginTop: "15px" }} onClick={handleClose} data-testid="close-color-picker-btn">{t("image_confirmation_page.close")}</MainButton>
       </>
     </Modal>
   );

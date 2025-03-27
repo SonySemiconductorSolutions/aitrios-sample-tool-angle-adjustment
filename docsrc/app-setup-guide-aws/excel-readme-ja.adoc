@@ -118,6 +118,7 @@ AITRIOS Enterprise Edition: +
 `https://login.microsoftonline.com/TENANT_ID` (Change the TENANT_ID section)
 | 例: +
 https://console.aitrios.sony-semicon.com/api/v1
+https://console.aitrios.sony-semicon.com/api/v2
 | aum12d4cp2jbcfl12112
 | df457d4cp2jbcfl12154
 | Enterprise Editionの場合はApplication IDを記入してください。Developer Editionの場合は不要です。
@@ -261,4 +262,5 @@ https://console.aitrios.sony-semicon.com/api/v1
     ** SZP123S-001
     ** AIH-lVRW2
     ** CSV26
+    ** AIH-IPRSW
 ====

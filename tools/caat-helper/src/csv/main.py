@@ -20,6 +20,8 @@ import os
 import sys
 import asyncio
 
+import pandas as pd
+
 from src.config import CSV_OUTPUT_DIR
 from src.csv.csv_parser import check_csv_files, convert_excel_to_csv
 from src.csv.csv_validator import (
@@ -108,7 +110,7 @@ def db_populate(excel_path: str, csv_dir_path: str):
     device_dataframe = get_device_data(
         CSV_OUTPUT_DIR + "/device.csv",
         list(customer_dataframe["customer_name"]),
-        list(facility_dataframe["facility_name"]),
+        facility_dataframe,
         list(devicetype_dataframe["name"]),
     )
     if "is_valid" in device_dataframe and not device_dataframe["is_valid"]:
@@ -270,20 +272,20 @@ def get_facility_data(facility_csv_path: str, valid_customer_list: list, valid_f
 
 
 def get_device_data(
-    device_csv_path: str, valid_customer_list: list, valid_facility_list: list, valid_devicetype_list: list
+    device_csv_path: str, valid_customer_list: list, valid_facility_dataframe: pd.DataFrame, valid_devicetype_list: list
 ):
     """Get Device Data from the CSV
 
     Args:
         device_csv_path (str): CSV Path
         valid_customer_list (list): list of customers
-        valid_facility_list (list): list of facilities
+        valid_facility_list (dataframe): list of facilities
         valid_devicetype_list (list): list of device types
 
     Returns:
         PD.Dataframe: returns dataframe with data from CSV
     """
-    device_result = verify_device_data(device_csv_path, valid_customer_list, valid_facility_list, valid_devicetype_list)
+    device_result = verify_device_data(device_csv_path, valid_customer_list, valid_facility_dataframe, valid_devicetype_list)
 
     if not device_result["is_valid"]:
         logger.error(f"Device validation failed.")

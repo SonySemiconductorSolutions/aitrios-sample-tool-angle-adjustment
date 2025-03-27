@@ -169,6 +169,7 @@ export const Filter = () => {
               size="sm"
               placeholder={t("dashboardPage.select")}
               value={customerId}
+              data-testid="customer-select-dropdown"
               onChange={(_, value) => handleCustomerChange(value)}
               required
             >
@@ -199,6 +200,7 @@ export const Filter = () => {
                   lg: "calc(0.20 * (100vw - 255px))"
                 }
               }}
+              data-testid="prefecture-select-dropdown"
               onChange={(_, value) => handlePrefectureChange(value)}
             >
               {prefecturesList.map((value, index) => (
@@ -228,6 +230,7 @@ export const Filter = () => {
               size="sm"
               placeholder={t("dashboardPage.enterText")}
               value={tempFilter.municipality}
+              data-testid="municipality-input"
               onChange={(e) => handleMunicipalityChange(e.target.value)}
             />
             {tempFilter.municipality.length >= CHARACTER_LIMIT &&
@@ -242,6 +245,7 @@ export const Filter = () => {
             size="sm"
             placeholder={t("dashboardPage.enterText")}
             value={tempFilter.facilityName}
+            data-testid="facility-name-input"
             onChange={(e) => handleFacilityNameChange(e.target.value)}
           />
           {tempFilter.facilityName.length >= CHARACTER_LIMIT &&
@@ -270,10 +274,15 @@ export const Filter = () => {
             variant="outlined"
             onClick={handleClearButton}
             sx={{ width: 80 }}
+            data-testid="clear-filters-btn"
           >
             {t("dashboardPage.clear")}
           </Button>
-          <Button onClick={handleFindButton} sx={{ width: 80 }}>
+          <Button
+            onClick={handleFindButton}
+            sx={{ width: 80 }}
+            data-testid="apply-filters-btn"
+          >
             {t("dashboardPage.search")}
           </Button>
         </Box>

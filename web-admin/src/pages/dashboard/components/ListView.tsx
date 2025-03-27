@@ -184,11 +184,8 @@ export const ListView = ({ data, deviceStatus, startIndex }: ListViewProps) => {
                   <Button
                     variant="solid"
                     sx={{ width: 80 }}
-                    onClick={() => {
-                      navigate("/review", {
-                        state: { reviewId: row.latestReviewId },
-                      });
-                    }}
+                    onClick={() => navigate(`/reviews/${row.latestReviewId}`)}
+                    data-testid={`listview-details-btn-${index + 1}`}
                   >
                     {t("dashboardPage.details")}
                   </Button>}

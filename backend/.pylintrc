@@ -86,8 +86,7 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         use-symbolic-message-instead,
-
-        # Added by SARD
+        # custom ignored errors/warnings`
         broad-except,
         broad-exception-caught,
         broad-exception-raised,
@@ -415,8 +414,7 @@ ignored-classes=optparse.Values,thread._local,_thread._local
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis). It
 # supports qualified module names, as well as Unix pattern matching.
-# Added by SARD, as installation is NG
-ignored-modules=pysqlcipher3
+ignored-modules=
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.

@@ -124,7 +124,10 @@ export const TopPage = () => {
             </p>
           </div>
           <div className={styles.buttonsContainer}>
-            <MainButton onClick={handleNext}>
+            <MainButton
+              onClick={handleNext}
+              data-testid="confirm-facility-btn"
+            >
               {t("top_page.confirm_facility")}
             </MainButton>
           </div>

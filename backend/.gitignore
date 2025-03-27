@@ -65,6 +65,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.venv-test/
+cov_html/
 
 # Translations
 *.mo

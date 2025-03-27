@@ -147,7 +147,16 @@ export const ReviewStatusPage = () => {
               </div>
             )}
           </div>
-          <p className={styles.descriptionDetail}>
+          <p
+            className={styles.descriptionDetail}
+            data-testid={
+              resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
+                ? "review-status-requesting"
+                : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
+                ? "review-status-rejected"
+                : "review-status-approved"
+            }
+          >
             {resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
               ? t("review_status_page.des2_p1")
               : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
@@ -170,6 +179,7 @@ export const ReviewStatusPage = () => {
             </div>
           ) : null}
           <div
+            data-testid="go-back-btn"
             className={styles.reportSubmit}
             onClick={() => {
               if (resultStatus === DEVICE_PROGRESS_STATUS.REJECTED) {
@@ -185,7 +195,10 @@ export const ReviewStatusPage = () => {
                 : t("review_status_page.setup_another_cam")}
             </MainButton>
           </div>
-          <div className={styles.reportSubmit} onClick={() => goBack("/")}>
+          <div
+            onClick={() => goBack("/")}
+            data-testid="go-to-home-btn"
+            className={styles.reportSubmit}>
             <MainButton>{t("review_status_page.go_to_home")}</MainButton>
           </div>
         </div>
@@ -195,6 +208,7 @@ export const ReviewStatusPage = () => {
             severity="error"
             variant="filled"
             className={styles.errorMsg}
+            data-testid="alert-error-message"
             onClose={() => setErrorMessage("")}
           >
             {errorMessage in EN.error_code

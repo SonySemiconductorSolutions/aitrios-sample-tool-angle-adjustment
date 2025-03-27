@@ -34,7 +34,7 @@ const GridOverlayBox = styled(Box)<GridOverlayProps>(({ gridRows, gridColumns, g
   left: 0,
   right: 0,
   bottom: 0,
-  pointerEvents: "none",  
+  pointerEvents: "none",
   "& > div": {
     borderRight: `2px solid ${gridColor}`,
     borderBottom: `2px solid ${gridColor}`,
@@ -49,7 +49,7 @@ const GridOverlayBox = styled(Box)<GridOverlayProps>(({ gridRows, gridColumns, g
 
 export const GridOverlay = ({ gridColor, gridRows, gridColumns }: GridOverlayProps) => {
   return (
-    <GridOverlayBox gridColor={gridColor} gridRows={gridRows} gridColumns={gridColumns}>
+    <GridOverlayBox gridColor={gridColor} gridRows={gridRows} gridColumns={gridColumns} data-testid="grid-overlay">
       {Array.from({ length: gridRows * gridColumns }).map((_, index) => (
         <div key={index} />
       ))}

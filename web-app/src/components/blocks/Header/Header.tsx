@@ -84,7 +84,7 @@ export const Header: React.FC<Props> = ({
     <div className={styles.headerContainer}>
       <div className={styles.topContainer}>
         <div className={styles.toolContainer}>
-          <span className={styles.backButton} onClick={() => onGoBack()}>
+          <span data-testid="back-to-home-btn" className={styles.backButton} onClick={() => onGoBack()}>
             {goBack ? <ChevronLeftIcon /> : null}
           </span>
           {t("app_title")}
@@ -96,6 +96,7 @@ export const Header: React.FC<Props> = ({
               styles.language,
               selectedLanguage === "ja" && styles.selected,
             ])}
+            data-testid="language-ja"
           >
             日本語
           </span>
@@ -105,6 +106,7 @@ export const Header: React.FC<Props> = ({
               styles.language,
               selectedLanguage === "en" && styles.selected,
             ])}
+            data-testid="language-en"
           >
             ENG
           </span>

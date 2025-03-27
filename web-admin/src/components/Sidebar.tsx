@@ -55,7 +55,7 @@ export const Sidebar = () => {
       }}
     >
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <IconButton variant="soft" color="primary" size="sm" onClick={goHome}>
+        <IconButton data-testid="homeButton" variant="soft" color="primary" size="sm" onClick={goHome}>
           <HomeRounded />
         </IconButton>
         <Typography level="title-lg">
@@ -75,6 +75,7 @@ export const Sidebar = () => {
         <List>
           <ListItem>
             <ListItemButton
+              data-testid="dashboardButton"
               selected={pathname === "/"}
               onClick={() => navigate("/")}
             >
@@ -84,10 +85,10 @@ export const Sidebar = () => {
               </ListItemContent>
             </ListItemButton>
           </ListItem>
-          <ListItem sx={{ display: (pathname === "/review" || pathname === "/review/history") ? "flex" : "none"}}>
+          <ListItem sx={{ display: (pathname.startsWith("/reviews")) ? "flex" : "none"}}>
             <ListItemButton
               sx={{ pl: 4 }}
-              selected={pathname === "/review" || pathname === "/review/history"}
+              selected={pathname.startsWith("/reviews")}
             >
               <RateReviewRounded />
               <ListItemContent>
@@ -97,6 +98,7 @@ export const Sidebar = () => {
           </ListItem>
           <ListItem>
             <ListItemButton
+              data-testid="configButton"
               selected={pathname === "/console-configuration"}
               onClick={() => navigate("/console-configuration")}
             >
@@ -106,10 +108,10 @@ export const Sidebar = () => {
               </ListItemContent>
             </ListItemButton>
           </ListItem>
-          <ListItem sx={{ display: (pathname === "/console-configuration/edit") ? "flex" : "none"}}>
+          <ListItem sx={{ display: (pathname.endsWith("/edit")) ? "flex" : "none"}}>
             <ListItemButton
               sx={{ pl: 4 }}
-              selected={pathname === "/console-configuration/edit"}
+              selected={pathname.endsWith("/edit")}
             >
               <EditRounded />
               <ListItemContent>

@@ -148,11 +148,8 @@ export default function ConfigurationTable() {
                           width: "80px",
                           justifyContent: "center",
                         }}
-                        onClick={() => navigate("edit", {
-                          state: {
-                            customerData: { id: row.id, customerName: row.customerName },
-                          }
-                        })}
+                        onClick={() => navigate(`customers/${row.id}/edit`)}
+                        data-testid={`edit-btn-${index + 1}`}
                       >
                         {t("consoleConfigurationPage.edit")}
                       </Button>
