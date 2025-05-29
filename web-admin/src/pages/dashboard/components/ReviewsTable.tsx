@@ -18,7 +18,6 @@ limitations under the License.
 import {
   Box,
   Card,
-  CircularProgress,
   Checkbox,
   Divider,
   FormLabel,
@@ -33,7 +32,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { CloseRounded, ErrorRounded, List, Apps } from "@mui/icons-material";
-import { Backdrop, FormGroup, IconButton, Pagination } from "@mui/material";
+import { FormGroup, IconButton, Pagination } from "@mui/material";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { getLatestReviewsThrottled, getDeviceStatusThrottled } from "../../../services";
 import { useStore } from "../../../store";
@@ -42,7 +41,7 @@ import { Filter } from "./Filter";
 import { GridView } from "./GridView";
 import { ListView } from "./ListView";
 import { useTranslation } from "react-i18next";
-
+import { ResponsiveBackdrop } from "../../../components/ResponsiveBackdrop";
 
 // Interface for latest review of a device from Response payload
 interface DeviceLatestReviewDetails {
@@ -52,6 +51,8 @@ interface DeviceLatestReviewDetails {
     facility: {
       facility_name: string;
       facility_type: { name: string; };
+      prefecture: string;
+      municipality: string;
     },
     id: number;
   },
@@ -74,6 +75,8 @@ interface TableRow {
     name: string;
     type: string;
   };
+  prefecture: string;
+  municipality: string;
   latestReviewId: number;
   result: number;
   imageBlob: string;
@@ -209,6 +212,8 @@ export default function ReviewsTable() {
               name: value.device?.facility?.facility_name,
               type: value.device?.facility?.facility_type.name,
             },
+            prefecture: value.device?.facility?.prefecture,
+            municipality: value.device?.facility?.municipality,
             latestReviewId: value.latest_review?.id,
             result: value.latest_review?.result,
             imageBlob: value.latest_review?.image_blob,
@@ -253,7 +258,6 @@ export default function ReviewsTable() {
       filter.facilityName,
       filter.prefecture,
       filter.municipality,
-      filter.status,
     )?.then((responseData) => {
       setDeviceStatus(responseData?.data?.reduce(
         (statusMap: DeviceStatusMap, device: any) => {
@@ -311,21 +315,7 @@ export default function ReviewsTable() {
 
   return (
     <>
-      {isLoading && (
-        <Backdrop
-          open
-          sx={{
-            position: "absolute",
-            height: "100%",
-            left: { md: "255px" },
-            width: { xs: "100%", md: "calc(100vw - 255px)" },
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 499,
-          }}
-        >
-          <CircularProgress variant="soft" />
-        </Backdrop>
-      )}
+      {isLoading && <ResponsiveBackdrop open={true} />}
 
       {reviewStatistics.totalReviews ?
         (<Stack sx={{ display: "flex" }}>

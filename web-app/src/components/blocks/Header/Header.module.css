@@ -17,11 +17,11 @@ limitations under the License.
 */
 .headerContainer {
   height: 120px;
+  margin-bottom: 48px;
 }
 
 .steps {
   display: flex;
-  margin-bottom: 12px;
 }
 
 .goBackButton {

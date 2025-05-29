@@ -1,23 +1,23 @@
 {
-  "facility_type": [
-    {
-      "name": "Parking"
-    }
-  ],
-  "device_type": [
-    {
-      "name": "Entrance Device",
-      "sample_image_path": "/path/to/sample/image"
-    },
-    {
-      "name": "Exit Device",
-      "sample_image_path": "/path/to/sample/image"
-    }
-  ],
   "admin": [
     {
       "login_id": "INSERT_UNIQUE_LOGIN_ID",
       "admin_pass": "INSERT USER_PASS",
+      "facility_type": [
+        {
+          "name": "Parking"
+        }
+      ],
+      "device_type": [
+        {
+          "name": "Entrance Device",
+          "sample_image_path": "/path/to/sample/image"
+        },
+        {
+          "name": "Exit Device",
+          "sample_image_path": "/path/to/sample/image"
+        }
+      ],
       "customers": [
         {
           "customer_name": "INSERT CUSTOMER NAME",

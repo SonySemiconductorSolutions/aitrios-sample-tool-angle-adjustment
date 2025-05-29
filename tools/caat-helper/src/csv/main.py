@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 
 """DB main"""
 
+import asyncio
 import os
 import sys
-import asyncio
 
 import pandas as pd
-
 from src.config import CSV_OUTPUT_DIR
 from src.csv.csv_parser import check_csv_files, convert_excel_to_csv
 from src.csv.csv_validator import (
@@ -45,15 +44,11 @@ from src.db.data_manager import (
     get_admin_data_from_db,
     update_admin_by_id,
 )
+from src.utils.logger import get_json_logger
 from tabulate import tabulate
 from werkzeug.security import generate_password_hash
 
-from src.utils.logger import get_json_logger
-
 logger = get_json_logger()
-
-# pylint: disable = line-too-long
-# pylint: disable = too-many-return-statements
 
 db_table_names = ["admin", "device_type", "facility_type", "customer", "facility", "device"]
 
@@ -85,7 +80,9 @@ def db_populate(excel_path: str, csv_dir_path: str):
 
     admin_dataframe = get_admin_data_from_csv(CSV_OUTPUT_DIR + "/admin.csv")
 
-    facilitytype_dataframe = get_facilitytype_data(CSV_OUTPUT_DIR + "/facility_type.csv")
+    facilitytype_dataframe = get_facilitytype_data(
+        CSV_OUTPUT_DIR + "/facility_type.csv", list(admin_dataframe["login_id"])
+    )
     if "is_valid" in facilitytype_dataframe and not facilitytype_dataframe["is_valid"]:
         return facilitytype_dataframe
 
@@ -94,7 +91,9 @@ def db_populate(excel_path: str, csv_dir_path: str):
         return customer_dataframe
 
     devicetype_dataframe = get_devicetype_data(
-        CSV_OUTPUT_DIR + "/device_type.csv", list(customer_dataframe["customer_name"])
+        CSV_OUTPUT_DIR + "/device_type.csv",
+        list(customer_dataframe["customer_name"]),
+        list(admin_dataframe["login_id"]),
     )
     if "is_valid" in devicetype_dataframe and not devicetype_dataframe["is_valid"]:
         return devicetype_dataframe
@@ -103,6 +102,7 @@ def db_populate(excel_path: str, csv_dir_path: str):
         CSV_OUTPUT_DIR + "/facility.csv",
         list(customer_dataframe["customer_name"]),
         list(facilitytype_dataframe["name"]),
+        list(admin_dataframe["login_id"]),
     )
     if "is_valid" in facility_dataframe and not facility_dataframe["is_valid"]:
         return facility_dataframe
@@ -112,6 +112,7 @@ def db_populate(excel_path: str, csv_dir_path: str):
         list(customer_dataframe["customer_name"]),
         facility_dataframe,
         list(devicetype_dataframe["name"]),
+        list(admin_dataframe["login_id"]),
     )
     if "is_valid" in device_dataframe and not device_dataframe["is_valid"]:
         return device_dataframe
@@ -140,12 +141,10 @@ def db_populate(excel_path: str, csv_dir_path: str):
         logger.info(f"DeviceType data is successfully added in Database")
         tables_added.add("device_type")
 
-
     facility_db_result = add_facility_data(facility_dataframe)
     if facility_db_result:
         logger.info(f"Facility data is successfully added in Database")
         tables_added.add("facility")
-
 
     device_db_result = add_device_data(device_dataframe)
     if device_db_result:
@@ -176,7 +175,7 @@ def get_admin_data_from_csv(admin_csv_path: str):
     return admin_dataframe
 
 
-def get_devicetype_data(devicetype_csv_path: str, valid_customer_list: list):
+def get_devicetype_data(devicetype_csv_path: str, valid_customer_list: list, valid_admin_list: list):
     """Get the DeviceType Data from CSV
 
     Args:
@@ -186,7 +185,7 @@ def get_devicetype_data(devicetype_csv_path: str, valid_customer_list: list):
         PD.Dataframe: returns dataframe with data from CSV
     """
 
-    devicetype_result = verify_device_type_data(devicetype_csv_path, valid_customer_list)
+    devicetype_result = verify_device_type_data(devicetype_csv_path, valid_customer_list, valid_admin_list)
 
     if not devicetype_result["is_valid"]:
         logger.error(f"DeviceType validation failed.")
@@ -200,7 +199,7 @@ def get_devicetype_data(devicetype_csv_path: str, valid_customer_list: list):
     return devicetypes_dataframe
 
 
-def get_facilitytype_data(facilitytype_csv_path: str):
+def get_facilitytype_data(facilitytype_csv_path: str, valid_admin_list: list):
     """Get the FacilityType Data from CSV
 
     Args:
@@ -209,7 +208,7 @@ def get_facilitytype_data(facilitytype_csv_path: str):
     Returns:
         PD.Dataframe: returns dataframe with data from CSV
     """
-    facilitytype_result = verify_facility_type_data(facilitytype_csv_path)
+    facilitytype_result = verify_facility_type_data(facilitytype_csv_path, valid_admin_list)
     if not facilitytype_result["is_valid"]:
         logger.error(f"FacilityType validation failed.")
         return facilitytype_result
@@ -246,7 +245,9 @@ def get_customer_data(customer_csv_path: str, valid_admin_list: list):
     return customers_dataframe
 
 
-def get_facility_data(facility_csv_path: str, valid_customer_list: list, valid_facilitytype_list):
+def get_facility_data(
+    facility_csv_path: str, valid_customer_list: list, valid_facilitytype_list, valid_admin_list: list
+):
     """Get Facility Data from the CSV
 
     Args:
@@ -257,7 +258,9 @@ def get_facility_data(facility_csv_path: str, valid_customer_list: list, valid_f
     Returns:
         PD.Dataframe: returns dataframe with data from CSV
     """
-    facility_result = verify_facility_data(facility_csv_path, valid_customer_list, valid_facilitytype_list)
+    facility_result = verify_facility_data(
+        facility_csv_path, valid_customer_list, valid_facilitytype_list, valid_admin_list
+    )
 
     if not facility_result["is_valid"]:
         logger.error(f"Facility validation failed.")
@@ -272,7 +275,11 @@ def get_facility_data(facility_csv_path: str, valid_customer_list: list, valid_f
 
 
 def get_device_data(
-    device_csv_path: str, valid_customer_list: list, valid_facility_dataframe: pd.DataFrame, valid_devicetype_list: list
+    device_csv_path: str,
+    valid_customer_list: list,
+    valid_facility_dataframe: pd.DataFrame,
+    valid_devicetype_list: list,
+    valid_admin_list: list,
 ):
     """Get Device Data from the CSV
 
@@ -285,7 +292,9 @@ def get_device_data(
     Returns:
         PD.Dataframe: returns dataframe with data from CSV
     """
-    device_result = verify_device_data(device_csv_path, valid_customer_list, valid_facility_dataframe, valid_devicetype_list)
+    device_result = verify_device_data(
+        device_csv_path, valid_customer_list, valid_facility_dataframe, valid_devicetype_list, valid_admin_list
+    )
 
     if not device_result["is_valid"]:
         logger.error(f"Device validation failed.")
@@ -358,10 +367,10 @@ async def db_clear():
             return await asyncio.wait_for(clear_all_data(), timeout=60)
         except asyncio.TimeoutError:
             logger.error(
-                f"Attempt {attempt + 1} of {max_retries} failed: DB clear operation took too long and was terminated.")
+                f"Attempt {attempt + 1} of {max_retries} failed: DB clear operation took too long and was terminated."
+            )
         except Exception as e:
-            logger.error(
-                f"Attempt {attempt + 1} of {max_retries} failed: An error occurred - {e}")
+            logger.error(f"Attempt {attempt + 1} of {max_retries} failed: An error occurred - {e}")
         if attempt < max_retries - 1:
             logger.info(f"Retrying... ({attempt + 2}/{max_retries})")
     return False

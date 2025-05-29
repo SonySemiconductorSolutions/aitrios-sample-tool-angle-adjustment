@@ -1,0 +1,42 @@
+@startuml Delete Reviews By Device
+title Delete Reviews By Device
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate device_id;
+if (device_id is invalid?) then (yes)
+    : Send HTTP status 400, Valid device_id is required;
+    kill
+endif
+: Check resource authorization for device_id;
+: Find all reviews for device_id;
+if (No reviews found?) then (yes)
+    : Send HTTP status 404, Review not found;
+    kill
+endif
+: For each review, attempt to delete;
+if (Any review deletion fails?) then (yes)
+    : Send HTTP status 500, Failed to delete some reviews;
+    kill
+endif
+: Update device status to INITIAL_STATE;
+if (Device update fails?) then (yes)
+    : Send HTTP status 500, Failed to update device status;
+    kill
+endif
+: Send HTTP 200, All reviews for the device deleted successfully;
+note right
+    Returns:
+        1. Success message - "All reviews for the device deleted successfully"
+end note
+stop
+@enduml

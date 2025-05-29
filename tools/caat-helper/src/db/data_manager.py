@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,13 +22,83 @@ from datetime import datetime, timedelta
 import pandas as pd
 from prisma import errors
 from src.db.connection_manager import get_db_instance
-from src.utils.data_validator_util import is_nan
+from src.utils.data_validator_util import is_nan, validate_loginid, validate_password
+from src.utils.logger import get_json_logger
 from src.utils.security_util import encrypt_data
 from src.utils.util_resources import image_to_base64
 from werkzeug.security import generate_password_hash
-from src.utils.logger import get_json_logger
 
 logger = get_json_logger()
+
+
+def create_admin_cli(login_id: str, admin_password: str) -> bool:
+    """
+    Adds a single admin to the database.
+
+    Args:
+        login_id (str): the new admin's login ID
+        admin_password (str): the new admin's raw password
+
+    Returns:
+        bool: True if the admin was created, False if they already existed
+    """
+    db = get_db_instance()
+
+    # Validate login ID
+    if not validate_loginid(login_id):
+        logger.error(f"Invalid login ID: '{login_id}'. Admin creation aborted.")
+        return False
+
+    # Validate password
+    if not validate_password(admin_password):
+        logger.error(f"Invalid password for login ID: '{login_id}'. Admin creation aborted.")
+        return False
+
+    # check for existing admin
+    existing = db.admin.find_first(where={"login_id": login_id})
+    if existing:
+        logger.info(f"Admin '{login_id}' already exists. No action taken.")
+        return False
+
+    # create new admin
+    db.admin.create(
+        {
+            "login_id": login_id,
+            "admin_password": generate_password_hash(admin_password),
+        }
+    )
+    logger.info(f"Admin '{login_id}' has been created in the database.")
+    return True
+
+
+def get_admin_data_from_db():
+    """
+    Fetch admin data (many) from DB
+    """
+    db = get_db_instance()
+    admin_data_list = db.admin.find_many()
+    return admin_data_list
+
+
+def get_admin_by_login_id(login_id):
+    """
+    Get admin data from Database for a given login_id
+    """
+    db = get_db_instance()
+    admin_data = db.admin.find_first(where={"login_id": login_id})
+    return admin_data
+
+
+def update_admin_by_id(admin_id, hashed_passwd):
+    """
+    Update Admin pass by login ID
+    """
+    db = get_db_instance()
+    admin_data = db.admin.update(where={"id": admin_id}, data={"admin_password": hashed_passwd})
+    if admin_data:
+        return True
+    return False
+
 
 def add_admin_data(admin_dataframe: pd.DataFrame) -> bool:
     """Adds Admin data in Database
@@ -72,35 +142,6 @@ def add_admin_data(admin_dataframe: pd.DataFrame) -> bool:
     return True
 
 
-def get_admin_data_from_db():
-    """
-    Fetch admin data (many) from DB
-    """
-    db = get_db_instance()
-    admin_data_list = db.admin.find_many()
-    return admin_data_list
-
-
-def get_admin_by_login_id(login_id):
-    """
-    Get admin data from Database for a given login_id
-    """
-    db = get_db_instance()
-    admin_data = db.admin.find_first(where={"login_id": login_id})
-    return admin_data
-
-
-def update_admin_by_id(admin_id, hashed_passwd):
-    """
-    Update Admin pass by login ID
-    """
-    db = get_db_instance()
-    admin_data = db.admin.update(where={"id": admin_id}, data={"admin_password": hashed_passwd})
-    if admin_data:
-        return True
-    return False
-
-
 def add_facilitytype_data(facilitytype_dataframe: pd.DataFrame) -> bool:
     """Adds FacilityType data in Database
 
@@ -116,16 +157,33 @@ def add_facilitytype_data(facilitytype_dataframe: pd.DataFrame) -> bool:
     # Track if any new facility type were added
     new_facility_type_added = False
 
+    # Returns the list of admin objects
+    existing_admins = db.admin.find_many()
+
     for index in range(len(facilitytype_dataframe)):
         row = facilitytype_dataframe.iloc[index]
 
-        # print(row['name'] + row['note'])
+        admin_id_for_facility_type = None
+        for admin in existing_admins:
+            if admin.login_id == row["admin_login_id"]:
+                admin_id_for_facility_type = admin.id
+                break
+
+        if admin_id_for_facility_type is None:
+            logger.error(f"admin_id for {row['name']} facility type is incorrect.")
+            return False
+
         try:
-            # Check if the facility_type already exists based on name and note
-            existing_facility_type = db.facility_type.find_first(where={"name": row["name"]})
+            # Check if the same facility_type already exists based on name and admin id
+            existing_facility_type = db.facility_type.find_first(
+                where={
+                    "name": row["name"],
+                    "admin_id": admin_id_for_facility_type,
+                }
+            )
 
             if not existing_facility_type:
-                db.facility_type.create({"name": row["name"]})
+                db.facility_type.create({"name": row["name"], "admin_id": admin_id_for_facility_type})
 
                 logger.info(f"Facility Type with '{row['name']}' added to the DB.")
                 new_facility_type_added = True
@@ -185,8 +243,10 @@ def add_customer_data(customer_dataframe: pd.DataFrame) -> bool:
             else:
                 client_secret = encrypt_data(row["client_secret"])
 
-            # Check if the customer already exists based on customer_name only
-            existing_customer = db.customer.find_first(where={"customer_name": row["customer_name"]})
+            # Check if the customer already exists based on customer_name and admin_id
+            existing_customer = db.customer.find_first(
+                where={"customer_name": row["customer_name"], "admin_id": admin_id_for_customer}
+            )
 
             # Initialize values
             auth_url = ""
@@ -242,10 +302,13 @@ def add_devicetype_data(devicetype_dataframe: pd.DataFrame) -> bool:
     # Retrieve the list of customer objects
     existing_customers = db.customer.find_many()
 
+    # Returns the list of admin objects
+    existing_admins = db.admin.find_many()
+
     for index in range(len(devicetype_dataframe)):
         row = devicetype_dataframe.iloc[index]
 
-        # print(row['name'] + row['note'] + row['sample_image_path'] + row['customer_name'])
+        # print(row['name'] + row['sample_image_path'] + row['customer_name'] + row['admin_login_id'])
 
         customer_uuid_for_devicetype = None
         for customer in existing_customers:
@@ -256,6 +319,16 @@ def add_devicetype_data(devicetype_dataframe: pd.DataFrame) -> bool:
         if customer_uuid_for_devicetype is None:
             logger.error(f"customer uuid could not be loaded for DeviceType: {row['name']}")
             continue
+
+        admin_id_for_device_type = None
+        for admin in existing_admins:
+            if admin.login_id == row["admin_login_id"]:
+                admin_id_for_device_type = admin.id
+                break
+
+        if admin_id_for_device_type is None:
+            logger.error(f"admin_id for {row['name']} device type is incorrect.")
+            return False
 
         binary_data = None
         with open(row["sample_image_path"], "rb") as image_file:
@@ -270,11 +343,19 @@ def add_devicetype_data(devicetype_dataframe: pd.DataFrame) -> bool:
 
         try:
 
-            # Check if the device type already exists based on device type name and note.
-            existing_device_type = db.device_type.find_first(where={"name": row["name"]})
+            # Check if the device type already exists based on device type name and admin login id.
+            existing_device_type = db.device_type.find_first(
+                where={"name": row["name"], "admin_id": admin_id_for_device_type}
+            )
 
             if not existing_device_type:
-                db.device_type.create({"name": row["name"], "sample_image_blob": sample_image_b64})
+                db.device_type.create(
+                    {
+                        "name": row["name"],
+                        "sample_image_blob": sample_image_b64,
+                        "admin_id": admin_id_for_device_type,
+                    }
+                )
 
                 logger.info(f"Device Type '{row['name']}' added to the DB.")
                 new_device_type_added = True
@@ -303,6 +384,9 @@ def add_facility_data(facility_dataframe: pd.DataFrame) -> bool:
     # Track if any new facility were added
     new_facility_added = False
 
+    # Retrieve the list of admin objects
+    existing_admins = db.admin.find_many()
+
     # Retrieve the list of customer objects
     existing_customers = db.customer.find_many()
 
@@ -314,11 +398,18 @@ def add_facility_data(facility_dataframe: pd.DataFrame) -> bool:
 
         # print(row['customer_name'] + row['prefecture'] +
         #       row['municipality'] + row['facility_name'] + row['effective_start_jst'] +
-        #       row['effective_end_jst'] + row['facility_type'])
+        #       row['effective_end_jst'] + row['facility_type'] + row['admin_login_id'])
+
+        # Look up admin id based on admin_login_id from the row
+        admin_id_for_facility = None
+        for admin in existing_admins:
+            if admin.login_id == row["admin_login_id"]:
+                admin_id_for_facility = admin.id
+                break
 
         customer_id_for_facility = None
         for customer in existing_customers:
-            if customer.customer_name == row["customer_name"]:
+            if customer.customer_name == row["customer_name"] and customer.admin_id == admin_id_for_facility:
                 customer_id_for_facility = customer.id
                 break
 
@@ -328,7 +419,7 @@ def add_facility_data(facility_dataframe: pd.DataFrame) -> bool:
 
         facilitytype_id_for_facility = None
         for facilitytype in existing_facilitytypes:
-            if facilitytype.name == row["facility_type"]:
+            if facilitytype.name == row["facility_type"] and facilitytype.admin_id == admin_id_for_facility:
                 facilitytype_id_for_facility = facilitytype.id
                 break
 
@@ -342,10 +433,14 @@ def add_facility_data(facility_dataframe: pd.DataFrame) -> bool:
         try:
 
             # Check if the facility already exists based on facility_name, customer_id, prefecture and municipality.
-            existing_facility = db.facility.find_first(where={"facility_name": row["facility_name"], 
-                                                              "customer_id": customer.id,
-                                                              "prefecture": row["prefecture"],
-                                                              "municipality": row["municipality"]})
+            existing_facility = db.facility.find_first(
+                where={
+                    "facility_name": row["facility_name"],
+                    "customer_id": customer.id,
+                    "prefecture": row["prefecture"],
+                    "municipality": row["municipality"],
+                }
+            )
 
             if not existing_facility:
                 db.facility.create(
@@ -387,6 +482,9 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
     # Track if any new devices were added
     new_devices_added = False
 
+    # Retrieve the list of admin objects
+    existing_admins = db.admin.find_many()
+
     # Retrieve the list of facility objects
     existing_facilities = db.facility.find_many()
 
@@ -399,21 +497,31 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
     for index in range(len(device_dataframe)):
         row = device_dataframe.iloc[index]
 
-        # print(row['device_name'] + row['device_id'] + row['facility_name'] +
-        #       row['device_type_name'])
+        # print(row['device_name'] + row['device_id'] + row['customer_name'] +
+        #       row['facility_name'] + row['device_type_name'] + row['facility_prefecture'] +
+        #       row['facility_municipality'])
+
+        # Look up admin id based on admin_login_id from the row
+        admin_id_for_device = None
+        for admin in existing_admins:
+            if admin.login_id == row["admin_login_id"]:
+                admin_id_for_device = admin.id
+                break
 
         # Look up customer_id based on customer_name from the row
         for customer in existing_customers:
-            if customer.customer_name == row["customer_name"]:
+            if customer.customer_name == row["customer_name"] and customer.admin_id == admin_id_for_device:
                 customer_id_for_row = customer.id
                 break
 
         facility_id_for_device = None
         for facility in existing_facilities:
-            if (facility.facility_name == row["facility_name"] and
-                facility.customer_id == customer_id_for_row and
-                facility.prefecture == row["facility_prefecture"] and
-                facility.municipality == row["facility_municipality"]):
+            if (
+                facility.facility_name == row["facility_name"]
+                and facility.customer_id == customer_id_for_row
+                and facility.prefecture == row["facility_prefecture"]
+                and facility.municipality == row["facility_municipality"]
+            ):
                 facility_id_for_device = facility.id
                 break
 
@@ -423,7 +531,7 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
 
         devicetype_id_for_device = None
         for devicetype in existing_devicetypes:
-            if devicetype.name == row["device_type_name"]:
+            if devicetype.name == row["device_type_name"] and devicetype.admin_id == admin_id_for_device:
                 devicetype_id_for_device = devicetype.id
                 break
 
@@ -432,8 +540,14 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
             return False
 
         try:
-            # Check if the customer already exists based on device_name only
-            existing_device = db.device.find_first(where={"device_name": row["device_name"]})
+            # Check if the device already exists based on device ID, admin_id and facility_id.
+            existing_device = db.device.find_first(
+                where={
+                    "device_id": row["device_id"],
+                    "admin_id": admin_id_for_device,
+                    "facility_id": facility_id_for_device,
+                }
+            )
 
             if not existing_device:
                 db.device.create(
@@ -442,6 +556,7 @@ def add_device_data(device_dataframe: pd.DataFrame) -> bool:
                         "device_name": row["device_name"],
                         "facility_id": facility_id_for_device,
                         "device_type_id": devicetype_id_for_device,
+                        "admin_id": admin_id_for_device,
                     }
                 )
 

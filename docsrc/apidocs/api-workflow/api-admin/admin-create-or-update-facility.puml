@@ -1,0 +1,51 @@
+@startuml Create or Update Facility
+title Create or Update Facility
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate facility_id and request body;
+if (facility_id < 0?) then (yes)
+    : Send HTTP status 404, Facility not found;
+    kill
+endif
+: Check if facility exists by facility_id;
+if (exists?) then (yes)
+    : Check for duplicate facility name for customer (excluding this facility);
+    if (duplicate?) then (yes)
+        : Send HTTP status 409, Duplicate facility name;
+        kill
+    endif
+    : Update facility in DB;
+    : Send HTTP 200, Facility updated successfully;
+    note right
+        Returns:
+            1. Success message - "Facility updated successfully"
+    end note
+else (no)
+    if (facility_id > 0?) then (yes)
+        : Send HTTP status 404, Facility not found;
+        kill
+    endif
+    : Check for duplicate facility name for customer;
+    if (duplicate?) then (yes)
+        : Send HTTP status 409, Duplicate facility name;
+        kill
+    endif
+    : Create new facility in DB;
+    : Send HTTP 200, Facility created successfully;
+    note right
+        Returns:
+            1. Success message - "Facility created successfully"
+    end note
+endif
+stop
+@enduml

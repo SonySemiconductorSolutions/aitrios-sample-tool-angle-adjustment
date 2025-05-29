@@ -38,7 +38,7 @@ Install asciidoctor and other packages to build the Asciidocs and OpenAPI docs.
    ```shell
    $ sudo gem install css_parser -v 1.17.1
    $ sudo gem install public_suffix -v 5.1.1
-   $ sudo gem install asciidoctor asciidoctor-diagram asciidoctor-multipage asciidoctor-pdf
+   $ sudo gem install asciidoctor asciidoctor-diagram asciidoctor-diagram-plantuml asciidoctor-multipage asciidoctor-pdf
    ```
 
 4. Install redocly npm package

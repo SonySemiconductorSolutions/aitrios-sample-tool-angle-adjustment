@@ -1,0 +1,38 @@
+@startuml Import Data
+title Import Data
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request (json_file present and .json);
+if (Invalid file?) then (yes)
+    : Send HTTP status 400, Invalid file;
+    kill
+endif
+: Read and validate JSON file;
+if (Invalid JSON or schema?) then (yes)
+    : Send HTTP status 400, Invalid JSON or schema;
+    kill
+endif
+: Validate device type images and customer name uniqueness;
+if (Invalid image or duplicate customer?) then (yes)
+    : Send HTTP status 400, Invalid image or duplicate customer;
+    kill
+endif
+: Clear all data for current admin (reviews, devices, facilities, customers, device types, facility types);
+: Insert facility types, device types, customers, facilities, and devices from import data;
+: Send HTTP 200 with import success message;
+note right
+    Returns:
+        1. Success message - "Data imported successfully"
+end note
+stop
+@enduml

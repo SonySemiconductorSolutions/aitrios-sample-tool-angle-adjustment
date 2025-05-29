@@ -1,0 +1,30 @@
+@startuml Bulk Delete Devices
+title Bulk Delete Devices
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request body (device IDs list);
+if (Invalid data?) then (yes)
+    : Send HTTP status 400, Invalid input;
+    kill
+endif
+: For each device ID in request:
+    : If device exists and is authorized, delete device;
+    : Else, skip or log error;
+: Send HTTP 200 with deletion result summary;
+note right
+    Returns:
+        1. Success message
+        2. (Optional) List of failed device deletions
+end note
+stop
+@enduml

@@ -1,4 +1,4 @@
-
+[[environment-setup]]
 == Environment Setup
 
 This page provides instructions to setup the AAT Application in AWS Cloud.
@@ -7,7 +7,12 @@ This page provides instructions to setup the AAT Application in AWS Cloud.
 - It is recommended to use link:https://docs.github.com/en/codespaces/overview[GitHub Codespaces^] to set up AWS cloud environment. Alternatively, an Ubuntu machine will also work.
 - Ensure that your host machine has access to AWS and that it can connect to the database port (Port: 5432).
 
+[NOTE]
+====
+To upgrade existing AAT instance from previous version, please visit the <<version-upgrade,Version Upgrade>> section.
+====
 
+[[prerequisites]]
 === Prerequisites
 
 * Make sure to install following softwares before proceeding to next step
@@ -66,14 +71,14 @@ link:https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-cre
 | aatbackend, aatbackendserver, aatbackendapp.
 
 |WEBAPP_NAME
-|This name will be used to create ContractorApp in AWS S3 Bucket. However the final ContractorApp URL will appear as `https://<RandomGUID>.cloudfront.net`. 
+|This name will be used to create ContractorApp in AWS S3 Bucket. However the final ContractorApp URL will appear as `https://<RandomGUID>.cloudfront.net`.
 | `a-z`,`0-9`, `-` +
 Length: 3-63 Characters +
 link:https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html?icmpid=docs_amazons3_console[Bucket naming rules^]
 | aat-web-app, aatcontractor, aatcontractorapp.
 
 |WEBADMIN_NAME
-|This name will be used to create AdminApp in AWS S3 Bucket. However the final Admin App URL will appear as `https://<RandomGUID>.cloudfront.net`. 
+|This name will be used to create AdminApp in AWS S3 Bucket. However the final Admin App URL will appear as `https://<RandomGUID>.cloudfront.net`.
 | `a-z`,`0-9`, `-` +
 Length: 3-63 Characters +
 link:https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html?icmpid=docs_amazons3_console[Bucket naming rules^]
@@ -100,10 +105,10 @@ Length: 8-128 Characters +
 |===
 |Resource Type | Resource Name
 
-|S3 Bucket for Admin App 
+|S3 Bucket for Admin App
 | `WEBADMIN_NAME`
 
-|S3 Bucket for Contractor App 
+|S3 Bucket for Contractor App
 | `WEBAPP_NAME`
 
 |CloudFront Distribution ID for Admin App

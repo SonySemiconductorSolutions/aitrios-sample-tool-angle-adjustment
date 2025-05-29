@@ -272,3 +272,7 @@ pyrightconfig.json
 src/sample_images/
 src/unseed.py
 dev_getDeviceData.py
+
+allure-results/
+coverage_report/
+coverage_unit.json

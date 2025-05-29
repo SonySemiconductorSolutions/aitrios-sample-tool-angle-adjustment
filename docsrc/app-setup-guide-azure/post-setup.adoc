@@ -7,89 +7,15 @@
 ** <<whitelist-host-machine-ip, Whitelist host machine IP>>
 
 
-=== Get Application URLs
-
-==== Admin App URL and Contractor App URL
-
-* Execute the following command to display the Admin App URL and Contractor App URLs
-
-[source,shell]
-----
-# from tools/cloud-setup/azure
-$ bash print-app-url.sh
-----
-
-Make note of the displayed URLs in the terminal. Refer following section to know about the usage.
-
-==== QR Code Generation for Contractor App and Facilities
-
-* Once the data is populated to the DB, to use the contractor App, generate the QR Codes.
-* Contractor App can be opened by scanning QR Code only.
-
-* Following command can be used to generate the QR codes for Contractor App and available facilities. +
-This command generates QR Codes for all the facilities at once in the 'QRCodes' directory.
-
-* Replace the Contractor App URL from previous command output in the following command.
-
-[source,shell]
-----
-# from tools/cloud-setup/azure
-(.venv) $ caat-helper qr generate -u {PLACEHOLDER_CONTRACTOR_APP_URL}
-----
-
-==== App User Guide
-
-* Usage instructions for Admin App - refer menu: `Admin User Guide`
+=== Contractor App User Guide
 
 * Usage instructions for Contractor App - refer menu: `Contractor User Guide`
 
-
-[[remove-host-machine-ip]]
-=== Remove Host IP from Database whitelist
-
-* If all data is populated to Database and no further interaction required with the Database, remove the host machine IP, so that the Database stays in Private network.
-* Execute the following command to remove the IP whitelisting from Database
-
-[source,shell]
-----
-# from tools/cloud-setup/azure
-$ bash remove-host-ip-db.sh
-----
 
 This would conclude the setting up of AAT application in Azure cloud. +
 
 Please start using the application.
 
-
-=== Add Selective Data to Database
-
-* When initial cloud setup is complete and data is added, a situation may arise, when more number of devices or facilities or new customer needs to be added to the already existing Database.
-* Selective data such as such as facilities, devices, customers can be added to the database with the help of caat-helper.
-
-[NOTE]
-====
-* Updating the existing data is not supported in `caat-helper`.
-* E.g., Initial data is added. Admin 1 is associated to Customer 1. +
-Next time, Admin 2 is added and user would like to assign to Customer 1. +
-This is not supported.
-====
-
-==== Add the data through excel
-
-* Add the data to the respective sheets (facility, customer, device) in the excel file used initially to populate database and execute the following command.
-
-* Before running any `caat-helper` commands, make sure to:
-    ** <<activate-virtual-environment, Activate virtual environment>>
-    ** <<set-environment-variables, Execute set environment variable script>>
-    ** <<whitelist-host-machine-ip, Whitelist host machine IP>>
-
-
-[source,shell]
-----
-$ (.venv) caat-helper db populate --excel-path '/path/to/excel'
-----
-
-* Once the DB interaction is complete <<remove-host-machine-ip, remove host machine IP>>
 
 === Reset Admin Password
 

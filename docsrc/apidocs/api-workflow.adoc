@@ -19,22 +19,13 @@
 
 plantuml::api-workflow/api-admin/admin-login.puml[]
 
-==== Get latest reviews
+==== Create admin
 
-plantuml::api-workflow/api-admin/admin-get-latest-reviews.puml[]
+plantuml::api-workflow/api-admin/admin-create-admin.puml[]
 
-==== Get reviews history
+==== Create customer
 
-plantuml::api-workflow/api-admin/admin-get-review-history.puml[]
-
-==== Get review by ID
-
-plantuml::api-workflow/api-admin/admin-get-review-by-id.puml[]
-
-
-==== Update review by ID
-
-plantuml::api-workflow/api-admin/admin-approve-or-reject-review-by-id.puml[]
+plantuml::api-workflow/api-admin/admin-create-customer.puml[]
 
 ==== Get customer list
 
@@ -48,10 +39,89 @@ plantuml::api-workflow/api-admin/admin-get-customer-details.puml[]
 
 plantuml::api-workflow/api-admin/admin-updates-console-creds.puml[]
 
+==== Get device types
+
+plantuml::api-workflow/api-admin/admin-get-device-types.puml[]
+
+==== Get device type by ID
+
+plantuml::api-workflow/api-admin/admin-get-device-type-by-id.puml[]
+
+==== Create device type
+
+plantuml::api-workflow/api-admin/admin-create-device-type.puml[]
+
+==== Update device type
+
+plantuml::api-workflow/api-admin/admin-update-device-type.puml[]
+
+==== Get facility types
+
+plantuml::api-workflow/api-admin/admin-get-facility-types.puml[]
+
+==== Create facility type
+
+plantuml::api-workflow/api-admin/admin-create-facility-type.puml[]
+
+==== Get facilities by customer
+
+plantuml::api-workflow/api-admin/admin-get-facilities-by-customer.puml[]
+
+==== Create or update facility
+
+plantuml::api-workflow/api-admin/admin-create-or-update-facility.puml[]
+
+==== Get facility details
+
+plantuml::api-workflow/api-admin/admin-get-facility-details.puml[]
+
+==== Get combined devices
+
+plantuml::api-workflow/api-admin/admin-get-combined-devices.puml[]
+
 ==== Get device connection state
 
 plantuml::api-workflow/api-admin/admin-get-device-status.puml[]
 
+==== Save or update devices
+
+plantuml::api-workflow/api-admin/admin-save-update-devices.puml[]
+
+==== Bulk delete devices
+
+plantuml::api-workflow/api-admin/admin-bulk-delete-devices.puml[]
+
+==== Generate customer QR codes
+
+plantuml::api-workflow/api-admin/admin-generate-customer-qr-codes.puml[]
+
+==== Delete reviews by device
+
+plantuml::api-workflow/api-admin/admin-delete-reviews-by-device.puml[]
+
+==== Get latest reviews
+
+plantuml::api-workflow/api-admin/admin-get-latest-reviews.puml[]
+
+==== Get reviews history
+
+plantuml::api-workflow/api-admin/admin-get-review-history.puml[]
+
+==== Get review by ID
+
+plantuml::api-workflow/api-admin/admin-get-review-by-id.puml[]
+
+==== Update review by ID
+
+plantuml::api-workflow/api-admin/admin-approve-or-reject-review-by-id.puml[]
+
+==== Export data
+
+plantuml::api-workflow/api-admin/admin-export-data.puml[]
+
+==== Import data
+
+plantuml::api-workflow/api-admin/admin-import-data.puml[]
 
 === Contractor API workflow
 

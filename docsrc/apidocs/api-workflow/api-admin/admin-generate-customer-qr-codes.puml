@@ -1,0 +1,31 @@
+@startuml Generate Customer QR Codes
+title Generate Customer QR Codes
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request body (customers and facility_ids);
+if (Invalid customers or facility_ids?) then (yes)
+    : Send HTTP status 400, Invalid customer or facility;
+    kill
+endif
+: Check resource authorization for each customer and facility;
+: Create temporary directory for QR codes;
+: For each customer and facility, generate QR codes;
+: Zip all generated QR codes;
+: Send ZIP file as HTTP response;
+note right
+    Returns:
+        1. ZIP file containing generated QR codes for customers/facilities
+end note
+: Clean up temporary files;
+stop
+@enduml

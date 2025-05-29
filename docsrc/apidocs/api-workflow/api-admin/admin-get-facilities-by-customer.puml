@@ -1,0 +1,32 @@
+@startuml Get Facilities By Customer
+title Get Facilities By Customer
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Parse and validate customer_id from query;
+if (customer_id missing or invalid?) then (yes)
+    : Send HTTP status 400, Invalid customer_id;
+    kill
+endif
+: Check resource authorization for customer_id;
+: Retrieve all facilities for customer_id;
+: Build response with facilities list, total, and message;
+: Send HTTP 200 with facilities list;
+note right
+    Returns:
+        1. Facility ID
+        2. Facility name
+        3. Customer ID
+        4. Total number of facilities
+end note
+stop
+@enduml

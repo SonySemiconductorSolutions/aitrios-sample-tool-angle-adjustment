@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
   language: "English",
-  version: "1.7.0",
+  version: "2.0.0",
   app_title: "Angle Adjustment Tool",
   camera: "Camera",
 
@@ -26,8 +26,8 @@ const translations = {
     para_1: "Please confirm the facility listed below.",
     para_2: "Once confirmed, please proceed with setting up the cameras.",
     facility_name: "Facility Name: ",
-    prefecture: "State/Province/Region: ",
-    municipality: "City/Town: ",
+    prefecture: "State: ",
+    municipality: "City: ",
     error: "ERROR: ",
     qr_para_1: "ERROR: Open the application using a valid QR code of Web URL",
     qr_para_2: "Authentication failed",
@@ -143,6 +143,8 @@ const translations = {
     approval_des1_p2: "Thank you!",
     reject_des1_p1: "We have checked the angle of view.",
     reject_des1_p2: "Please adjust the angle of view.",
+    failed_des1_p1: "Review processing failed.",
+    failed_des1_p2: "Please try again or contact Admin.",
     reject_retry: "Adjust the angle of view",
     setup_another_cam: "Setup another camera",
     go_to_home: "Go to main page",

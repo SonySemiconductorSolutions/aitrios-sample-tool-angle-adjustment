@@ -18,8 +18,10 @@ Welcome to the AAT documentation. This document provides comprehensive informati
 
 include::introduction.adoc[]
 include::environment-setup.adoc[]
+include::db-initialization.adoc[]
 include::build-deploy.adoc[]
-include::db-operations.adoc[]
+include::db-population.adoc[]
 include::post-setup.adoc[]
 include::faq.adoc[]
 include::version-upgrade.adoc[]
+include::appendix.adoc[]

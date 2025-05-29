@@ -15,27 +15,60 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------
 */
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useStore } from "../../store";
 import { LoginForm } from "./components/LoginForm";
 import { BackgroundContainer } from "../../components/BackgroundContainer";
+import { getCustomers } from "../../services/customers";
 
 export const LoginPage = () => {
-  const { currentAccount } = useStore();
+  const { currentAccount, setCustomers } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [customersChecked, setCustomersChecked] = useState(false);
+  const [isCheckingCustomers, setIsCheckingCustomers] = useState(false);
 
-  // Effect hook to redirect to Dashboard page on successful login
   useEffect(() => {
-    if (currentAccount) {
-      // Check for the redirect query parameter
-      const params = new URLSearchParams(location.search);
+    const fetchAndCheckCustomers = async () => {
+      if (!currentAccount || customersChecked || isCheckingCustomers) {
+        return;
+      }
 
-      // Fallback to dashboard if no redirect query parameter is found
-      const redirectParam = params.get("redirect") || "/";
-      navigate(redirectParam);
-    }
-  }, [currentAccount, location.search, navigate]);
+      setIsCheckingCustomers(true);
+      try {
+        const customersData = await getCustomers();
+
+        if (customersData?.data) {
+          setCustomers(customersData.data.map((value: { id: any; customer_name: any; last_updated_by: any; last_updated_at_utc: any; }) => ({
+            id: value.id,
+            customerName: value.customer_name,
+            lastUpdatedBy: value.last_updated_by,
+            lastUpdatedTime: value.last_updated_at_utc,
+          })));
+        }
+
+        setCustomersChecked(true);
+
+        const params = new URLSearchParams(location.search);
+        const redirectParam = params.get("redirect");
+
+        if (!customersData?.data || customersData.data.length === 0) {
+          navigate("/settings");
+        } else {
+          navigate(redirectParam || "/");
+        }
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+        setCustomersChecked(true);
+        navigate("/");
+      } finally {
+        setIsCheckingCustomers(false);
+      }
+    };
+
+    fetchAndCheckCustomers();
+  }, [currentAccount, navigate, location.search, customersChecked, isCheckingCustomers, setCustomers]);
 
   return (
     <BackgroundContainer>

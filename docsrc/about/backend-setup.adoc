@@ -4,7 +4,6 @@
 === Requirements
 
 * Python 3.10
-* Pipenv
 * Docker
 
 === Quick start
@@ -93,11 +92,11 @@ If the secret key is changed, the data already signed/encrypted will be of no us
 [source,shell]
 ----
 # from backend
-$ pipenv shell --python 3.10
-$ pipenv install
+$ python3.10 -m venv .venv
+$ source .venv/bin/activate
+$ pip install -U pip
+$ pip install -r requirements.txt
 
-# Install dev packages
-$ pipenv install --dev
 ----
 
 * Generate ORM code (run only whenever there is change in Database schema). Additional details about prisma, see backend/prisma/README.md
@@ -170,7 +169,7 @@ $ python scripts/seed.py
 
 [NOTE]
 ====
-* Alternatively, CAAT Helper (see: tools/caat-helper/README.md) can be used to populate the initial data to Database.
+* Alternatively, CAAT Helper (see: tools/caat-helper/README.md) or Admin App UI can be used to populate the initial data to Database.
 * If `caat-helper` is used for local development/hosting, please set APP_ENV variable before using any caat-helper commands. +
 `$ export APP_ENV=local`
 ====
@@ -186,6 +185,8 @@ $ prisma studio --schema=./prisma/schema.postgres.prisma
 ===== Generate QR codes
 
 * After DB is created and data is populated, a QR code is needed to open the contractor App.
+* QR Codes can be generated using the script or using the Admin App UI.
+* Here, script method is described. For Admin App UI process, please see Admin App User Guide documentation.
 * Make sure to setup the contractor app (see: web-app/README.md) and copy the URL of contractor app.
 * Edit URL variable in the backend/scripts/generate_qr.py and replace with Contractor App URL
 * Edit backend/scripts/generate_qr.py and provide the APP_SECRET_KEY value as generated in previous step

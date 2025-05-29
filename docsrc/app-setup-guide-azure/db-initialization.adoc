@@ -1,0 +1,152 @@
+
+== Database Initialization
+
+* CAAT Helper(`caat-helper`) is a python package. It provides command line interface to interact with the CAAT Database.
+* CAAT Helper can do following:
+  ** Create Admin Account
+  ** Reset Admin Password
+  ** Clean the DB
+
+[[whitelist-host-machine-ip]]
+=== Whitelisting host machine IP
+
+* During cloud setup (previous section), host machine IP is whitelisted in the Virtual Network
+* In case, if setup procedure is stopped for some reason and resumed next day or resumed in other machine, there is a chance that the host machine IP is changed.
+* To add host machine IP to access the Database, execute following command:
+
+[NOTE]
+====
+Whitelist the host machine IP, before running caat-helper commands.
+====
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+$ bash allow-host-ip-db.sh
+----
+
+=== Installation
+Run following commands to create virtual environment and install `caat-helper` package.
+
+==== Create virtual environment
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+$ python3.10 -m venv .venv
+----
+
+[[activate-virtual-environment]]
+==== Activate virtual environment
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+$ source .venv/bin/activate
+----
+
+==== Install `caat-helper` package
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+# Upgrade pip
+$ pip install -U pip
+
+# Install CAAT helper package
+$ pip install ../../caat-helper/
+----
+
+[[set-environment-variables]]
+=== Setting of Env variables
+
+* Following environment variables are required to execute the commands.
+
+  - DATABASE_URL (SQLServer Database Connection String).
+  - APP_SECRET_KEY (Encryption KEY to sign URL token and to encrypt Customer credentials)
+
+* Execute following command to set the Environment Variables
+
+[NOTE]
+====
+Make sure to execute set environment variable script, before running caat-helper commands.
+====
+
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+$ source set-env-var.sh
+----
+
+
+=== Generate prisma client (only once)
+
+Run following commands to generate prisma client.
+
+WARNING: Please make sure to execute this command first before any other caat-helper commands and only once.
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+(.venv) $ caat-helper-init
+----
+
+=== Creation of Admin Account
+
+* Run following commands to create admin account.
+* Provide login-id and password for the admin account as parameter to the command.
+* Refer the table below for the naming conventions of login-id and password.
+
+WARNING: Please make sure to remember the password. Once the password is set, it cannot be retrieved. Only reset option is available.
+
+[%noheader, cols="1,2,2"]
+|===
+|**Item** ^| _Login ID_ ^| _Admin Password_
+
+|**Description**
+| The user ID which admin can use for logging to the Admin app.
+| The admin password to login to the admin app. 
+
+|**Character details**
+|English AlphaNumeric characters without Space and Japanese Characters except `。` are supported. +
+Allowed Special characters are Hyphen `-`, Underscore `_`. +
+Length: 1-255 characters.
+|Verify password has: +
+1. Length: 8-255 characters. +
+2. Contains letter from any of 3 categories +
+    a. Lowercase (a-z) +
+    b. Uppercase (A-Z) +
+    c. Digits (0-9) +
+    d. Special Characters (`_`, `-`, `!`, `$`, `#`, `%`, `@`) +
+3. No space allowed. +
+
+|**Sample Values**
+|aat-admin
+|ajatmd11Arug500TAeCne
+|===
+
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+(.venv) $ caat-helper db create-admin -id <loginid> -p <password>
+----
+
+=== View DB data using Prisma Studio
+
+* To view/confirm the data that is populated in the Database, run following command:
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+(.venv) $ prisma studio --schema=../../caat-helper/src/data/prisma/schema.prisma
+----
+
+* The above command execution opens/prompts to open the studio viewer in web browser, please allow.
+* Once prisma studio is opened, the following models can be seen:
+
+image::images/prisma-db-model-list.png[Prisma Model List]
+
+* Click admin model to view the data. Rest of the models can be viewed in similar way after data population.
+* To close the studio instance, run `ctrl+c` in the terminal where above command was executed.

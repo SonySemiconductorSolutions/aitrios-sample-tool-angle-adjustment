@@ -19,36 +19,26 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request
 from flask_login import current_user, login_required
 from flask_pydantic import validate
-from src.config import DB_TRANSACTION_MAX_WAIT_SECONDS, DB_TRANSACTION_TIMEOUT_SECONDS
+from src.config import DB_TRANSACTION_MAX_WAIT_SECONDS, DB_TRANSACTION_TIMEOUT_SECONDS, DEFAULT_PAGE_SIZE
 from src.core import db
 from src.exceptions import APIException, ErrorCodes
 from src.libs.auth import check_device_authorization, check_resource_authorization, validate_auth_token
 from src.models.reviews import build_device_query, get_checking_reviews_info
-from src.schemas import *
-from src.schemas.devices import DeviceSchema
+from src.schemas.devices import DeviceGetResponseSchema, DeviceSchema
+from src.schemas.response import ResponseHTTPSchema
+from src.schemas.reviews import (
+    ConfirmReviewRequestSchema,
+    ConfirmReviewResponseDataSchema,
+    CreateReviewRequestSchema,
+    DeviceReviewAllowedEnums,
+    DeviceReviewHistorySchema,
+    ReviewGetResponseSchema,
+    ReviewListResponseSchema,
+    ReviewListSchema,
+    ReviewSchema,
+)
 
 api = Blueprint("reviews", __name__, url_prefix="/reviews")
-
-
-# @api.get("")
-# @login_required
-# def list_reviews():
-#     query = ReviewListSchema(**request.args)
-
-#     rows, count = build_review_query(connection=db, parameters=query)
-#     data = [ReviewSchema.model_validate(row.model_dump()) for row in rows]
-#     reviewing_info = get_checking_reviews_info(data=data, late_minutes=query.late_minutes)
-
-#     pagination_data = {
-#         "data": data,
-#         "page": query.page if query.page > 0 else 1,
-#         "total": count,
-#         "page_size": query.page_size,
-#         "size": len(data),
-#         "reviewing_info": reviewing_info,
-#     }
-
-#     return ReviewListResponseSchema(**pagination_data).make_response()
 
 
 @api.get("/latest")
@@ -77,10 +67,14 @@ def get_device_latest_reviews():
     # Raise error if customer Id is not an integer
     try:
         customer_id = int(request.args.get("customer_id"))
-    except ValueError:
+    except ValueError as exc:
         _ec = ErrorCodes.VALUE_ERROR
         _ec["message"] = "customer_id should be an integer"
-        raise APIException(_ec)
+        raise APIException(_ec) from exc
+
+    # Return 404 if customer_id is not valid
+    if customer_id <= 0:
+        raise APIException(ErrorCodes.CUSTOMER_NOT_FOUND)
 
     check_resource_authorization(customer_id=customer_id)
 
@@ -132,10 +126,15 @@ def get_device_review_history(device_id: int):
     Returns:
         List of reviews for a device ID.
     """
+
+    # Return 404 if device_id is not valid
+    if device_id <= 0:
+        raise APIException(ErrorCodes.DEVICE_NOT_FOUND)
+
     check_resource_authorization(device_id=device_id)
 
     # Get device by ID
-    device = db.device.find_first(where={"id": device_id})
+    device = db.device.find_first(where={"id": device_id, "admin_id": current_user.id})
 
     # Check whether the device exists
     if not device:
@@ -205,6 +204,11 @@ def get_review(review_id: int) -> ReviewGetResponseSchema:
     Returns:
         Review Details
     """
+
+    # Return 404 if review_id is not valid
+    if review_id <= 0:
+        raise APIException(ErrorCodes.REVIEW_NOT_FOUND)
+
     # Check resource authorization
     check_resource_authorization(review_id=review_id)
 
@@ -244,6 +248,11 @@ def update_review_by_admin(review_id: int, body: ConfirmReviewRequestSchema):
     Returns:
         Success response with status 200
     """
+
+    # Return 404 if review_id is not valid
+    if review_id <= 0:
+        raise APIException(ErrorCodes.REVIEW_NOT_FOUND)
+
     check_resource_authorization(review_id=review_id)
     review = db.review.find_first(where={"id": review_id}, include={"facility": {}})
     if not review:
@@ -350,7 +359,7 @@ def create_review_by_contractor(body: CreateReviewRequestSchema, payload: dict):
     if not facility_id:
         raise APIException(ErrorCodes.INVALID_FACILITY_ID)
 
-    elif not device_id:
+    if not device_id:
         raise APIException(ErrorCodes.INVALID_DEVICE_ID)
 
     # Fetch facility
@@ -391,7 +400,7 @@ def create_review_by_contractor(body: CreateReviewRequestSchema, payload: dict):
     # Create DB transaction to add review in the DB
     try:
         # max_wait and timeout is added overriding the default, because, in case of Azure SQL DB
-        # if the transaction takes more than 5s  and there is a timeout of 5s default, which results in failed transaction.
+        # if the transaction takes more than 5s  and there is a timeout of 5s default, resulting in failed transaction.
         # This is unlikely to occur in review create transaction, but added for safety
         with db.tx(
             max_wait=timedelta(seconds=DB_TRANSACTION_MAX_WAIT_SECONDS),
@@ -413,8 +422,67 @@ def create_review_by_contractor(body: CreateReviewRequestSchema, payload: dict):
             )
 
     except Exception as _exec:
-        raise APIException(ErrorCodes.REVIEW_CREATION_FAILED)
+        raise APIException(ErrorCodes.REVIEW_CREATION_FAILED) from _exec
     # Return success response
     return ResponseHTTPSchema(
         status_code=201, message="Create successfully", data={"review_id": review.id}
     ).make_response()
+
+
+@api.delete("/devices/<int:device_id>")
+@login_required
+@validate()
+def delete_reviews_by_device(device_id: int) -> ResponseHTTPSchema:
+    """
+    DELETE API /reviews/devices/<device_id>
+
+    Deletes all reviews for the specified device.
+
+    Args:
+        device_id (int): ID of the device
+
+    Returns:
+        ResponseHTTPSchema: A response schema indicating success or failure.
+    """
+    # Validate device_id
+    if device_id <= 0:
+        _ec = ErrorCodes.VALUE_ERROR.copy()
+        _ec["message"] = "Valid device_id is required"
+        raise APIException(_ec)
+
+    # Authorization check for the device
+    check_resource_authorization(device_id=device_id)
+
+    # Find all reviews for the device
+    reviews = db.review.find_many(where={"device_id": device_id})
+
+    # Check if reviews exist for the device
+    if not reviews:
+        raise APIException(ErrorCodes.REVIEW_NOT_FOUND)
+
+    failed_to_delete_reviews = []
+    # Iterate through the reviews and delete them
+    for review in reviews:
+        try:
+            db.review.delete(where={"id": review.id})
+        except Exception:
+            failed_to_delete_reviews.append(review.id)
+
+    if failed_to_delete_reviews:
+        # If any review deletion fails, add the failed review IDs to the error message
+        error_message = f"Failed to delete reviews with IDs: {', '.join(map(str, failed_to_delete_reviews))}"
+        _ec = ErrorCodes.REVIEW_DELETE_FAILED.copy()
+        _ec["message"] = error_message
+        raise APIException(_ec)
+
+    update_data = {
+        "result": DeviceReviewAllowedEnums.INITIAL_STATE,
+    }
+    update_result = db.device.update(where={"id": device_id}, data=update_data)
+
+    if not update_result:
+        _ec = ErrorCodes.REVIEW_DELETE_FAILED.copy()
+        _ec["message"] = "Failed to update device status after deleting reviews"
+        raise APIException(_ec)
+
+    return ResponseHTTPSchema(message="All reviews for the device deleted successfully").make_response()

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import pandas as pd
 from src.config import SUPPORTED_PREFECTURES_LIST
 from src.service.aitrios_service import verify_customer_credentials
 from src.utils.data_validator_util import (
-    confirm_alert,
     is_nan,
     validate_date,
     validate_local_url,
@@ -137,7 +136,8 @@ def verify_customer_data(csv_file_path: str, valid_admin_list: list):
     CUSTOMER_CRITERIA_01: Verify values are present for all columns
     CUSTOMER_CRITERIA_02: Verify customer name AlphaNumeric Characters only
     CUSTOMER_CRITERIA_03: Verify admin login id is present in admin data
-    CUSTOMER_CRITERIA_04: Validate customer credentials for each row
+    CUSTOMER_CRITERIA_04: Verify that the customer name is unique for given admin login id
+    CUSTOMER_CRITERIA_05: Validate customer credentials for each row
 
     Returns:
         bool: True if customer data is valid, False otherwise.
@@ -221,6 +221,19 @@ def verify_customer_data(csv_file_path: str, valid_admin_list: list):
             sys.exit(1)
 
     # CUSTOMER_CRITERIA_04
+    are_customer_unique = cust_dataframe.duplicated(subset=["customer_name", "admin_login_id"], keep=False)
+    if are_customer_unique.any():
+        duplicated_customers = cust_dataframe[are_customer_unique]
+        logger.error(f"Some customer names are not unique for the given admin login ID:")
+        for index, row in duplicated_customers.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in customer")
+            logger.error(
+                f"\nRow {adjusted_index}: Customer name '{row['customer_name']}' is not unique for admin login ID '{row['admin_login_id']}'."
+            )
+        sys.exit(1)
+
+    # CUSTOMER_CRITERIA_05
     for index, row in cust_dataframe.iterrows():
         logger.info(f"\nVerifying customer credentials for customer {row['customer_name']}. This may take some time.")
         customer_data = {
@@ -250,13 +263,15 @@ def verify_customer_data(csv_file_path: str, valid_admin_list: list):
     return {"is_valid": True, "customer_data": cust_dataframe}
 
 
-def verify_device_type_data(csv_file_path: str, valid_customer_list: list):
+def verify_device_type_data(csv_file_path: str, valid_customer_list: list, valid_admin_list: list):
     """Validates the device type data by Sier in csv
 
     DEVICE_TYPE_CRITERIA_01: Verify all fields are present for all rows
     DEVICE_TYPE_CRITERIA_02: Verify device type name is in valid format
     DEVICE_TYPE_CRITERIA_03: Verify sample_image_path is valid
     DEVICE_TYPE_CRITERIA_04: Verify the customer exists or not
+    DEVICE_TYPE_CRITERIA_05: Verify the admin login id is present in admin data
+    DEVICE_TYPE_CRITERIA_06: Verify that the device type name is unique for given admin login id
 
     Returns:
         bool: True if device type data is valid, False otherwise.
@@ -268,7 +283,7 @@ def verify_device_type_data(csv_file_path: str, valid_customer_list: list):
 
     # DEVICE_TYPE_CRITERIA_01
     # Check if any row has null values for any column and also for check if the header matches the criteria
-    expected_headers = ["name", "sample_image_path", "customer_name"]
+    expected_headers = ["name", "sample_image_path", "customer_name", "admin_login_id"]
 
     # Check if the headers match
     actual_headers = list(devicetype_dataframe.columns)
@@ -340,14 +355,43 @@ def verify_device_type_data(csv_file_path: str, valid_customer_list: list):
             )
             sys.exit(1)
 
+    # DEVICE_TYPE_CRITERIA_05
+    are_adminid_valid = devicetype_dataframe["admin_login_id"].isin(valid_admin_list)
+    if not are_adminid_valid.all():
+        invalid_admin_ids = devicetype_dataframe[~are_adminid_valid]
+        logger.error("Some admin login IDs do not match admin data:")
+        for index, row in invalid_admin_ids.iterrows():
+            adjusted_index = index + 2
+            logger.error("\nError occurred in device_type")
+            logger.error(
+                f"\nRow {adjusted_index}: Invalid admin login ID in device_type: {row['admin_login_id']}. "
+                f"Please verify that login ID '{row['admin_login_id']}' exists in the admin table."
+            )
+            sys.exit(1)
+
+    # DEVICE_TYPE_CRITERIA_06
+    are_device_type_unique = devicetype_dataframe.duplicated(subset=["name", "admin_login_id"], keep=False)
+    if are_device_type_unique.any():
+        duplicated_device_types = devicetype_dataframe[are_device_type_unique]
+        logger.error("Some device type names are not unique for the given admin login ID:")
+        for index, row in duplicated_device_types.iterrows():
+            adjusted_index = index + 2
+            logger.error("\nError occurred in device_type")
+            logger.error(
+                f"\nRow {adjusted_index}: Device type name '{row['name']}' is not unique for admin login ID '{row['admin_login_id']}'."
+            )
+        sys.exit(1)
+
     return {"is_valid": True, "devicetype_data": devicetype_dataframe}
 
 
-def verify_facility_type_data(csv_file_path: str):
+def verify_facility_type_data(csv_file_path: str, valid_admin_list: list):
     """Validates the facility type data by Sier in csv
 
     FACILITY_TYPE_CRITERIA_01: Verify all fields are present for all rows
     FACILITY_TYPE_CRITERIA_02: Verify facility type name is in valid format
+    FACILITY_TYPE_CRITERIA_03: Verify admin login id is present in admin data
+    FACILITY_TYPE_CRITERIA_04: Verify that the facility type name is unique for given admin login id
 
     Returns:
         bool: True if facility type data is valid, False otherwise.
@@ -359,7 +403,7 @@ def verify_facility_type_data(csv_file_path: str):
 
     # FACILITY_TYPE_CRITERIA_01
     # Check if any row has null values for any column and also for check if the header matches the criteria
-    expected_headers = ["name"]
+    expected_headers = ["name", "admin_login_id"]
 
     # Check if the headers match
     actual_headers = list(facilitytype_dataframe.columns)
@@ -407,10 +451,39 @@ def verify_facility_type_data(csv_file_path: str):
             logger.error(f"\nRow {adjusted_index}: Invalid facility type name in facility_type: '{row['name']}'")
             sys.exit(1)
 
+    # FACILITY_TYPE_CRITERIA_03
+    are_adminid_valid = facilitytype_dataframe["admin_login_id"].isin(valid_admin_list)
+    if not are_adminid_valid.all():
+        invalid_admin_ids = facilitytype_dataframe[~are_adminid_valid]
+        logger.error(f"Some admin login IDs do not match admin data:")
+        for index, row in invalid_admin_ids.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility_type")
+            logger.error(
+                f"\nRow {adjusted_index}: Invalid admin login ID in facility type: {row['admin_login_id']}. "
+                f"Please verify that login ID '{row['admin_login_id']}' exists in the admin table."
+            )
+            sys.exit(1)
+
+    # FACILITY_TYPE_CRITERIA_04
+    are_facility_type_unique = facilitytype_dataframe.duplicated(subset=["name", "admin_login_id"], keep=False)
+    if are_facility_type_unique.any():
+        duplicated_facility_types = facilitytype_dataframe[are_facility_type_unique]
+        logger.error(f"Some facility type names are not unique for the given admin login ID:")
+        for index, row in duplicated_facility_types.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility_type")
+            logger.error(
+                f"\nRow {adjusted_index}: Facility type name '{row['name']}' is not unique for admin login ID '{row['admin_login_id']}'."
+            )
+        sys.exit(1)
+
     return {"is_valid": True, "facilitytype_data": facilitytype_dataframe}
 
 
-def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_facilitytype_list: list):
+def verify_facility_data(
+    csv_file_path: str, valid_customer_list: list, valid_facilitytype_list: list, valid_admin_list: list
+):
     """Validates the facility data by Sier in csv
 
     FACILITY_CRITERIA_01: Verify all fields are present for all rows
@@ -422,6 +495,7 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
     FACILITY_CRITERIA_07: Verify prefecture is in valid format and from supported list
     FACILITY_CRITERIA_08: Verify municipality is in valid format
     FACILITY_CRITERIA_09: Verify facility, prefecture and municipality combination is unique
+    FACILITY_CRITERIA_10: Verify admin login id is present in admin data
 
     Returns:
         bool: True if facility data is valid, False otherwise.
@@ -504,20 +578,19 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
             sys.exit(1)
 
     # FACILITY_CRITERIA_04
-    are_start_dates_valid = facility_dataframe['effective_start_jst'].apply(validate_date)
+    are_start_dates_valid = facility_dataframe["effective_start_jst"].apply(validate_date)
     if not are_start_dates_valid.all():
         invalid_start_dates = facility_dataframe[~are_start_dates_valid]
         logger.error("Some facility effective start dates are incorrectly formatted:")
         for index, row in invalid_start_dates.iterrows():
             adjusted_index = index + 2
             logger.error(
-                f"Row {adjusted_index}: Invalid effective start date in facility: {row['effective_start_jst']}")
+                f"Row {adjusted_index}: Invalid effective start date in facility: {row['effective_start_jst']}"
+            )
             sys.exit(1)
 
     # FACILITY_CRITERIA_05
-    are_end_dates_valid = facility_dataframe["effective_end_jst"].apply(
-        lambda x: validate_date(x, True)
-    )
+    are_end_dates_valid = facility_dataframe["effective_end_jst"].apply(lambda x: validate_date(x, True))
     if not are_end_dates_valid.all():
         invalid_end_dates = facility_dataframe[~are_end_dates_valid]
         logger.error(f"Some facility effective end dates are incorrect:")
@@ -574,8 +647,15 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
             sys.exit(1)
 
     # FACILITY_CRITERIA_09
-    facility_dataframe["facility_details"] = facility_dataframe["customer_name"] + " " + facility_dataframe["facility_name"] + " " + facility_dataframe[
-        "prefecture"] + " " + facility_dataframe["municipality"]
+    facility_dataframe["facility_details"] = (
+        facility_dataframe["customer_name"]
+        + " "
+        + facility_dataframe["facility_name"]
+        + " "
+        + facility_dataframe["prefecture"]
+        + " "
+        + facility_dataframe["municipality"]
+    )
     are_facility_details_unique = facility_dataframe["facility_details"].duplicated()
     if are_facility_details_unique.any():
         duplicated_facility_details = facility_dataframe[are_facility_details_unique]
@@ -588,11 +668,29 @@ def verify_facility_data(csv_file_path: str, valid_customer_list: list, valid_fa
             )
             sys.exit(1)
 
+    # FACILITY_CRITERIA_10
+    are_adminid_valid = facility_dataframe["admin_login_id"].isin(valid_admin_list)
+    if not are_adminid_valid.all():
+        invalid_admin_ids = facility_dataframe[~are_adminid_valid]
+        logger.error(f"Some admin login IDs do not match admin data:")
+        for index, row in invalid_admin_ids.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in facility")
+            logger.error(
+                f"\nRow {adjusted_index}: Invalid admin login ID in facility: {row['admin_login_id']}. "
+                f"Please verify that login ID '{row['admin_login_id']}' exists in the admin table."
+            )
+            sys.exit(1)
+
     return {"is_valid": True, "facility_data": facility_dataframe}
 
 
 def verify_device_data(
-    csv_file_path: str, valid_customer_list: list, valid_facility_dataframe: pd.DataFrame, valid_devicetype_list: list
+    csv_file_path: str,
+    valid_customer_list: list,
+    valid_facility_dataframe: pd.DataFrame,
+    valid_devicetype_list: list,
+    valid_admin_list: list,
 ):
     """Validates the device data by Sier in csv
 
@@ -601,7 +699,9 @@ def verify_device_data(
     DEVICE_CRITERIA_03: Verify facility name existing or not
     DEVICE_CRITERIA_04: Verify device type existing or not
     DEVICE_CRITERIA_05: Verify customer name existing or not
-    DEVICE_CRITERIA_06: Verify facility details are valid
+    DEVICE_CRITERIA_06: Verify facility details are valid, verify the facility_municipality and facility_prefecture
+                        are present in valid_facility_dataframe
+    DEVICE_CRITERIA_07: Verify admin login id is present in admin data
 
     Returns:
         bool: True if device type data is valid, False otherwise.
@@ -614,7 +714,16 @@ def verify_device_data(
 
     # DEVICE_CRITERIA_01
     # Check if any row has null values for any column and also for check if the header matches the criteria
-    expected_headers = ["device_name", "device_id", "customer_name", "facility_name", "device_type_name"]
+    expected_headers = [
+        "device_name",
+        "device_id",
+        "customer_name",
+        "facility_name",
+        "device_type_name",
+        "facility_prefecture",
+        "facility_municipality",
+        "admin_login_id",
+    ]
 
     # Check if the headers match
     actual_headers = list(device_dataframe.columns)
@@ -700,27 +809,44 @@ def verify_device_data(
             sys.exit(1)
 
     # DEVICE_CRITERIA_06
-    merged_df = device_dataframe.merge(
-        valid_facility_dataframe,
-        left_on=["customer_name", "facility_name", "facility_prefecture", "facility_municipality"],
-        right_on=["customer_name", "facility_name", "prefecture", "municipality"],
-        how="left",
-        indicator=True
-    )
+    # Check if the combination of customer_name, facility_name, prefecture, municipality exists in valid_facility_dataframe
+    device_column_data = device_dataframe[
+        ["customer_name", "facility_name", "facility_prefecture", "facility_municipality"]
+    ]
+    facility_column_data = valid_facility_dataframe[["customer_name", "facility_name", "prefecture", "municipality"]]
 
-    # Check for matches
-    merged_df["Valid"] = merged_df["_merge"] == "both"
+    # Build a set of valid facility tuples for fast lookup
+    facility_tuples = set(tuple(row) for row in facility_column_data.values)
 
-    # Find missing records
-    missing_records = merged_df[merged_df["_merge"] == "left_only"]
+    # Find device rows whose facility combination does not exist in facility_tuples
+    invalid_rows = []
+    for idx, row in device_column_data.iterrows():
+        if tuple(row) not in facility_tuples:
+            invalid_rows.append(idx)
 
-    # Raise an error if any device record is missing from valid facilities
-    if not missing_records.empty:
-        missing_records_info = missing_records[["customer_name", "facility_name", "facility_prefecture", "facility_municipality"]]
-        logger.error(f"\nError occurred in device")
-        logger.error(
-            f"Error: The following device records are not present in valid facilities:\n{missing_records_info}"
-        )
+    if invalid_rows:
+        logger.error(f"Some facility details are not valid:")
+        for index in invalid_rows:
+            row = device_column_data.loc[index]
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in device")
+            logger.error(
+                f"\nRow {adjusted_index}: Invalid facility combination in device: customer_name='{row['customer_name']}', facility_name='{row['facility_name']}', facility_prefecture='{row['facility_prefecture']}', facility_municipality='{row['facility_municipality']}'."
+            )
         sys.exit(1)
+
+    # DEVICE_CRITERIA_07
+    are_adminid_valid = device_dataframe["admin_login_id"].isin(valid_admin_list)
+    if not are_adminid_valid.all():
+        invalid_admin_ids = device_dataframe[~are_adminid_valid]
+        logger.error(f"Some admin login IDs do not match admin data:")
+        for index, row in invalid_admin_ids.iterrows():
+            adjusted_index = index + 2
+            logger.error(f"\nError occurred in device")
+            logger.error(
+                f"\nRow {adjusted_index}: Invalid admin login ID in device: {row['admin_login_id']}. "
+                f"Please verify that login ID '{row['admin_login_id']}' exists in the admin table."
+            )
+            sys.exit(1)
 
     return {"is_valid": True, "device_data": device_dataframe}

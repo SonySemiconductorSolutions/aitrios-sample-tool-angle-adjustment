@@ -37,7 +37,7 @@ export interface Account {
 export interface FilterProps {
   customerId: number | null;
   facilityName: string;
-  prefecture: string | null;
+  prefecture: string;
   municipality: string;
   status: string | null;
 }
@@ -60,7 +60,6 @@ export interface GridLineProps {
 
 // Represents the overall state of the store
 export interface StoreState {
-
   customers: Customer[];
   setCustomers: (customers: Customer[]) => void;
 
@@ -72,7 +71,7 @@ export interface StoreState {
 
   filter: FilterProps;
   setFilter: (filter: FilterProps) => void;
-  setSingleFilter: (filter: { key: string, value: string }) => void;
+  setSingleFilter: (filter: { key: string; value: string }) => void;
 
   dashboard: DashboardProps;
   setViewType: (viewType: ViewType) => void;

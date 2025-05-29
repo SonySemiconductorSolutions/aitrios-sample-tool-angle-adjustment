@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
   language: "Japanese",
-  version: "1.7.0",
+  version: "2.0.0",
   app_title: "画角調整ツール",
   camera: "カメラ",
 
@@ -143,6 +143,8 @@ const translations = {
     approval_des1_p2: "お疲れ様でした！",
     reject_des1_p1: "画角確認を実施しました",
     reject_des1_p2: "画角調整をお願いします",
+    failed_des1_p1: "レビュー処理に失敗しました",
+    failed_des1_p2: "もう一度お試しするか、管理者にお問い合わせください。",
     reject_retry: "画角を調整する",
     setup_another_cam: "別のカメラをセットアップする",
     go_to_home: "トップに戻る",

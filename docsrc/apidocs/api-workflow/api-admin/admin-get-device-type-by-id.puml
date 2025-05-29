@@ -1,0 +1,33 @@
+@startuml Get Device Type By ID
+title Get Device Type By ID
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate devicetype_id;
+if (devicetype_id is invalid?) then (yes)
+    : Send HTTP status 404, Device type not found;
+    kill
+endif
+: Retrieve device type by ID for current admin;
+if (Device type not found?) then (yes)
+    : Send HTTP status 404, Device type not found;
+    kill
+endif
+: Send HTTP 200 with device type details;
+note right
+    Returns:
+        1. Device type ID
+        2. Device type name
+        3. (Optional) Other device type details
+end note
+stop
+@enduml

@@ -251,6 +251,10 @@ def check_resource_authorization(
                 raise APIException(ErrorCodes.FACILITY_NOT_FOUND)
             if not record.customer.admin_id == current_user.id:
                 raise APIException(ErrorCodes.PERMISSION_DENIED)
+            if customer_id:
+                # Check if given customer_id and facility's customer_id are same
+                if record.customer.id != customer_id:
+                    raise APIException(ErrorCodes.PERMISSION_DENIED)
         if review_id:
             record = db.review.find_first(where={"id": review_id}, include={"customer": {}})
             # Check if record exists

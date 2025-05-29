@@ -1,0 +1,41 @@
+@startuml Get Combined Devices
+title Get Combined Devices
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Parse and validate customer_id from query;
+if (customer_id missing or invalid?) then (yes)
+    : Send HTTP status 400, Parameter missing or invalid;
+    kill
+endif
+: Check resource authorization for customer_id;
+: Fetch console credentials from DB;
+if (Credentials missing or invalid?) then (yes)
+    : Send HTTP status 400/401, Invalid console credentials;
+    kill
+endif
+: Decrypt credentials and get AITRIOS access token;
+if (Access token retrieval fails?) then (yes)
+    : Send HTTP status 400/401, Invalid console credentials;
+    kill
+endif
+: Call AITRIOS to get all devices;
+: Fetch local DB devices for customer;
+: Merge AITRIOS and local devices, mark registered_flag;
+: Add facility and device type info for registered devices;
+: Return combined device list as HTTP response;
+note right
+    Returns:
+        1. List of devices (with connection status, device/facility/type info, registered flag)
+end note
+stop
+@enduml
