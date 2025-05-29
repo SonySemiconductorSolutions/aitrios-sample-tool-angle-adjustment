@@ -40,3 +40,19 @@ export const stringDifference = (currentValue: string, newValue: string): string
 
   return newValue.slice(prefixLength, newValue.length - suffixLength);
 };
+
+// Validates a string against a given regex pattern.
+export const validateString = (value: string, type: 'LOGIN_ID' | 'LOGIN_PASSWORD' | 'URL' | 'NAME' | 'TIMESTAMP'): boolean => {
+  if (!value) return true;
+
+  const regexPatterns: Record<string, RegExp> = {
+    LOGIN_ID: /^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9]+(?:[_-][\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9]+)*$/,
+    LOGIN_PASSWORD: /^(?=.{8,})(?!.*\s)(?:(?=.*[a-z])(?=.*[A-Z])(?=.*\d)|(?=.*[a-z])(?=.*[A-Z])(?=.*[_\-!$#%@])|(?=.*[a-z])(?=.*\d)(?=.*[_\-!$#%@])|(?=.*[A-Z])(?=.*\d)(?=.*[_\-!$#%@])).+$/,
+    URL: /^(https?|ftp):\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$/,
+    NAME: /^(?:[A-Za-z0-9\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FF])(?:[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_\- ]*[A-Za-z0-9\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FF])?$/,
+    TIMESTAMP: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+]00:00$/,
+  };
+
+  const regex = regexPatterns[type];
+  return regex.test(value);
+};

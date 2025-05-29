@@ -26,9 +26,9 @@ if (Parameters are not valid?) then (yes)
     :Return token, user_id and login_id as the response;
     note right
         Returns:
-            token: Auth token (expires in 24 hours)
-            user_id: Admin User Id
-            login_id: Admin Login Id
+            1. token (auth token, expires in 24 hours)
+            2. user_id (Admin User Id)
+            3. login_id (Admin Login Id)
     end note
 else (no)
     :Send HTTP status code 400 with error message;

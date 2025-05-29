@@ -60,3 +60,7 @@ A: `allow-host-ip-db.sh` スクリプトを使用することで、ホストマ�
 # from tools/cloud-setup/azure
 $ bash allow-host-ip-db.sh
 ----
+
+Q: 異なるCloud環境 (Azure/AWS)でどのようにcaat-helperを使用しますか？::
+A: caat-helperを使用する前に、各ディレクトリからスクリプト `set-env-var.sh` を必ず実行してください。
+Azureには `tools/cloud-setup/azure/set-env-var.sh` を、AWSには `tools/cloud-setup/aws/set-env-var.sh` を使用してください。

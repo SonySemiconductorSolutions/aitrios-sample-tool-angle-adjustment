@@ -1,0 +1,33 @@
+@startuml Update Device Type
+title Update Device Type
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate device_type_id and request body;
+if (Device type not found?) then (yes)
+    : Send HTTP status 404, Device type not found;
+    kill
+endif
+if (Invalid image format?) then (yes)
+    : Send HTTP status 400, Invalid image format;
+    kill
+endif
+: Update device type in DB;
+: Send HTTP 200 with updated device type;
+note right
+    Returns:
+        1. Device type ID
+        2. Device type name
+        3. (Optional) Other device type details
+end note
+stop
+@enduml

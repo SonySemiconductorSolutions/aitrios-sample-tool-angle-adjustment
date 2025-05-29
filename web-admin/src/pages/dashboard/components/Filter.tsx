@@ -20,22 +20,21 @@ import {
   Button,
   FormControl,
   FormLabel,
-  FormHelperText,
   Input,
   Option,
   Select,
   Typography,
-  useTheme,
 } from "@mui/joy";
 import { useState, useEffect } from "react";
 import { useStore } from "../../../store";
 import { useTranslation } from "react-i18next";
+import { validateString } from "src/utils";
 
 // Interface for filter properties
 interface FilterProps {
   customerId: number | null;
   facilityName: string;
-  prefecture: string | null;
+  prefecture: string;
   municipality: string;
   status: string | null;
 }
@@ -50,18 +49,12 @@ const LABEL_SX = {
 const CHARACTER_LIMIT = 127;
 
 export const Filter = () => {
-  const theme = useTheme();
   const { customers, filter, setFilter, setCurrentPage } = useStore();
   const { t } = useTranslation();
-
-  // Lists of prefectures
-  const prefecturesList: string[] = t("prefecturesList", { returnObjects: true }) as string[];
-  const jaPrefecturesList: string[] = t("prefecturesList", { returnObjects: true, lng: "ja" }) as string[];
 
   // State variables
   const [tempFilter, setTempFilter] = useState<FilterProps>(filter);
   const [customerId, setCustomerId] = useState<number | null>(filter.customerId);
-  const [prefecture, setPrefecture] = useState<string[]>(filter.prefecture?.split(",") ?? []);
   const [filterModified, setFilterModified] = useState<boolean>(false);
 
   // Handles customer selection change
@@ -71,9 +64,10 @@ export const Filter = () => {
   };
 
   // Handles prefecture selection change
-  const handlePrefectureChange = (value: string[]) => {
-    setTempFilter({ ...tempFilter, prefecture: value.join(",") });
-    setPrefecture(value);
+  const handlePrefectureChange = (value: string) => {
+    if (value.length <= CHARACTER_LIMIT) {
+      setTempFilter({ ...tempFilter, prefecture: value });
+    }
   };
 
   // Handles municipality input change
@@ -92,6 +86,13 @@ export const Filter = () => {
 
   // Handles click on Search button to apply filters
   const handleFindButton = () => {
+    // Validate inputs
+    if (
+      !validateString(tempFilter.facilityName, "NAME") ||
+      !validateString(tempFilter.prefecture, "NAME") ||
+      !validateString(tempFilter.municipality, "NAME")
+    ) return;
+
     // Set current page to 1 and set filter
     setCurrentPage(1);
     setFilter({ ...tempFilter, status: filter.status });
@@ -110,7 +111,6 @@ export const Filter = () => {
   const handleClearButton = () => {
     setTempFilter(filterClearState);
     setCustomerId(filter.customerId);
-    setPrefecture([]);
     setFilter(filterClearState);
   };
 
@@ -187,71 +187,95 @@ export const Filter = () => {
             </Select>
           </FormControl>
           <FormControl size="sm" sx={{ flex: 1 }}>
-            <FormLabel sx={LABEL_SX}>{t("dashboardPage.prefectures")}:</FormLabel>
-            <Select
-              multiple
+            <FormLabel sx={LABEL_SX}>{t("dashboardPage.prefecture")}:</FormLabel>
+            <Input
               size="sm"
-              placeholder={t("dashboardPage.selectMultiple")}
-              value={prefecture}
-              sx={{
-                width: {
-                  xs: "calc(0.95 * 100vw)",
-                  md: "calc(0.30 * (100vw - 255px))",
-                  lg: "calc(0.20 * (100vw - 255px))"
-                }
-              }}
-              data-testid="prefecture-select-dropdown"
-              onChange={(_, value) => handlePrefectureChange(value)}
-            >
-              {prefecturesList.map((value, index) => (
-                <Option key={index} value={jaPrefecturesList[index]}
-                  sx={{
-                    width: {
-                      xs: "calc(0.95 * 100vw)",
-                      md: "calc(0.30 * (100vw - 255px))",
-                      lg: "calc(0.20 * (100vw - 255px))"
-                    }
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={prefecture.indexOf(jaPrefecturesList[index]) > -1}
-                    readOnly
-                    style={{ transform: "scale(1.25)" }}
-                  />
-                  {value}
-                </Option>
-              ))}
-            </Select>
+              placeholder={t("dashboardPage.enterText")}
+              value={tempFilter.prefecture}
+              data-testid="prefecture-input"
+              error={!validateString(tempFilter.prefecture, "NAME")}
+              slotProps={{ input: { maxLength: CHARACTER_LIMIT } }}
+              onChange={(e) => handlePrefectureChange(e.target.value)}
+            />
+            {tempFilter.prefecture && (
+              <Typography
+                level="body-xs"
+                sx={{
+                  color: !validateString(tempFilter.prefecture, "NAME")
+                    ? "danger.500"
+                    : tempFilter.prefecture.length >= CHARACTER_LIMIT
+                      ? "warning.400"
+                      : "inherit",
+                }}
+              >
+                {!validateString(tempFilter.prefecture, "NAME")
+                  ? t("errorCodes.10003")
+                  : tempFilter.prefecture.length >= CHARACTER_LIMIT
+                    ? t("errorCodes.10002")
+                    : ""}
+              </Typography>
+            )}
           </FormControl>
           <FormControl size="sm" sx={{ flex: 1 }}>
-            <FormLabel sx={LABEL_SX}>{t("dashboardPage.municipalities")}:</FormLabel>
+            <FormLabel sx={LABEL_SX}>{t("dashboardPage.municipality")}:</FormLabel>
             <Input
               size="sm"
               placeholder={t("dashboardPage.enterText")}
               value={tempFilter.municipality}
               data-testid="municipality-input"
+              error={!validateString(tempFilter.municipality, "NAME")}
+              slotProps={{ input: { maxLength: CHARACTER_LIMIT } }}
               onChange={(e) => handleMunicipalityChange(e.target.value)}
             />
-            {tempFilter.municipality.length >= CHARACTER_LIMIT &&
-              <FormHelperText sx={{ mx: 2, color: theme.palette.warning[400] }}>
-                {t("errorCodes.10002")}
-              </FormHelperText>}
+            {tempFilter.municipality && (
+              <Typography
+                level="body-xs"
+                sx={{
+                  color: !validateString(tempFilter.municipality, "NAME")
+                    ? "danger.500"
+                    : tempFilter.municipality.length >= CHARACTER_LIMIT
+                      ? "warning.400"
+                      : "inherit",
+                }}
+              >
+                {!validateString(tempFilter.municipality, "NAME")
+                  ? t("errorCodes.10003")
+                  : tempFilter.municipality.length >= CHARACTER_LIMIT
+                    ? t("errorCodes.10002")
+                    : ""}
+              </Typography>
+            )}
           </FormControl>
         </Box>
         <FormControl sx={{ flex: 0.5 }} size="sm">
-          <FormLabel sx={LABEL_SX}>{t("dashboardPage.searchByFacilityName")}:</FormLabel>
+          <FormLabel sx={LABEL_SX}>{t("dashboardPage.facilityName")}:</FormLabel>
           <Input
             size="sm"
             placeholder={t("dashboardPage.enterText")}
             value={tempFilter.facilityName}
             data-testid="facility-name-input"
+            error={!validateString(tempFilter.facilityName, "NAME")}
+            slotProps={{ input: { maxLength: CHARACTER_LIMIT } }}
             onChange={(e) => handleFacilityNameChange(e.target.value)}
           />
-          {tempFilter.facilityName.length >= CHARACTER_LIMIT &&
-            <FormHelperText sx={{ mx: 2, color: theme.palette.warning[400] }}>
-              {t("errorCodes.10002")}
-            </FormHelperText>}
+          {tempFilter.facilityName && (
+            <Typography
+              level="body-xs"
+              sx={{
+                color: !validateString(tempFilter.facilityName, "NAME")
+                  ? "danger.500"
+                  : tempFilter.facilityName.length >= CHARACTER_LIMIT
+                    ? "warning.400"
+                    : "inherit",
+              }}
+            >
+              {!validateString(tempFilter.facilityName, "NAME")
+                ? t("errorCodes.10003")
+                : tempFilter.facilityName.length >= CHARACTER_LIMIT
+                  ? t("errorCodes.10002")
+                  : ""}
+            </Typography>
+          )}
         </FormControl>
       </Box>
 
@@ -262,13 +286,10 @@ export const Filter = () => {
         gap: 2,
         mt: 2
       }}>
-        {filterModified &&
-          <Typography sx={{
-            fontSize: "sm",
-            display: "flex",
-            alignItems: "flex-end",
-            color: theme.palette.primary[500],
-          }}>{t("dashboardPage.filterModifiedInfo")}</Typography>}
+        {filterModified && (
+          <Typography level="body-sm" display="flex" alignItems="flex-end" color="primary">
+            {t("dashboardPage.filterModifiedInfo")}
+          </Typography>)}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
           <Button
             variant="outlined"

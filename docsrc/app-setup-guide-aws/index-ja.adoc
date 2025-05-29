@@ -18,8 +18,10 @@ AATドキュメントへようこそ。このドキュメントにはアプリ�
 
 include::introduction-ja.adoc[]
 include::environment-setup-ja.adoc[]
+include::db-initialization-ja.adoc[]
 include::build-deploy-ja.adoc[]
-include::db-operations-ja.adoc[]
+include::db-population-ja.adoc[]
 include::post-setup-ja.adoc[]
 include::faq-ja.adoc[]
 include::version-upgrade-ja.adoc[]
+include::appendix-ja.adoc[]

@@ -34,5 +34,29 @@ Please verify by visiting Azure Portal.
 |====
 
 * At this point, all services are deployed.
-* Although URLs are accessible, please note that apps cannot be used as Data in the Database is still empty.
-* Populating the Data into Database in explained in next chapter.
+* Admin app can be used to log in, however Contractor app can not be used until data is populated.
+* Populating the Data into Database in explained in next chapter. <<db-population-ui, Populate Data using Admin App>>.
+
+
+=== Get Application URLs
+
+==== Admin App URL and Contractor App URL
+
+* Execute the following command to display the Admin App URL and Contractor App URLs
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+$ bash print-app-url.sh
+----
+
+Make note of the displayed URLs in the terminal. Refer following section <<db-population-ui, Populate Data using Admin App>> to know about the usage.
+
+* Admin App is used for following purposes.
+    ** Log in to AAT tool.
+    ** To add/update/delete the data in the database.
+    ** To generate QR codes for the contractors.
+    ** To review the applications submitted by contractors.
+
+* Contractor App is used for following purposes.
+    ** To submit the applications for camera angle of the devices.

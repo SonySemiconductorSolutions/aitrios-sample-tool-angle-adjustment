@@ -3,8 +3,8 @@
 == セットアップ後
 
 * `caat-helper` コマンドを実行する前に、以下を確認してください:
-** <<activate-virtual-environment, Activate virtual environment>>
-** <<set-environment-variables, Execute set environment variable script>>
+** <<activate-virtual-environment, 仮想環境をアクティベートする>>
+** <<set-environment-variables, 環境変数設定スクリプトを実行する>>
 
 === AATセットアップの確認
 

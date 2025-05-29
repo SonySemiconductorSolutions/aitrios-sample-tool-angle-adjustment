@@ -1,0 +1,111 @@
+
+== 添付資料
+
+[[db-population-excel]]
+=== caat-helperを使用したデータベースの入力
+
+==== Excelファイルの作成
+
+* ExcelのテンプレートとExcelのサンプルファイルを作成します。
+
+* 現在のワーキングディレクトリ内にExcelファイルを作成するには、以下のコマンドを実行してください:
+
+[source,shell]
+----
+(.venv) $ caat-helper db export-template
+----
+
+* 上記のエクスポートコマンドは2つのファイルをアウトプットします。
+  ** `SIerData_template.xlsx` : データを記入するExcelのテンプレートファイル
+  ** `SIerData_sample.xlsx` : 参照用のExcel内のサンプルデータを含むExcel サンプルファイル
+
+==== Excel fileを準備する
+
+* Excelテンプレートが作成されると、有効なデータがシートに入力されます。
+
+[注記]
+====
+* Codespacesを使用する場合、Excelファイルをホストマシンにダウンロードする必要がある場合があります。
+* データが準備できたらホストマシン内のExcelファイルを編集し、Codespacesにアップロードし直します。
+====
+
+* 各シートに含まれている項目、及びその目的については以下の章を参照してください。
+
+include::excel-readme-ja.adoc[Excel Instructions]
+
+==== データのDBへの入力
+
+* 作成されたテンプレートに必要な詳細が入力されたら、以下のコマンドを実行してデータをデータベースに入力します。
+
+* 特にシート: `customer` でauth_url, base_url, client_id, client_secretのようなカスタマー認証情報は、後ほど管理者アプリUIに追加・更新される場合があります。
+
+===== Excelを使用する入力
+
+[source,shell]
+----
+# e.g.,
+# caat-helper db populate --excel-path SIer-Data.xlsx
+(.venv) $ caat-helper db populate --excel-path '/path/to/excel'
+----
+
+
+=== コントラクターアプリ及び施設用のQRコードを生成する
+
+* データがDBに入力されたら、コントラクターアプリを使用するためにQRコードを生成します。
+* コントラクターアプリはQRコードをスキャンすることでのみ開くことができます。
+
+* コントラクターアプリと利用可能な施設のQRコードを生成するために、以下のコマンドを使用できます。 +
+このコマンドは、'QRCodes'ディレクトリにすべての施設のQRコードを一度に生成します。
+
+*  前のコマンドの出力からコントラクターアプリのURLを以下のコマンドに置き換えてください。
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+(.venv) $ caat-helper qr generate -u {PLACEHOLDER_CONTRACTOR_APP_URL}
+----
+
+
+=== 選択したデータをデータベースに追加する
+
+* クラウドの初期設定が完了しデータが追加されると、既存のデータベースに、さらに多くのデバイスや設備、または新規カスタマーを追加する必要性が出てくる場合があります。
+* 施設、デバイス、カスタマーなどの選択可能なデータは、caat-helperによりデータベースへ追加できます。
+
+[注記]
+====
+* 既存のデータの更新は `caat-helper` ではサポートされていません。
+* 例：初期データを追加。管理者１はカスタマー１に関連付けられている。 +
+次に、管理者２が追加され、それをユーザーがカスタマー１にアサインしたい場合 +
+それはサポートされていません。
+====
+
+[[remove-host-machine-ip]]
+=== データベースホワイトリストからホストIPを削除する
+
+* すべてのデータをデータベースへ入力し、その後データベースとのやり取りが不要な場合、ホストマシンIPを削除することで、データベースをプライベートネットワーク内に留めることができます。
+* データベースからIPホワイトリストを削除するには、以下のコマンドを実行してください。
+
+[source,shell]
+----
+# from tools/cloud-setup/azure
+$ bash remove-host-ip-db.sh
+----
+
+
+==== エクセルを使ってデータを追加する
+
+* 最初にデータベースに入力するために使用したエクセルファイル内の各シート (施設、カスタマー、デバイス) へデータを追加し、以下のコマンドを実行します。
+
+* `caat-helper` コマンドを実行する前に、以下のことを確認してください:
+
+    ** <<activate-virtual-environment, 仮想環境をアクティベートする>>
+    ** <<set-environment-variables, 環境変数設定スクリプトを実行する>>
+    ** <<whitelist-host-machine-ip, ホストマシンIPをホワイトリストする>>
+
+
+[source,shell]
+----
+$ (.venv) caat-helper db populate --excel-path '/path/to/excel'
+----
+
+* DBとのやりとりが完了したら <<remove-host-machine-ip, ホストマシンIPを削除してください>>

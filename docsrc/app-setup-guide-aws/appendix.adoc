@@ -1,0 +1,124 @@
+
+== Appendix
+
+[[db-population-excel]]
+=== Database Population using caat-helper
+
+==== Generate excel file
+
+* Generate excel template and excel sample files.
+
+* Run following command to generate excel files in current working directory:
+
+[source,shell]
+----
+(.venv) $ caat-helper db export-template
+----
+
+* The above export command outputs 2 files.
+  ** `SIerData_template.xlsx`: An Excel template file to fill the data.
+  ** `SIerData_sample.xlsx`: An Excel sample file with sample data in the excel for reference only.
+
+==== Prepare excel file
+
+* Once the excel template is generated to fill the sheets with valid data.
+
+[NOTE]
+====
+* Excel file may need to be downloaded to host machine if using Codespaces.
+* Edit the excel file in host machine and upload back to Codespaces once the data is ready.
+====
+
+* Refer following section to understand what each sheet contains and the purpose.
+
+include::excel-readme.adoc[Excel Instructions]
+
+==== Populate Data to DB
+
+* Once the generated template is filled with necessary details, run following command to populate the data to DB.
+
+* Particularly in the sheet: `customer` Customer credentials like auth_url, base_url, client_id, client_secret can be added/updated later in the Admin Application UI.
+
+===== Populate using Excel
+
+[source,shell]
+----
+# e.g.,
+# caat-helper db populate --excel-path SIer-Data.xlsx
+(.venv) $ caat-helper db populate --excel-path '/path/to/excel'
+----
+
+
+=== QR Code Generation for Contractor App and Facilities
+
+* Once the data is populated to the DB, to use the contractor App, generate the QR Codes.
+* Contractor App can be opened by scanning QR Code only.
+
+* Following command can be used to generate the QR codes for Contractor App and available facilities. +
+This command generates QR Codes for all the facilities at once in the 'QRCodes' directory.
+
+* Replace the Contractor App URL from previous command output in the following command.
+
+[source,shell]
+----
+# from tools/cloud-setup/aws
+(.venv) $ caat-helper qr generate -u {PLACEHOLDER_CONTRACTOR_APP_URL}
+----
+
+
+=== Add Selective Data to Database
+
+* When initial cloud setup is complete and data is added, a situation may arise, when more number of devices or facilities or new customer needs to be added to the already existing Database.
+* Selective data such as such as facilities, devices, customers can be added to the database with the help of caat-helper.
+
+[NOTE]
+====
+* Updating the existing data is not supported in `caat-helper`.
+* E.g., Initial data is added. Admin 1 is associated to Customer 1. +
+Next time, Admin 2 is added and user would like to assign to Customer 1. +
+This is not supported.
+====
+
+[[disable-db-public-access]]
+=== Disable DB public access
+
+* If all data is populated to Database and no further interaction required with the Database, remove the db public access, so that the Database stays in Private network.
+* Execute the following command to disable the public access of Database
+
+[source,shell]
+----
+# from tools/cloud-setup/aws
+$ bash disable-db-public-access.sh
+----
+
+
+==== Add the data through excel
+
+* Add the data to the respective sheets (facility, customer, device) in the excel file used initially to populate database and execute the following command.
+
+* Before running any `caat-helper` commands, make sure to:
+    ** <<activate-virtual-environment, Activate virtual environment>>
+    ** <<set-environment-variables, Execute set environment variable script>>
+    ** <<enable-db-public-access, Enable DB public access>>
+
+
+[source,shell]
+----
+$ (.venv) caat-helper db populate --excel-path '/path/to/excel'
+----
+
+* Once the DB interaction is complete <<disable-db-public-access, Disable DB public access>>
+
+
+=== Add Selective Data to Database
+
+* When initial cloud setup is complete and data is added, a situation may arise, when more number of devices or facilities or new customer needs to be added to the already existing Database.
+* Selective data such as such as facilities, devices, customers can be added to the database with the help of caat-helper.
+
+[NOTE]
+====
+* Updating the existing data is not supported in `caat-helper`.
+* E.g., Initial data is added. Admin 1 is associated to Customer 1. +
+Next time, Admin 2 is added and user would like to assign to Customer 1. +
+This is not supported.
+====

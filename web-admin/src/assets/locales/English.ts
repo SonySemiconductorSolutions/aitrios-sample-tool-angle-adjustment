@@ -17,21 +17,40 @@ limitations under the License.
 */
 const translations = {
     language: "English",
-    version: "v1.7.0",
+    version: "v2.0.0",
     appTitle: "Angle Adjustment Tool (Admin)",
     appTitleShort: "AAT (Admin)",
-
-    // Navigator
-    navigator: {
-        logOut: "Log out",
-    },
 
     // Sidebar
     sidebar: {
         dashboard: "Dashboard",
         reviewRequest: "Review Request",
-        consoleConfiguration: "Console Configuration",
-        editConfiguration: "Edit Configuration",
+        settings: "Settings",
+        addCustomer: "Add Customer",
+        editCustomer: "Edit Customer",
+        generateQr: "Generate QR",
+        manageDevices: "Manage Devices",
+
+        // Account
+        account: {
+            title: "Account",
+            logout: "Log out",
+        },
+
+        // Admin
+        admin: {
+            title: "Admin",
+            addAdmin: "Add Admin",
+        },
+    },
+
+    addAdmin: {
+        title: "Add Admin",
+        loginId: "Login ID",
+        pass: "Password",
+        createAdmin: "Create Admin",
+        success: "Admin created successfully.",
+        saveNote: "Important: Make sure to copy the Login ID and Password now, as they will not be displayed again!",
     },
 
     // DashboardPage
@@ -50,11 +69,10 @@ const translations = {
         // Filter
         customerName: "Customer Name",
         noCustomerFound: "No customer found",
-        prefectures: "State/Province/Region",
         select: "--Select option--",
-        selectMultiple: "--Select options--",
-        municipalities: "City/Town",
-        searchByFacilityName: "Search by Facility name",
+        prefecture: "State",
+        municipality: "City",
+        facilityName: "Facility Name",
         enterText: "Enter text",
         applicationStatus: "Application Status",
         filterModifiedInfo: "Filter modified. Click 'Search' to see the latest results.",
@@ -63,7 +81,6 @@ const translations = {
 
         // Table
         slNo: "No",
-        facilityName: "Facility Name",
         facilityType: "Facility Type",
         deviceName: "Device Name",
         deviceId: "Device ID",
@@ -75,7 +92,7 @@ const translations = {
         details: "Details",
         noData: "There is no corresponding data.",
         moreItemsInNextPage: "More items available on next page...",
-        
+
         // View Tab
         list: "List",
         tiled: "Tiled",
@@ -116,6 +133,12 @@ const translations = {
         updateReferenceImageNote: "Updating the Reference image will disable review approval, and if the review is rejected, it will permanently overwrite the existing Reference image.",
         cancel: "Cancel",
         adjustToMatchSampleImage: "Adjust the camera angle of view to match the sample image.",
+
+        // Delete reviews
+        delete: "Delete",
+        deleteReviews: "Delete Reviews",
+        deleteReviewsConfirm: "Are you sure you want to delete all the reviews associated with: ",
+        deleteReviewsSuccess: "Reviews deleted successfully.",
     },
 
     // Review History Page
@@ -130,19 +153,61 @@ const translations = {
         reviewComment: "Review Comment",
     },
 
-    // Console Configuration Page
-    consoleConfigurationPage: {
-        configurationList: "Configuration List",
+    // Settings Page
+    settingsPage: {
+        settings: "Settings",
+        customerList: "Customer List",
         slNo: "No",
         customerName: "Customer Name",
         lastUpdatedBy: "Last Updated By",
         lastUpdatedAt: "Last Updated At",
-        action: "Action",
+        actions: "Actions",
+        addCustomer: "Add Customer",
+        editCustomer: "Edit Customer",
+        manageDevices: "Manage Devices",
+        generateQr: "Generate QR",
         edit: "Edit",
+        exportData: "Export Data",
+        importData: "Import Data",
+        noData: "Start adding customers to use the tool",
     },
 
-    // Edit Configuration Page
-    editConfigurationPage: {
+    // Export Data
+    exportData: {
+        title: "Export Data",
+        description: "This exports the devices and facilities, their respective types and reference images associated with the admins and customers.",
+        note: "Note: Reviews associated with device will not be exported.",
+        buttons: {
+            cancel: "Cancel",
+            export: "Export",
+        },
+        success: "Data exported successfully.",
+        errors: {
+            exportFailed: "Failed to export data. Please try again.",
+        },
+    },
+
+    // Import Data
+    importData: {
+        title: "Import Data",
+        note: "Note: Importing data will overwrite all existing data, including reviews. Data to be imported must be in the same format as the exported data.",
+        labels: {
+            importJsonFile: "Import JSON File",
+        },
+        buttons: {
+            cancel: "Cancel",
+            import: "Import",
+        },
+        success: "Data imported successfully.",
+        errors: {
+            noFileSelected: "Please select a file.",
+            invalidFileType: "Invalid file type. Please upload a JSON file.",
+            importFailed: "Failed to import data. Please validate the file and try again.",
+        },
+    },
+
+    // Console Credentials Page
+    consoleCredentialsPage: {
         // Form
         customerName: "Customer Name",
         clientId: "Client ID",
@@ -161,7 +226,9 @@ const translations = {
         applicationIdNote: "Application ID is applicable only if AITRIOS is Enterprise Edition",
         save: "Save",
         reset: "Reset",
+        next: "Next",
         credentialsUpdated: "Console credentials updated successfully.",
+        customerCreated: "Customer created successfully.",
         // Tips
         tip: "Tip: ",
         aitriosPortal: "AITRIOS Portal",
@@ -171,6 +238,207 @@ const translations = {
         clientApp: "Client App",
         createNewIfDoesnotExist: "Create new if doesn't exists",
         visibleOnlyOnceWhenCreated: "Visible only once when created",
+        noChanges: "No changes detected. Nothing to save.",
+    },
+
+    generateQR: {
+        title: "Generate QR Code",
+        customerName: "Customer Name",
+        facilities: "facilities",
+        selectCustomer: "Select customers",
+        selectFacilities: "Select Facilities",
+        selectAll: "Select All",
+        note: "Note: The validity of the QR codes will be within the effective start and end time of the facilities. To modify, navigate to \"Manage Devices\" and make necessary changes.",
+        generateAndDownload: "Generate & Download",
+        errors: {
+            fetchFacilities: "Failed to fetch facilities",
+            loadFacilities: "Failed to load facilities",
+            generateQR: "Failed to generate QR codes"
+        },
+        buttons: {
+            cancel: "Cancel",
+            generate: "Generate & Download"
+        }
+    },
+
+    // Manage Devices Page
+    manageDevicesPage: {
+        refreshDeviceList: "Refresh Device List",
+        selectCustomer: "Select Customer",
+        editSelectedDevices: "Batch Edit Selected Devices",
+        deregisterSelectedDevices: "Deregister Selected Devices",
+        cancel: "Cancel",
+        saveSelectedDevices: "Register/Update Selected Devices",
+        noDevicesFound: "No Devices Found",
+        deviceList: "Device List",
+        facility: "Facility",
+        deviceType: "Device Type",
+        group: "Group",
+        status: "Status",
+        registered: "Registered",
+        notRegistered: "Not Registered",
+        createDeviceType: "Create Device Type",
+        updateDeviceType: "Update Device Type",
+        selectFacility: "Select Facility",
+        selectDeviceType: "Select Device Type",
+        deregisterSuccess: "Devices deregistered successfully.",
+        saveSuccess: "Devices registered/updated successfully.",
+        errors: {
+            noCustomerFound: "No customer found",
+            noCustomerSelected: "No customer selected",
+            deviceFetchFailed: "Failed to fetch devices",
+            facilityFetchFailed: "Failed to fetch facilities",
+            deviceTypeFetchFailed: "Failed to fetch device types",
+            customerDataFetchFailed: "Failed to fetch data for customer",
+            facilityUpdateFailed: "Failed to update facility",
+            deviceTypeUpdateFailed: "Failed to update device type",
+            editFailed: "Failed to edit devices",
+            deregisterFailed: "Failed to deregister devices",
+            saveFailed: "Failed to register/update devices",
+            saveNotAllowed: "Register/Update not allowed. Deselect the devices missing Facility or Device Type settings.",
+            deregisterNotAllowed: "Deregister not allowed. Deselect the \"Not Registered\" devices.",
+        }
+    },
+
+    deviceTable: {
+        // Table Headers
+        deviceName: "Device Name",
+        deviceId: "Device ID",
+        facilityName: "Facility Name",
+        deviceType: "Device Type",
+        findOrCreate: "Find or create...",
+        status: "Tool Registration Status",
+        statusShort: "Status",
+        group: "Group",
+
+        // Status Display
+        registered: "Registered",
+        notRegistered: "Not Registered",
+
+        // Update Status
+        updating: "Updating...",
+
+        // Autocomplete Related
+        createNew: "Create New",
+        editFacility: "Edit Facility",
+        editDeviceType: "Edit Device Type",
+        selectFacility: "Select Facility",
+        selectDeviceType: "Select Device Type",
+        noFacilitiesFound: "No facilities found",
+        noDeviceTypesFound: "No device types found",
+
+        // Modal Related
+        closeModal: "Close",
+        cancel: "Cancel",
+        save: "Save",
+
+        // Error Messages
+        errorUpdatingFacility: "Error occurred while updating facility",
+        errorUpdatingDeviceType: "Error occurred while updating device type",
+    },
+
+    selectWithAddAndEdit: {
+        add: "Add",
+        edit: "Edit",
+    },
+
+    facility: {
+        // Modal related
+        submitting: "Submitting...",
+        updateFacility: "Update Facility",
+        createFacility: "Create Facility",
+        closeModal: "Close",
+    },
+
+    facilityForm: {
+        editTitle: "Edit Facility",
+        addTitle: "Add Facility",
+        customerName: "Customer Name",
+        facilityName: "Facility Name",
+        facilityType: "Facility Type",
+        prefecture: "State",
+        municipality: "City",
+        effectiveStartDate: "Effective Start Date",
+        effectiveEndDate: "Effective End Date",
+        failedToAddFacilityType: "Failed to add facility type",
+        failedToCreateFacility: "Failed to create facility",
+        failedToUpdateFacility: "Failed to update facility",
+        selectFacilityType: "Select Facility Type",
+        updateFacility: "Update Facility",
+        createFacility: "Create Facility",
+        closeModal: "Close",
+        findOrCreate: "Find or create...",
+        noChanges: "No changes detected. Nothing to update.",
+    },
+    facilityType: {
+        addTitle: "Add Facility Type",
+        typeName: "Facility Type Name",
+        add: "Add",
+        errors: {
+            required: "Facility type name is required.",
+            createFailed: "Failed to create facility type.",
+        }
+    },
+
+    addDeviceType: {
+        deviceTypeName: "Device Type Name",
+        referenceImage: "Reference Image",
+        note: "Note: Please upload an image in .jpg, .jpeg, or .png format, with a maximum file size of 1MB.",
+        errors: {
+            invalidFileType: "Invalid file type. Please upload a JPG or PNG file.",
+            fileTooLarge: "File size exceeds 1MB limit.",
+            requiredImage: "Reference image is required.",
+            requiredName: "Device type name is required.",
+            createFailed: "Failed to create device type.",
+            updateFailed: "Failed to update device type."
+        },
+        modal: {
+            addTitle: "Add Device Type",
+            editTitle: "Edit Device Type",
+            addButton: "Add",
+            editButton: "Save"
+        }
+    },
+
+    deviceType: {
+        add: {
+            title: "Add Device Type",
+            button: "Add"
+        },
+        edit: {
+            title: "Edit Device Type",
+            button: "Save"
+        }
+    },
+
+    editDevices: {
+        title: "Edit Selected Devices",
+        facilityName: {
+            label: "Facility Name",
+            placeholder: "Find or create facility name",
+            noFacilities: "No facilities available"
+        },
+        deviceType: {
+            label: "Device Type",
+            placeholder: "Find or create device type"
+        },
+        buttons: {
+            cancel: "Cancel",
+            apply: "Apply"
+        },
+        errors: {
+            invalidProps: "Invalid props: facilities and deviceTypes must be arrays"
+        }
+    },
+
+    deregisterDevices: {
+        title: "Deregister Devices",
+        message: "Are you sure you want to deregister the following devices from {{customerName}}?",
+        buttons: {
+            deregister: "Deregister",
+            cancel: "Cancel",
+        },
+        note: "Note: Deregistering the devices will remove the reviews history associated with them.",
     },
 
     // Login Page
@@ -187,57 +455,6 @@ const translations = {
         returnToDashboard: "The requested page does not exist. Please return to the dashboard.",
     },
 
-    // Prefectures Dropdown
-    prefecturesList: [
-        "Hokkaido",
-        "Aomori",
-        "Iwate",
-        "Miyagi",
-        "Akita",
-        "Yamagata",
-        "Fukushima",
-        "Ibaraki",
-        "Tochigi",
-        "Gunma",
-        "Saitama",
-        "Chiba",
-        "Tokyo",
-        "Kanagawa",
-        "Niigata",
-        "Toyama",
-        "Ishikawa",
-        "Fukui",
-        "Yamanashi",
-        "Nagano",
-        "Gifu",
-        "Shizuoka",
-        "Aichi",
-        "Mie",
-        "Shiga",
-        "Kyoto",
-        "Osaka",
-        "Hyogo",
-        "Nara",
-        "Wakayama",
-        "Tottori",
-        "Shimane",
-        "Okayama",
-        "Hiroshima",
-        "Yamaguchi",
-        "Tokushima",
-        "Kagawa",
-        "Ehime",
-        "Kochi",
-        "Fukuoka",
-        "Saga",
-        "Nagasaki",
-        "Kumamoto",
-        "Oita",
-        "Miyazaki",
-        "Kagoshima",
-        "Okinawa"
-    ],
-
     // Application Status
     statusList: {
         initialState: "Initial State",
@@ -252,6 +469,17 @@ const translations = {
         10000: "Unknown error, please try again.",
         10001: "You have reached the character limit of 255.",
         10002: "You have reached the character limit of 127.",
+        10003: "No special characters allowed other than spaces, hyphens, and underscores.",
+        10004: "Input must be in a valid URL format.",
+        10005: "Invalid input. Please check the values.",
+        10006: "No special characters allowed other than hyphens and underscores.",
+        10007: `1. Password must be at least 8 characters long.
+                2. Password must contain any three characters from the following categories:
+                    - Lowercase (a-z)
+                    - Uppercase (A-Z)
+                    - Digits (0-9)
+                    - Special characters (_, -, !, $, #, %, @)
+                3. Password must not contain spaces.`,
         40004: "Sorry, we encountered an error while processing your request.",
         40005: "Sorry, we encountered an error while processing your request.",
         40006: "Sorry, we encountered an error while processing your request.",
@@ -259,6 +487,8 @@ const translations = {
         40008: "Sorry, we encountered an error while processing your request.",
         40009: "Sorry, we encountered an error while processing your request.",
         40010: "Sorry, we encountered an error while processing your request.",
+        40015: "Customer name already taken. Please choose a different name.",
+        40016: "Login ID already taken. Please choose a different Login ID.",
         40107: "Invalid Account or Password.",
         40301: "Sorry, we encountered an error while processing your request.",
         40303: "Review approval failed as the current review is not the latest one.",

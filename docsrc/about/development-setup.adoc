@@ -14,7 +14,7 @@
 
 = Setup Development Environment
 
-Three components are involved while setting AAT application, viz., backend, web-admin, web-app.
+Three components are involved while setting AAT application, viz., backend, web-admin (Admin App), web-app (Contractor App).
 
 The following sections explains setting up of each component.
 

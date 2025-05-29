@@ -65,20 +65,27 @@ Postgres Database is used for local development.
 
    ```shell
    # from backend
-   $ pipenv shell --python 3.10
-   $ pipenv install
+   $ python3.10 -m venv .venv
+   $ source .venv/bin/activate
 
    # Install dev packages
-   $ pipenv install --dev
+   $ pip install -U pip
+   $ pip install -r requirements.txt
     ```
 
-2. Generate ORM code (run only whenever there is change in Database schema). Additional details about prisma, [see here](./prisma/README.md).
+2. Source environment variables
+   ```shell
+   # from backend
+   $ export $(grep -v '^#' .env | xargs)
+   ```
+
+3. Generate ORM code (run only whenever there is change in Database schema). Additional details about prisma, [see here](./prisma/README.md).
    ```
    # from backend
    $ make model
    ```
 
-3. Apply schema changes into the database. (run for the first time or only whenever there is change in Database schema)
+4. Apply schema changes into the database. (run for the first time or only whenever there is change in Database schema)
     * Define database schema in [schema.postgres.prisma](./prisma/schema.postgres.prisma). [Reference](https://www.prisma.io/docs/concepts/components/prisma-schema)
     * Apply schema changes into the database.
 
@@ -87,14 +94,20 @@ Postgres Database is used for local development.
    $ make migrate
    ```
 
-4. Start development server
+5. Start development server
+   * To make use of the Generate QR feature in the backend, contractor app URL must be set as environment variable.
+   * [Set up contractor app](../web-app/README.md) with dummy backend URL to know the contractor app URL and set it in the `.env` file as `CONTRACTOR_APP_URL` variable.
+   * Once backend server is up and running, replace the dummy backend URL with the actual backend URL and re-run the contractor app.
+
    ```
    # from backend
+   $ export $(grep -v '^#' .env | xargs)
    $ make dev
    ```
 
     > NOTE: Make a note of the backend server URL with the port which is required while setting contractor app and admin app.
-    > NOTE: Also make backend URL accessible from  contractor app and admin app. If using codespaces, set port visibility to `public`.
+
+    > NOTE: Also make backend URL accessible from contractor app and admin app. If using codespaces, set port visibility to `public`.
 
     > TIP: If there is change in environment variables (`.env`) and would like to export them to current terminal, run following command:
    ```
@@ -123,7 +136,7 @@ Utility scripts are provided to perform following:
    $ python scripts/seed.py
    ```
 
-   > Alternatively,  [CAAT Helper](./../tools/caat-helper/README.md) can be used to populate the initial data to Database. <br>
+   > Alternatively, [CAAT Helper](./../tools/caat-helper/README.md) can be used to populate the initial data to Database. <br>
    > If caat-helper is used for local development/hosting, please set APP_ENV variable before using any caat-helper commands. <br>
    > `$ export APP_ENV=local`
 
@@ -137,7 +150,7 @@ Utility scripts are provided to perform following:
 2. Generate QR codes
 
    * After DB is created and data is populated, a QR code is needed to open the contractor App.
-   * Make sure to [setup the contractor app](../web-app/README.md) and copy the URL of contractor app.
+   * Make sure to [set up the contractor app](../web-app/README.md) and copy the URL of contractor app.
    * Edit URL variable in the [script](./scripts/generate_qr.py) and replace with Contractor App URL
    * Edit [script](./scripts/generate_qr.py) and provide the APP_SECRET_KEY value as generated in previous [step](#get-app_secret_key)
    * Execute following [script](./scripts/generate_qr.py) to generate all the QR codes (all the facility QR codes) of Contractor app URL.

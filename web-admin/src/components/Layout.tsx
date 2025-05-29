@@ -21,7 +21,6 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { useStore } from "../store";
 import { Sidebar } from "./Sidebar";
 import { BackgroundContainer } from "./BackgroundContainer";
-import { Navigator } from "./Navigator";
 import { getCustomers } from "../services";
 
 // Interface for Customer details from Response payload
@@ -97,8 +96,7 @@ export const Layout = () => {
           overflowY: "scroll",
         }}
       >
-        {currentAccount && <Navigator />}
-        <Box sx={{ marginTop: currentAccount ? "60px" : 0 }}>
+        <Box>
           <Outlet />
         </Box>
       </Box>

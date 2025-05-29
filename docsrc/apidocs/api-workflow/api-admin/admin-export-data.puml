@@ -1,0 +1,29 @@
+@startuml Export Data
+title Export Data
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Fetch admin and related data (customers, facilities, devices);
+if (Admin not found?) then (yes)
+    : Send HTTP status 404, Admin not found;
+    kill
+endif
+: Fetch facility types and device types for admin;
+: Prepare export data structure;
+: Export as JSON file;
+: Send file as HTTP response;
+note right
+    Returns:
+        1. Exported data as a downloadable JSON file
+end note
+stop
+@enduml

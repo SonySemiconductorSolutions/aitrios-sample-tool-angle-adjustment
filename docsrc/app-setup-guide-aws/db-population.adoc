@@ -1,0 +1,14 @@
+
+[[db-population-ui]]
+== Database Data Population
+
+* There are two ways to populate the DB, using Admin App (preferred new method) and using caat-helper (previous method)
+
+=== Populate Data using Admin App
+
+* Usage instructions for Admin App - refer menu: `Admin User Guide` - `Quick Database Population`
+
+=== Database Population using caat-helper
+
+* Data can be populated using Excel file through caat-helper tool.
+* Refer the section <<db-population-excel, Database Population using caat-helper>> for the details.

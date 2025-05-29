@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------
-
+import base64
 from datetime import date, datetime
+from io import BytesIO
 from typing import Callable, List
-from werkzeug.exceptions import BadRequest
-from src.exceptions import APIException, ErrorCodes
-from src.core import fernet
+
 from cryptography.fernet import InvalidToken
+from PIL import Image
+from src.core import fernet
+from src.exceptions import APIException, ErrorCodes
+from werkzeug.exceptions import BadRequest
 
 
 def serialize_date(date_field: date = None):
@@ -156,3 +159,22 @@ def dict_has_non_null_values(d: dict, exempt_key: str) -> bool:
         bool : True if the dict has non null except one key else False
     """
     return all(value is not None for key, value in d.items() if key != exempt_key)
+
+
+def is_valid_base64_image(base64_string: str) -> bool:
+    """
+    Validates if a given base64 string represents a valid image.
+    Args:
+        base64_string (str): The base64 encoded string of the image.
+    Returns:
+        bool: True if valid image, False otherwise.
+    """
+    try:
+        header, encoded = base64_string.split(",", 1)
+        if not header.startswith("data:image/"):
+            return False
+        decoded = base64.b64decode(encoded)
+        Image.open(BytesIO(decoded)).verify()
+        return True
+    except Exception:
+        return False

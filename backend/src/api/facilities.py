@@ -28,53 +28,20 @@ from src.exceptions import (
     RetryAPIException,
 )
 from src.libs.auth import check_device_authorization, validate_auth_token
-from src.schemas import *
 from src.schemas.devices import DeviceStatusListSchema
+from src.schemas.facilities import (
+    FacilityDeviceDataSchema,
+    FacilityImageGetResponseSchema,
+    FacilityStatusGetResponseSchema,
+    FacilityStatusSchema,
+    ImageTypeSchema,
+)
+from src.schemas.reviews import DeviceReviewAllowedEnums
 from src.services import aitrios_service
 from src.utils import dict_has_non_null_values
 
+# Contractor App API
 api = Blueprint("facility", __name__, url_prefix="/facility")
-
-
-# Commenting as facility token is validated in validate_auth_token
-
-# def facility_required(f):
-#     """
-#     Decorator to ensure that a facility ID is provided and exists in the database.
-#     Args:
-#         f (function): The function to be decorated.
-#     Returns :
-#         function: The decorated function.
-#     """
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         # Extract facility ID from kwargs or request JSON
-#         facility_id = kwargs.get(
-#             "facility_id") or request.json.get("facility_id")
-
-#         # Check if facility ID is provided
-#         if not facility_id:
-#             raise APIException(status_code=400, error_code=4001,
-#                                message="Facility ID is invalid or not provided")
-
-#         # Query the database to find the facility with the provided ID
-#         try:
-#             facility = db.facility.find_first(
-#                 where={"id": int(facility_id)})
-#         except ValueError:
-#             raise APIException(status_code=400, error_code=4002,
-#                                message="Invalid facility")
-
-#         # Check if facility exists
-#         if not facility:
-#             raise APIException(status_code=404, error_code=4041,
-#                                message="Facility not found")
-
-#         g.current_facility = facility
-
-#         return f(*args, **kwargs)
-
-#     return decorated_function
 
 
 @api.get("/devices")
@@ -226,7 +193,7 @@ def get_device_status(device_id: int, payload: dict) -> FacilityStatusGetRespons
     """
     Endpoint to get the status of a device in a facility.
     Args:
-        device_id (int):    The ID of the device.
+        device_id (int):    The Database ID of the device.
         payload (dict):     Dict contains facility_id and customer_id.
                             payload is returned as kwargs by`validate_auth_token` decorator.
                             payload is formed by validating the request header in
@@ -235,6 +202,11 @@ def get_device_status(device_id: int, payload: dict) -> FacilityStatusGetRespons
     Returns:
         FacilityStatusGetResponseSchema: A schema containing the status and review comment of the device.
     """
+
+    # Return 404 if device_id is not valid
+    if device_id <= 0:
+        raise APIException(ErrorCodes.DEVICE_NOT_FOUND)
+
     check_device_authorization(device_id, payload)
     device = db.device.find_first(where={"id": int(device_id)})
 
@@ -247,24 +219,8 @@ def get_device_status(device_id: int, payload: dict) -> FacilityStatusGetRespons
     if any(reviews):
         reviews = reviews[0]
         return FacilityStatusGetResponseSchema(status=reviews.result, review_comment=reviews.review_comment)
-    else:
-        return FacilityStatusGetResponseSchema(status=FacilityStatusSchema.CONFIRMED, review_comment="")
 
-
-# Not used
-# @api.post("/<string:facility_id>/device/status")
-# @login_required
-# @validate()
-# @facility_required
-# def change_device_status(facility_id: str, body: FacilityUpdateRequestSchema):
-#     db.facility.update(where={"id": g.current_facility.id}, data={
-#                        "status": body.status})
-#     # Get current request and update status to new status
-#     db.review.update(
-#         where={"id": g.current_facility.request_id}, data={"result": body.status}
-#     )
-
-#     return ResponseHTTPSchema(message="Facility status updated")
+    return FacilityStatusGetResponseSchema(status=FacilityStatusSchema.CONFIRMED, review_comment="")
 
 
 @api.get("/devices/<int:device_id>/images")
@@ -278,7 +234,7 @@ def get_images(device_id: int, payload: dict):
     Get images based on the device ID and facility ID.
 
     Args:
-        device_id (int): The ID of the device.
+        device_id (int): The Database ID of the device.
         payload (dict): Dict containing facility_id and customer_id.
                         payload is returned as kwargs by`validate_auth_token` decorator.
                         payload is formed by validating the request header in
@@ -290,6 +246,11 @@ def get_images(device_id: int, payload: dict):
         401: If any required header is missing or in invalid format, or if tokens are invalid or expired.
         500: If an unexpected error occurs during the processing of the request.
     """
+
+    # Return 404 if device_id is not valid
+    if int(device_id) <= 0:
+        raise APIException(ErrorCodes.DEVICE_NOT_FOUND)
+
     check_device_authorization(device_id, payload)
     image_type = int(request.args.get("image_type", 0))
     if image_type not in [ImageTypeSchema.CAMERA, ImageTypeSchema.REVIEW_COMMENT_AND_SAMPLE_IMAGE]:

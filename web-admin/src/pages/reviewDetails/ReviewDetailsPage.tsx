@@ -42,15 +42,16 @@ import {
   InfoOutlined,
 } from "@mui/icons-material";
 import { HexColorPicker } from "react-colorful";
-import { Backdrop, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { approveReview, getReviewById, rejectReview, updateDeviceTypeReferenceImage } from "../../services";
+import { approveReview, deleteDeviceReviews, editDeviceType, getReviewById, rejectReview } from "../../services";
 import { NotFound } from "../../components/NotFound";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import { formatDatetime, statusToString } from "../../utils";
 import { useStore } from "../../store";
 import { useTranslation } from "react-i18next";
+import { ResponsiveBackdrop } from "../../components/ResponsiveBackdrop";
 
 // Interface for Review details from Response payload
 interface ReviewAPIResponse {
@@ -140,6 +141,9 @@ export const ReviewDetailsPage = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [startAdjust, setStartAdjust] = useState(false);
   const [reviewNotFound, setReviewNotFound] = useState(false);
+  const [openDeleteReviewsModal, setOpenDeleteReviewsModal] = useState(false);
+  const [isDeletingReviews, setIsDeletingReviews] = useState(false);
+  const [isDeleteDone, setIsDeleteDone] = useState(false);
 
   // Handles input change for Rejection comment
   const onRejectReasonChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -168,8 +172,8 @@ export const ReviewDetailsPage = () => {
     setOpenSnackbar(false);
     setIsRejecting(true);
     try {
-      if (referenceImageBase64 && referenceImageBase64 !== initialReferenceImageBase64) {
-        await updateDeviceTypeReferenceImage(reviewData?.device.typeId, referenceImageBase64 ?? "");
+      if (reviewData?.device?.typeId && referenceImageBase64 && referenceImageBase64 !== initialReferenceImageBase64) {
+        await editDeviceType(reviewData.device.typeId, reviewData.device.typeName, referenceImageBase64);
       }
       await rejectReview(reviewId, 3, rejectReason.trim()); // 3 means reject
       setIsReviewDone(true);
@@ -328,6 +332,27 @@ export const ReviewDetailsPage = () => {
     setReferenceImageBase64(initialReferenceImageBase64);
   };
 
+  // Handles deleting reviews
+  const handleDeleteReviews = async () => {
+    if (!reviewData?.device?.id) return;
+    setOpenSnackbar(false);
+    setIsDeletingReviews(true);
+    try {
+      await deleteDeviceReviews(reviewData.device.id);
+      setIsDeleteDone(true);
+      setSuccessMessage("reviewRequestPage.deleteReviewsSuccess");
+      setOpenDeleteReviewsModal(false);
+      setOpenSnackbar(true);
+      setTimeout(() => {
+        navigate("/");
+      }, NAVIGATE_TIMEOUT);
+    } catch (err: any) {
+      handleError(err);
+    } finally {
+      setIsDeletingReviews(false);
+    }
+  };
+
   // Effect hook to fetch data initially
   useEffect(() => {
     if (isNaN(reviewId)) {
@@ -341,18 +366,11 @@ export const ReviewDetailsPage = () => {
   return (
     <>
       {isLoading ? (
-        <Backdrop
-          open
-          sx={{
-            position: "absolute",
-            height: "100%",
-            left: { md: "255px" },
-            width: { xs: "100%", md: "calc(100vw - 255px)" },
-            backgroundColor: "rgba(221, 231, 238)",
-          }}
-        >
-          <CircularProgress variant="soft" />
-        </Backdrop>
+        <ResponsiveBackdrop
+          open={true}
+          zIndex={499}
+          children={<CircularProgress variant="soft" />}
+        />
       ) : reviewNotFound ? (
         <NotFound errorMessage={errorMessage} />
       ) : (
@@ -385,26 +403,54 @@ export const ReviewDetailsPage = () => {
                   {reviewData?.facility.name + t("reviewRequestPage.facilityCameraImage")}
                 </Typography>
               </Box>
-              <Typography
-                sx={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  color: '#2659ff',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    color: '#1e40af',
-                  },
-                  '&:focus': {
-                    color: '#1e40af',
-                  },
-                }}
-                onClick={() => navigate(
-                  `/reviews/devices/${reviewData?.device?.id}/history`
-                )}
-                data-testid="review-history-link"
-              >
-                {t("reviewRequestPage.viewHistory")}
-              </Typography>
+              <Box display="flex" gap={2}>
+                <Button
+                  variant="plain"
+                  sx={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: '#c41c1c',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      color: '#a51818',
+                      backgroundColor: theme.palette.danger[50],
+                    },
+                    '&:focus': {
+                      color: '#a51818',
+                      backgroundColor: theme.palette.danger[50],
+                    },
+                  }}
+                  onClick={() => setOpenDeleteReviewsModal(true)}
+                  data-testid="delete-reviews-link"
+                  disabled={isReviewDone || isDeleteDone}
+                >
+                  {t("reviewRequestPage.deleteReviews")}
+                </Button>
+                <Button
+                  variant="plain"
+                  sx={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: '#2659ff',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      color: '#1e40af',
+                      backgroundColor: theme.palette.primary[50],
+                    },
+                    '&:focus': {
+                      color: '#1e40af',
+                      backgroundColor: theme.palette.primary[50],
+                    },
+                  }}
+                  onClick={() => navigate(
+                    `/reviews/devices/${reviewData?.device?.id}/history`
+                  )}
+                  data-testid="review-history-link"
+                  disabled={isReviewDone || isDeleteDone}
+                >
+                  {t("reviewRequestPage.viewHistory")}
+                </Button>
+              </Box>
             </Box>
             <Stack sx={{ display: "flex", gap: 2 }}>
               <Box
@@ -525,7 +571,7 @@ export const ReviewDetailsPage = () => {
                   alignItems="center"
                   gap={2}
                   position="absolute"
-                  marginLeft={{ md: "255px" }}
+                  marginLeft={{ md: "200px" }}
                 >
                   <HexColorPicker color={gridLine.color} onChange={setGridLineColor} data-testid="hex-color-picker" />
                   <Button
@@ -625,8 +671,9 @@ export const ReviewDetailsPage = () => {
                       sx={{ width: 125, maxHeight: 20, alignSelf: "flex-end" }}
                       disabled={
                         ![2, 3].includes(reviewData?.result ?? 1) ||
-                        isReviewDone || isRejecting ||
-                        referenceImageBase64 !== initialReferenceImageBase64
+                        isReviewDone || isRejecting || isApproving ||
+                        referenceImageBase64 !== initialReferenceImageBase64 ||
+                        isDeleteDone
                       }
                       data-testid="approve-review-btn"
                     >
@@ -648,7 +695,10 @@ export const ReviewDetailsPage = () => {
                   size="lg"
                   sx={{ width: 230, maxHeight: 20 }}
                   data-testid="update-reference-image-modal-toggler"
-                  disabled={!submittedImageDimension?.width || !submittedImageDimension?.height}
+                  disabled={
+                    !submittedImageDimension?.width || !submittedImageDimension?.height ||
+                    isReviewDone || isApproving || isRejecting || isDeleteDone
+                  }
                 >
                   {t("reviewRequestPage.updateReferenceImage")}
                 </Button>
@@ -657,7 +707,10 @@ export const ReviewDetailsPage = () => {
                   size="lg"
                   sx={{ width: 230, maxHeight: 20 }}
                   data-testid="restore-reference-image-btn"
-                  disabled={referenceImageBase64 === initialReferenceImageBase64}
+                  disabled={
+                    referenceImageBase64 === initialReferenceImageBase64 ||
+                    isReviewDone || isApproving || isRejecting || isDeleteDone
+                  }
                 >
                   {t("reviewRequestPage.restoreReferenceImage")}
                 </Button>
@@ -796,7 +849,8 @@ export const ReviewDetailsPage = () => {
                     (rejectReason.trim() === initialRejectReason &&
                       referenceImageBase64 === initialReferenceImageBase64) ||
                     ![2, 3, 4].includes(reviewData?.result ?? 1) ||
-                    isReviewDone || isApproving || !rejectReason.trim()
+                    isReviewDone || isApproving || isRejecting || !rejectReason.trim()
+                    || isDeleteDone
                   }
                   onClick={onReject}
                   data-testid="reject-review-btn"
@@ -806,12 +860,72 @@ export const ReviewDetailsPage = () => {
               </Box>
             </Card>
           </Stack>
+          <Modal
+            open={openDeleteReviewsModal}
+            onClose={() => setOpenDeleteReviewsModal(false)}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backdropFilter: "blur(0.75px)",
+              zIndex: 10001,
+            }}
+          >
+            <Box sx={{
+              width: '600px',
+              maxWidth: '90%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              borderRadius: 1,
+              bgcolor: '#fff',
+              boxShadow: 'lg',
+              p: 4,
+            }}>
+              <Typography level="h4" component="h2" sx={{ mb: 2 }}>
+                {t('reviewRequestPage.deleteReviews')}
+              </Typography>
+              <Typography level="body-sm" sx={{ mb: 2 }}>
+                {t('reviewRequestPage.deleteReviewsConfirm')}
+                <strong>{reviewData?.aitriosName}</strong>?
+              </Typography>
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 2,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                pt: 3
+              }}>
+                <Button
+                  variant="outlined"
+                  color="neutral"
+                  disabled={isDeletingReviews}
+                  onClick={() => setOpenDeleteReviewsModal(false)}
+                  data-testid="cancel-delete-reviews-btn"
+                >
+                  {t('reviewRequestPage.cancel')}
+                </Button>
+                <Button
+                  variant="solid"
+                  color="danger"
+                  loading={isDeletingReviews}
+                  loadingPosition="start"
+                  disabled={isLoading || isApproving || isRejecting || isDeletingReviews}
+                  onClick={handleDeleteReviews}
+                  data-testid="confirm-delete-reviews-btn"
+                >
+                  {t('reviewRequestPage.delete')}
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
           {(successMessage || errorMessage) ? <Snackbar
             variant="soft"
             size="lg"
             open={openSnackbar}
             color={successMessage ? "success" : "danger"}
             anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            sx={{ zIndex: 12000 }}
             startDecorator={successMessage ? <AssignmentTurnedInRounded /> : <ErrorRounded />}
             endDecorator={
               <IconButton

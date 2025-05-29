@@ -21,6 +21,7 @@ import shutil
 import click
 from src.config import APP_SECRET_KEY, DATABASE_URL
 from src.csv.main import db_clear, db_populate, list_admin_data, reset_password
+from src.db.data_manager import create_admin_cli
 from src.qr.main import generate_qr
 from src.utils.data_validator_util import confirm_alert
 from src.utils.logger import get_json_logger
@@ -116,6 +117,28 @@ def reset_pass(login_id, password):
 
     result = reset_password(login_id, password)
     logger.info(f"Admin password reset is {'Successful' if result else 'Failed'}")
+
+
+@db.command(name="create-admin")
+@click.option("-id", "--login_id", required=True, type=str, help="Admin Login ID")
+@click.option("-p", "--password", required=True, type=str, help="Admin Password")
+def create_admin_cmd(login_id, password):
+    """
+    Create a new admin user with the given credentials.
+    """
+    # Validate Database URL
+    if not DATABASE_URL:
+        logger.error("Error: The DATABASE_URL environment variable is not set. Please set it and try again.")
+        return
+
+    # Validate Application Secret Key
+    if not APP_SECRET_KEY:
+        logger.error("Error: The APP_SECRET_KEY environment variable is not set. Please set it and try again.")
+        return
+
+    # Create the admin
+    result = create_admin_cli(login_id, password)
+    logger.info(f"Admin creation for user '{login_id}' is {'Successful' if result else 'Failed'}")
 
 
 @db.command()

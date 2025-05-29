@@ -1,24 +1,38 @@
-/*
-------------------------------------------------------------------------
-Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-------------------------------------------------------------------------
-*/
-import { client } from "./client";
 import throttle from "lodash/throttle";
+import { client } from "./client";
 
-// API call to fetch the device connection state of all the devices associated to a customer
+// Interface definitions
+interface DeviceResponse {
+  devices: DeviceCombinedItem[];
+  total: number;
+}
+
+// GET devices
+export const getDevices = async (
+  customerId: number,
+  facilityName?: string,
+  prefecture?: string | null,
+  municipality?: string,
+  status?: string | null,
+): Promise<DeviceResponse> => {
+  try {
+    const res = await client.get("devices", {
+      params: {
+        customer_id: customerId,
+        facility_name: facilityName,
+        prefecture: prefecture,
+        municipality: municipality,
+        status: status,
+      },
+    });
+    return res.data;
+  } catch (err: any) {
+    console.warn("Error fetching devices:", err);
+    throw err;
+  }
+};
+
+// GET device status
 export const getDeviceStatus = async (
   customerId: number | null,
   currentPage: number,
@@ -31,7 +45,6 @@ export const getDeviceStatus = async (
   try {
     if (customerId === null) return null;
 
-    // Params are provided from the Dashboard search filter
     const res = await client.get("devices/status", {
       params: {
         customer_id: customerId,
@@ -51,7 +64,64 @@ export const getDeviceStatus = async (
   }
 };
 
-// A new request won't be created since 500ms from previous request for avoid spaming
 export const getDeviceStatusThrottled = throttle(getDeviceStatus, 500, {
   trailing: false,
 });
+
+export interface DeviceSaveOrUpdateItem {
+  device_id: string;
+  device_name: string;
+  facility_id: number;
+  device_type_id: number;
+}
+
+export interface DeviceSaveOrUpdateRequest {
+  customer_id: number;
+  devices: DeviceSaveOrUpdateItem[];
+}
+
+export interface DeviceCombinedItem {
+  device_id: string;
+  device_name: string;
+  facility_id: number | null;
+  facility_name: string | null;
+  device_type_id: number | null;
+  device_type_name: string | null;
+  registered_flag: boolean;
+  group_name: string | null;
+  connection_status: string;
+}
+
+// POST devices
+export const saveOrUpdateDevices = async (data: DeviceSaveOrUpdateRequest) => {
+  try {
+    const res = await client.post("devices", data);
+    return res.data;
+  } catch (err: any) {
+    console.warn("Error saving or updating devices:", {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+    });
+    throw err;
+  }
+};
+
+interface DeviceDeregisterItem {
+  facility_id: number;
+  device_id: string;
+}
+
+export const deregisterDevices = async (devices: DeviceDeregisterItem[]) => {
+  try {
+    const res = await client.delete("devices", {
+      data: {
+        devices: devices,
+      },
+    });
+    return res.data;
+  } catch (err: any) {
+    console.warn("Error deregistering devices:", err);
+    throw err;
+  }
+};

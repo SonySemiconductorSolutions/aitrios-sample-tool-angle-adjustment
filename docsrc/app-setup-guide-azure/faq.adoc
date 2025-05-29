@@ -60,3 +60,7 @@ A: Using `allow-host-ip-db.sh` script, Host Machine IP Address can be whiteliste
 # from tools/cloud-setup/azure
 $ bash allow-host-ip-db.sh
 ----
+
+Q: How do I use the caat-helper for different Cloud environments (Azure/AWS)?::
+A: Make sure to execute the script `set-env-var.sh` from respective directory before using caat-helper.
+For azure use `tools/cloud-setup/azure/set-env-var.sh` and for AWS use `tools/cloud-setup/aws/set-env-var.sh`.

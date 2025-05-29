@@ -93,11 +93,11 @@ APP_SECRET_KEY="hMnkHhOm6oh3w63zzu6s8FmHRQnreWrh"
 [source,shell]
 ----
 # from backend
-$ pipenv shell --python 3.10
-$ pipenv install
+$ python3.10 -m venv .venv
+$ source .venv/bin/activate
+$ pip install -U pip
+$ pip install -r requirements.txt
 
-# Install dev packages
-$ pipenv install --dev
 ----
 
 * ORMコードを作成します(データベーススキーマに変更がでた場合にのみ実行）。プリズマに関する追加の詳細は、backend/prisma/README.md　を参照してください。

@@ -3,8 +3,8 @@
 :doctype: book
 :data-uri:
 :title: Angle Adjustment Tool (AAT) - Admin App User Guide
-:revdate: 2025 - 02 - 27
-:revnumber: 1.7.0
+:revdate: 2025 - 05 - 19
+:revnumber: 2.0.0
 :toc: left
 :toclevels: 3
 :toc-title: Table of Contents
@@ -42,10 +42,16 @@ image::./admin-app-images/admin_workflow.png[Admin App Workflow <1>]
 
 1. **Login:** Admin users start by logging into the application using their login credentials.
 2. **Dashboard:** Post-login, Admin is directed to the Dashboard where admin can view and filter applications.
-  * **Review:** Admin can navigate to the Review page to approve or reject applications.
-    - **Review History:** Admin can view history of reviews for a selected device.
-3. **Console Configuration:** Admin can configure console credentials for customers.
-  * **Edit Configuration:** Admin can view/update customer's console credentials.
+  * **Add Admin:** Admin can create a new admin user.
+  * **Review Applications**
+   - Navigate to the Review page to approve or reject applications.
+   - Compare submitted images with reference images.
+   - Adjust submitted images if needed and save them as new reference images.
+3. **Settings:** Admin can manage customer data and devices.
+   - **Add/Edit Customers:** Create or update customer credentials.
+   - **Generate QR Codes:** Create QR codes for facilities.
+   - **Manage Devices:** Add or remove devices for a customer and assign facilities and device types to each device.
+   - **Import/Export Data:** Upload or download customer and device data in JSON format.
 
 == Login
 
@@ -60,15 +66,150 @@ To log in to AAT Admin Portal, please enter valid `Login ID` and `Password` then
 * **Login ID:** Login ID shall be provided by the cloud/system administrator.
 * **Password:** Password shall be password provided by the cloud/system administrator.
 
+== Quick Database Population
+
+* This section allows Admin to quickly populate the database with all the data.
+* Customers, facilities, facility types, device types and their respective reference images can be added.
+* Devices are fetched from the AITRIOS project which is associated with the customer credentials.
+* Device connection status helps in deciding whether the device is to be registered in AAT or not.
+
+=== Settings
+* This section allows Admin to manage the customer credentials and devices.
+* Admin can add/edit customer credentials and manage devices for the selected customer.
+* Admin can generate QR codes for the selected customer.
+* Admin can import/export data of customers, devices, facilities, facility types and device types.
+
+==== Customer List Initial State
+
+.Empty Customer List
+image::./admin-app-images/customer_list_empty.png[Empty Customer List <3>]
+
+1. Admin can click `Add Customer` to add a new customer.
+2. Admin can click `Import Data` to import the data of customers, devices, facilities, facility types and device types.
+
+===== Add Customer
+
+.Add Customer
+image::./admin-app-images/add_customer.png[Add Customer <4>]
+
+1. **Customer Details:** Fill out the customer details in the form.
+  * **Customer Name:** Enter the name of the customer.
+  * **Client ID:** Client ID from the AITRIOS Portal.
+  * **Client Secret:** Client Secret from the AITRIOS Portal.
+  * **Auth URL:** Enter the authentication URL.
+  * **Console Endpoint:** Enter the console endpoint.
+  * **Application ID:** Enter the application ID.
+
+2. **Next:** This will verify the customer credentials and proceed to the 'Manage Devices' page.
+3. **Reset:** This will reset the values entered so far.
+
+To change the credentials, please edit as applicable and click Save.
+
+==== Customer List Populated
+
+.Customer List
+image::./admin-app-images/customer_list_populated.png[Customer List <5>]
+
+1. **Edit:** This option allows admin to edit the customer credentials. Admin can click `Edit` to edit the customer credentials.
+2. **Manage Devices:** This option allows admin to manage devices for the selected customer.
+3. **Generate QR:** This option allows admin to generate QR codes for the selected customer.
+4. **Export Data:** With this option, Admin can export the data which includes the devices, facilities of all the devices, facility types, device types and their respective reference images associated with the admins and customers. However, review history of the devices is not included in the export data.
+5. **Import Data:** This feature allows admin to import data of devices, facilities, facility types and device types. However, this option overwrites the existing data in the database. Please make sure to take a backup of the data before importing.
+
+=== Manage Devices
+
+* This section allows admin to manage devices for the selected customer. Admin can select the devices and assign them to a facility and device type.
+
+.Manage Devices
+image::./admin-app-images/manage_devices.png[Manage Devices <6>]
+
+1. **Customer List:** This drop down allows admin to select the customer for whom the devices are being managed. The list is populated with customers added in the previous step.
+2. **Device Selection:** This checkbox allows admin to select the devices to be registered. Selected devices can be edited in batches for Facility and DeviceType. Registered and unregistered devices can be deleted. Also, connection status is shown for each device which helps in identifying the devices that are connected to AITRIOS.
+3. **Find or Create Facility:** This option allows admin to create/to select the Facility for the selected devices.
+4. **Find or Create Device Types:** This option allows admin to create/to select the Device Type for selected devices.
+5. **Register/Update Selected Devices:** Every device needs to be associated with a facility and device type. Admin can select the devices and click `Register/Update Selected Devices` to register or update the selected devices.
+6. **Batch Edit Selected Devices:** With this option, Admin can set the facility and device type for multiple devices at once. Admin can select the devices and click `Batch Edit Selected Devices` to set the facility and device type.
+7. **Deregister Selected Devices:** This option allows admin to deregister the selected devices. Admin can select the devices and click `Deregister Selected Devices` to deregister the selected devices.
+8. **Refresh Devices List:** Devices can be refreshed by clicking `Refresh Devices List` button. This will refresh the list of devices and show the latest status.
+
+==== Add Facility and Facility Type
+
+* This option allows admin to create a new Facility and Facility type.
+
+.Add Facility
+image::./admin-app-images/add_facility.png[Add Facility <7>, width=450]
+
+.Add Facility Type
+image::./admin-app-images/add_facility_type.png[Add Facility Type <8>, , width=300]
+
+1. **Facility Name:** Here, admin can enter the name of the facility.
+2. **Facility Type:** Create or select the facility type from the dropdown.
+  2.1 **Facility Type Name:** This option allows admin to create a new facility type. Admin can enter the name of the facility type and click `Add Facility Type` to add the facility type.
+3. **State:** This option allows admin to select the State for the facility.
+4. **City:** This option allows admin to select the City for the facility.
+5. **Effective Start Date:** This is the date when the facility QR Code will be effective. Admin can select the date from the widget.
+6. **Effective End Date:** This is the date when the facility QR Code will expire. Admin can select the date from the widget.
+7. **Create Facility:** This button allows admin to create the facility. Admin can click `Create Facility` to create the facility.
+
+==== Add Device Type
+
+* This option allows admin to create a new device type.
+
+.Add Device Type
+image::./admin-app-images/add_device_type.png[Add Device Type <9>, , width=300]
+
+1. **Device Type Name:** Admin can enter the name of the device type.
+2. **Reference Image:** This option allows admin to upload a reference image for the device type. Admin can click `Upload` button to upload the reference image.
+3. **Add:** This button allows admin to add the device type.
+
+=== Generate QR
+
+* QR Codes are used to launch the Contractor App. It contains the Contractor App URL integrated with the Facility details. Once QR code is scanned, it will open the Contractor App with the particular Facility details and displays the list of the Devices which need to be setup.
+* This section allows admin to generate QR codes for the selected Facilities or all facilities from a particular Customer. Admin can select the devices and click `Generate QR` to generate the QR codes.
+
+.Generate QR
+image::./admin-app-images/generate_qr.png[Generate QR <10>]
+
+1. **Customer Name:** This option allows admin to select the customer for whom the QR codes are to be generated.
+2. **Facility Name:** This option allows admin to select the facility for which the QR codes are to be generated.
+3. **Generate & Download:** This button allows admin to generate the QR codes for the selected facilities. If no facility is selected for a particular customer, QR Codes will be generated for all the facilities belonging to that customer. A single zip file will be downloaded for selected options separated by Customer and Facility.
+
+=== Export Data
+
+* Admin can export the data which includes the devices, facilities of all the devices, facility types, device types and their respective reference images associated with the admins and customers. However, because of the size constraint, the angle adjustment reviews of the devices are not included in the export data.
+* This section allows admin to export the data for the logged in admin. Admin can click `Export Data` to export the data.
+
+.Export Data
+image::./admin-app-images/export_data.png[Export Data <11>, width=300]
+
+* A json file with the name format **AAT_Data_ADMIN-NAME-HERE_YYYYMMDDHHMMSS.json** will be downloaded automatically with the data.
+  * **ADMIN-NAME-HERE** is the name of the logged in admin.
+  * **YYYYMMDDHHMMSS** is the date and time when the data was exported.
+  * E.g. `AAT_Data_aat-admin_20250423094029.json`
+
+=== Import Data
+
+* Admin can import the data which includes the devices, facilities of all the devices, facility types, device types and their respective reference images associated with the admins and customers. However, similar to the export data feature, the angle adjustment reviews of the devices are not included in the import data.
+* This section allows admin to import the data for the logged in admin.
+* Admin can import the data from a json file. The json file should be in the same format as the exported data.
+
+WARNING: Importing data into the database will overwrite the existing data. Please make sure to take a backup of the data before importing.
+
+.Import Data
+image::./admin-app-images/import_data.png[Import Data <12>, width=300]
+
+1. **Upload:** Admin can click Upload button to upload the JSON file.
+2. **Import:** Imports the data from the selected json file. Admin can click `Import` button to import the data.
+
 == Dashboard
 
 The **Dashboard** page is displayed after logging in. It contains the application list for the devices.
 
 .Dashboard Listview
-image::./admin-app-images/dashboard_list.png[Admin Dashboard List <3>]
+image::./admin-app-images/dashboard_list.png[Admin Dashboard List <13>]
 
 .Dashboard Tiledview
-image::./admin-app-images/dashboard_tiled.png[Admin Dashboard Tiled <4>]
+image::./admin-app-images/dashboard_tiled.png[Admin Dashboard Tiled <14>]
 
 1. **Name and Version:** The application's name and current version (AAT: Angle Adjustment Tool).
 2. **Sidebar options:** Navigation links to Dashboard & Console Configuration.
@@ -81,15 +222,15 @@ image::./admin-app-images/dashboard_tiled.png[Admin Dashboard Tiled <4>]
   * Description: This filter allows to search application list by customer name.
   * How to use: Select any customer from the dropdown.
 
-  . `State/Province/Region`
-  * Filter type: Dropdown (Multiple Selection)
-  * Description: This filter allows to search application list by State/Province/Region.
-  * How to use: Select one or more State/Province/Region from the dropdown list.
-
-  . `City/Town`
+  . `State`
   * Filter type: Text Box (Full or partial word search)
-  * Description: This filter allows to search application list by City/Town name.
-  * How to use: Enter keyword containing full or partial name of the City/Town.
+  * Description: This filter allows to search application list by State name.
+  * How to use: Enter keyword containing full or partial name of the State.
+
+  . `City`
+  * Filter type: Text Box (Full or partial word search)
+  * Description: This filter allows to search application list by City name.
+  * How to use: Enter keyword containing full or partial name of the City.
 
   . `Search by Facility name`
   * Filter type: Text Box (Full or partial word search)
@@ -104,7 +245,7 @@ image::./admin-app-images/dashboard_tiled.png[Admin Dashboard Tiled <4>]
 
 [NOTE]
 ====
-* Search Button: Use the Search button to apply filters based on the specified criteria (Customer Name, State/Province/Region, City/Town, Facility Name). This action retrieves device applications that match the entered filter parameters. Additionally, it can be used as a reload button to fetch the latest results.
+* Search Button: Use the Search button to apply filters based on the specified criteria (Customer Name, State, City, Facility Name). This action retrieves device applications that match the entered filter parameters. Additionally, it can be used as a reload button to fetch the latest results.
 * Clear Button: Use the Clear button to reset all applied filters and return to the default view of all device applications without any filtering criteria.
 ====
 
@@ -120,14 +261,29 @@ image::./admin-app-images/dashboard_tiled.png[Admin Dashboard Tiled <4>]
     ** Small: Shows more items with smaller thumbnails.
     ** Medium: Balances the number of items with thumbnail size.
     ** Large: Shows fewer items with larger thumbnails.
+5. **Add Admin:** Click `Add Admin` to create a new admin user.
+
+=== Add Admin
+* This section allows Admin to create a new Admin user.
+
+.Add Admin
+image::./admin-app-images/add_admin.png[Add Admin <15>, width=300]
+
+* Admin can create a new admin user by entering the `Login ID` and `Password` in the form.
+* Admin can click `Create Admin` to create the new admin user.
+
+.New Admin Created
+image::./admin-app-images/new_admin.png[New Admin Created <16>, width=300]
+
+* Admin can copy the credentials of new admin for sharing, which are visible only once.
 
 === Review Page
 
 .Review Details
-image::./admin-app-images/review_details.png[Review Details <5>]
+image::./admin-app-images/review_details.png[Review Details <17>]
 
 .Grid Line Color Picker
-image::./admin-app-images/grid_line_color_picker.png[Grid Line Color Picker <6>]
+image::./admin-app-images/grid_line_color_picker.png[Grid Line Color Picker <18>]
 
 1. **Device and Review Details:** Displays details about the device under review.
 2. **Application Status:** Displays the current application status.
@@ -139,14 +295,15 @@ image::./admin-app-images/grid_line_color_picker.png[Grid Line Color Picker <6>]
 8. **Reject Button:** Enter the rejection reason in the provided field, then click `Reject` to reject the review request.
 9. **Update Reference Image Button:** Click `Update Reference Image` to open a pop-up window where user can drag and adjust the submitted image, then save it as the new reference image.
 10. **Restore Reference Image Button:** Click `Restore Reference Image` to reset the reference image to the last saved version, discarding any changes made.
-11. **View History:** Click `View History` to see the history of review data for the selected device.
+11. **View History:** Click `View History` to see the history of review data for the device.
+12. **Delete Reviews:** Click `Delete Reviews` to delete the review data for the device. This action will remove all review history associated with the device.
 
 ==== Adjust Submitted image to save as Reference image
 
 Users can reject the review by making adjustments to submitted image and saving it as the reference image.
 
 .Adjust Submitted Image
-image::./admin-app-images/adjust_submitted_image.png[Adjust Submitted Image <7>]
+image::./admin-app-images/adjust_submitted_image.png[Adjust Submitted Image <19>]
 
 * This interface allows users to drag and adjust the submitted image before saving it as the reference image.
 * Grid lines are enabled in this window to assist with precise adjustments.
@@ -160,7 +317,7 @@ image::./admin-app-images/adjust_submitted_image.png[Adjust Submitted Image <7>]
 ====
 
 .Updated Reference Image
-image::./admin-app-images/updated_reference_image.png[Updated Reference Image <8>]
+image::./admin-app-images/updated_reference_image.png[Updated Reference Image <20>]
 
 * The user can reset the reference image to the last saved version if they choose to discard the adjustments.
 * On rejecting the review, the updated reference image will be permanently saved, replacing the previous reference image.
@@ -170,32 +327,13 @@ image::./admin-app-images/updated_reference_image.png[Updated Reference Image <8
 All the reviews of the selected device are listed here.
 
 .Review History
-image::./admin-app-images/review_history_main.png[Review History <9>]
+image::./admin-app-images/review_history_main.png[Review History <21>]
 
 * **Review Image:** Click thumbnail to view larger previews of images associated with each review.
 * **Review Comment:** Review comment if any.
 
 .Review Image Preview
-image::./admin-app-images/review_history_image_preview.png[Review Image Preview <10>]
-
-== Console Configuration
-
-Console configuration page displays the list of customers for the logged in Admin account.
-The page has an option to edit the console credentials for the selected Customer.
-
-.Configuration List
-image::./admin-app-images/configuration_list.png[Configuration List <11>]
-
-1. **Edit Button:** Click `Edit` to modify the console credentials for a selected customer.
-
-=== Edit Console Configuration
-
-Admin can view/edit console credentials of the selected customer.
-
-.Edit Configuration
-image::./admin-app-images/edit_configuration.png[Edit Configuration <12>]
-
-To change the credentials, please edit as applicable and click Save.
+image::./admin-app-images/review_history_image_preview.png[Review Image Preview <22>]
 
 == FAQs
 

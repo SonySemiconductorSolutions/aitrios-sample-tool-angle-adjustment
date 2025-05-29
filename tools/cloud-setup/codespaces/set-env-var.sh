@@ -58,7 +58,13 @@ export APP_SECRET_KEY=${APP_SECRET_KEY}
 # Set APP_ENV to local so that postgres prisma file is referred.
 export APP_ENV="local"
 
+# Set contractor app URL
+CONTRACTOR_APP=$CODESPACE_NAME-3000.app.github.dev
+CONTRACTOR_APP_URL="https://$CONTRACTOR_APP"
+export CONTRACTOR_APP_URL="$CONTRACTOR_APP_URL"
+
 echo "Following environment variables are set"
 echo "DATABASE_URL=${DATABASE_URL}"
 echo "APP_SECRET_KEY=${APP_SECRET_KEY}"
 echo "APP_ENV=${APP_ENV}"
+echo "CONTRACTOR_APP_URL=${CONTRACTOR_APP_URL}"
