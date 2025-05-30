@@ -1,8 +1,0 @@
-# Python Unit test package; Not part of OSS
-pytest==7.4.2
-# For Code coverage
-pytest-cov==4.1.0
-# For mocking
-pytest-mock==3.11.1
-# For mocking responses
-responses==0.13.3

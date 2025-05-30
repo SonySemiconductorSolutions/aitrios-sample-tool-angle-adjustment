@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@
 from flask import Flask
 from pydantic import ValidationError
 from src.logger import get_json_logger
+from src.schemas.response import ResponseHTTPSchema
 from werkzeug.exceptions import HTTPException
 
 logger = get_json_logger()
-
-from .schemas.response import ResponseHTTPSchema
 
 
 def register_exceptions(app: Flask):
@@ -156,6 +155,36 @@ class ErrorCodes:
         "error_code": 40010,
         "message": "Unexpected parameters received",
     }
+    DUPLICATE_FACILITY_NAME = {
+        "http_status": 400,
+        "error_code": 40011,
+        "message": "Facility name already exists for the customer",
+    }
+    INVALID_DEVICE_TYPE_ID = {
+        "http_status": 400,
+        "error_code": 40012,
+        "message": "Device Type ID is invalid or not provided",
+    }
+    INVALID_FILE = {
+        "http_status": 400,
+        "error_code": 40013,
+        "message": "File is invalid or not provided",
+    }
+    INVALID_JSON_FORMAT = {
+        "http_status": 400,
+        "error_code": 40014,
+        "message": "Invalid JSON format",
+    }
+    DUPLICATE_CUSTOMER_NAME = {
+        "http_status": 400,
+        "error_code": 40015,
+        "message": "Customer name already exists",
+    }
+    ADMIN_ALREADY_EXISTS = {
+        "http_status": 400,
+        "error_code": 40016,
+        "message": "Admin with this login_id already exists.",
+    }
 
     # 401 Authorization Errors
     INVALID_AUTH_HEADER = {
@@ -260,6 +289,8 @@ class ErrorCodes:
     INVALID_EXPIRY = {"http_status": 404, "error_code": 40409, "message": "exp not valid."}
     URL_NOT_FOUND = {"http_status": 404, "error_code": 40410, "message": "URL not found"}
     DEVICE_TYPE_NOT_FOUND = {"http_status": 404, "error_code": 40411, "message": "Device type not found"}
+    FACILITY_TYPE_NOT_FOUND = {"http_status": 404, "error_code": 40412, "message": "Facility type not found"}
+    ADMIN_NOT_FOUND = {"http_status": 404, "error_code": 40413, "message": "Admin not found"}
 
     # 405 Method not allowed
     METHOD_NOT_ALLOWED = {"http_status": 405, "error_code": 40501, "message": "Method not allowed"}
@@ -330,6 +361,16 @@ class ErrorCodes:
         "http_status": 500,
         "error_code": 50014,
         "message": "AITRIOS cannot find the device ID",
+    }
+    REVIEW_DELETE_FAILED = {
+        "http_status": 500,
+        "error_code": 50015,
+        "message": "Failed to delete reviews.",
+    }
+    DEVICE_UPDATE_FAILED = {
+        "http_status": 500,
+        "error_code": 50016,
+        "message": "Failed to update devices",
     }
     # 503 Service Unavailable
     SERVICE_UNAVAILABLE = {

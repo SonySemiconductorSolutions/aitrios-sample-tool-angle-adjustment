@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,8 +26,29 @@ from .facilities import api as facility_api
 from .customers import api as customer_api
 from .devices import api as device_api
 from .device_types import api as device_type_api
+from .facility_types import api as facility_type_api
+from .data_migration import api as data_migration_api
+from .facility_update import api as facility_update_api
+from .customers_qr_codes import api as customers_qr_codes_api
+from .admins import api as admins_api
 
 
 def register_apis(app: Flask):
-    for api in [login_api, reviews_api, facility_api, health_api, customer_api, device_api, device_type_api]:
+    """
+    Register all API blueprints with the Flask app.
+    """
+    for api in [
+        login_api,
+        reviews_api,
+        facility_api,
+        health_api,
+        customer_api,
+        device_api,
+        device_type_api,
+        facility_type_api,
+        data_migration_api,
+        facility_update_api,
+        customers_qr_codes_api,
+        admins_api,
+    ]:
         app.register_blueprint(api)

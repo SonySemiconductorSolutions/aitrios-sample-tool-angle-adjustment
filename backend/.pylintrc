@@ -28,7 +28,7 @@ ignore-paths=
 
 # Files or directories matching the regex patterns are skipped. The regex
 # matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=tests
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -52,7 +52,7 @@ persistent=yes
 
 # Min Python version to use for version dependend checks. Will default to the
 # version used to run pylint.
-py-version=3.8
+py-version=3.10
 
 # When enabled, pylint would attempt to guess common misconfiguration and emit
 # user-friendly hints instead of false-positive error messages.

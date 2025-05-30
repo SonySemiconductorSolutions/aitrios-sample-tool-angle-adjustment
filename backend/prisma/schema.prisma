@@ -22,14 +22,17 @@ model admin {
     created_by          String     @default("system") @db.VarChar(255)
     last_updated_by     String     @default("system") @db.VarChar(255)
     customers           customer[] // Admin can have multiple customers
+    facility_types      facility_type[] // Admin can have multiple facility types
+    devices_types       device_type[] // Admin can have multiple device types
+    devices             device[] // Admin can have multiple devices
 }
 
 model customer {
     id                  Int        @id @default(autoincrement())
     customer_uuid       String     @db.VarChar(255)
-    admin               admin?     @relation(fields: [admin_id], references: [id])
-    admin_id            Int?
-    customer_name       String     @unique
+    admin               admin      @relation(fields: [admin_id], references: [id])
+    admin_id            Int
+    customer_name       String
     auth_url            String?
     base_url            String?
     client_id           String?
@@ -45,8 +48,8 @@ model customer {
 
 model facility {
     id                  Int           @id @default(autoincrement())
-    facility_type       facility_type @relation(fields: [facility_type_id], references: [id])
-    customer            customer      @relation(fields: [customer_id], references: [id])
+    facility_type       facility_type @relation(fields: [facility_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    customer            customer      @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
     customer_id         Int
     status              Int           @default(1)
     prefecture          String?
@@ -66,6 +69,8 @@ model facility {
 model facility_type {
     id                  Int        @id @default(autoincrement())
     name                String
+    admin               admin      @relation(fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    admin_id            Int
     created_by          String     @default("system") @db.VarChar(255)
     created_at_utc      DateTime   @default(now()) @map("created_at_utc")
     last_updated_by     String     @default("system") @db.VarChar(255)
@@ -75,11 +80,13 @@ model facility_type {
 
 model device {
     id             Int         @id @default(autoincrement())
-    device_id      String      @unique(map: "UQ__stores__2CB9A42611EEDF49") @db.VarChar(40)
-    device_name    String      @unique
-    device_type    device_type @relation(fields: [device_type_id], references: [id])
-    facility       facility    @relation(fields: [facility_id], references: [id])
+    device_id      String      @db.VarChar(40)
+    device_name    String
+    device_type    device_type @relation(fields: [device_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    facility       facility    @relation(fields: [facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
     facility_id    Int
+    admin          admin      @relation(fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    admin_id       Int
     device_type_id Int
     result         Int         @default(1)
     review         review[]
@@ -88,6 +95,8 @@ model device {
 model device_type {
     id                  Int      @id @default(autoincrement())
     name                String
+    admin               admin      @relation(fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    admin_id            Int
     sample_image_blob   String   @default("") @db.Text
     created_by          String   @default("system") @db.VarChar(255)
     created_at_utc      DateTime @default(now()) @map("created_at_utc")

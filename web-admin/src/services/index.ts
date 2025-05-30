@@ -18,5 +18,9 @@ limitations under the License.
 export * from "./reviews";
 export * from "./customers";
 export * from "./devices";
-export * from "./deviceTypes";
+export * from "./device_types";
+export * from "./data_migration";
+export * from "./facility_types";
+export * from "./facility_update";
 export * from "./login";
+export * from "./admins";

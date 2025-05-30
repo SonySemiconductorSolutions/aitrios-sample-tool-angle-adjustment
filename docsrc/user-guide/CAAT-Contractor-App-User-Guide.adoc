@@ -3,8 +3,8 @@
 :doctype: book
 :data-uri:
 :title: Angle Adjustment Tool (AAT) - Contractor App User Guide
-:revdate: 2025 - 02 - 27
-:revnumber: 1.7.0
+:revdate: 2025 - 05 - 19
+:revnumber: 2.0.0
 :toc: left
 :toclevels: 3
 :toc-title: Table of Contents
@@ -79,7 +79,7 @@ image::./contractor-app-images/facility_confirm.png[Facility Confirmation Page <
 
 1. **Language Change:** Select the desired Language for the App, default language of the application is Japanese.
 2. **Progress Bar:** The Progress bar shows the current step in progress, and shows previous passed steps as checked.
-3. **Facility Details:** The Facility details has Facility name, State/Province/Region, City/Town for verification.
+3. **Facility Details:** The Facility details has Facility name, State, City for verification.
 4. **Confirm Facility:** The Confirm Facility button is used to confirm the facility details mentioned above.
 5. **App Version:** The application version is displayed.
 

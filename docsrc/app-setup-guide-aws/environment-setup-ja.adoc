@@ -1,4 +1,4 @@
-
+[[environment-setup]]
 == 環境のセットアップ
 
 本ページではAWSクラウドにAATアプリケーションをセットアップする際の手順を説明します。
@@ -7,7 +7,12 @@
 - AWSクラウド環境のセットアップには link:https://docs.github.com/ja/codespaces/overview[GitHub Codespaces^] の使用を推奨します。また、Ubuntuマシンでも可能です。
 - ホストマシンがAWSにアクセスできること、そしてデータベースポートに接続できることを確認してください (Port: 5432)。
 
+[注記]
+====
+前バージョンからの既存のAATインスタンスのアップグレードは、 <<version-upgrade, バージョンアップグレード>> セクションを開いてください。
+====
 
+[[prerequisites]]
 === 前提条件
 
 * 次のステップへ進む前に、必ず以下のソフトウェアをインストールしてください。
@@ -19,7 +24,7 @@
 ** link:https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating[Install Node using `nvm`^] (v20.12.1でテスト済み)
 ** link:https://developer.hashicorp.com/terraform/install?product_intent=terraform#linux[Install Terraform^]  (v1.9.5 linux_amd64でテスト済み)
 ** link:https://docs.aws.amazon.com/ja_jp/lightsail/latest/userguide/amazon-lightsail-install-software.html#install-lightsailctl-on-linux[Install Lightsail Plugin^] (v1.0.4でテスト済み)
-*** 'Permission Denied'でエラーが発生した場合は'sudo'で実行します。 
+*** 'Permission Denied'でエラーが発生した場合は'sudo'で実行します。
 ** link:https://jqlang.github.io/jq/download/[Install `jq` JSON Processor Tool^] (1.6でテスト済み)
 * Cloud側で有効なAWSアカウントとAWSアクセス情報が必要となります。
 
@@ -67,14 +72,14 @@ link:https://docs.aws.amazon.com/ja_jp/lightsail/latest/userguide/amazon-lightsa
 | aatbackend, aatbackendserver, aatbackendapp.
 
 |WEBAPP_NAME
-|この名前はAWS S3バケットにContractorAppを作成する際に使用されます。 しかしながら、最終的なContractorApp URL は以下のように表示されます `https://<RandomGUID>.cloudfront.net`. 
+|この名前はAWS S3バケットにContractorAppを作成する際に使用されます。 しかしながら、最終的なContractorApp URL は以下のように表示されます `https://<RandomGUID>.cloudfront.net`.
 | `a-z`,`0-9`, `-` +
 長さ: 3-63 文字 +
 link:https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/bucketnamingrules.html?icmpid=docs_amazons3_console#bucketnamingrules-directorybucket[バケットの名前付け^]
 | aat-web-app, aatcontractor, aatcontractorapp.
 
 |WEBADMIN_NAME
-|この名前はAWS S3バケット内にAdminAppを作成する際に使用されます。 しかしながら、最終的な管理者アプリURLは以下のように表示されます `https://<RandomGUID>.cloudfront.net`. 
+|この名前はAWS S3バケット内にAdminAppを作成する際に使用されます。 しかしながら、最終的な管理者アプリURLは以下のように表示されます `https://<RandomGUID>.cloudfront.net`.
 | `a-z`,`0-9`, `-` +
 長さ: 3-63 文字 +
 link:https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/bucketnamingrules.html?icmpid=docs_amazons3_console#bucketnamingrules-directorybucket[バケットの名前付け^]

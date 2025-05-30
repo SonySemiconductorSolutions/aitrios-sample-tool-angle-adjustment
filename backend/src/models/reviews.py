@@ -130,7 +130,7 @@ def build_device_query(connection: Prisma, customer_id: int, parameters: ReviewL
 
         # Filter by prefecture
         if parameters.prefecture:
-            and_conditions.append({"facility": {"prefecture": {"in": to_list(parameters.prefecture)}}})
+            and_conditions.append({"facility": {"prefecture": {"contains": parameters.prefecture}}})
 
         # Filter by municipality
         if parameters.municipality:

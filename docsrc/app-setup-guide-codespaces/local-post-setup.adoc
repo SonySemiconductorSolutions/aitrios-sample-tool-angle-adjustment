@@ -71,31 +71,6 @@ Please start using the application.
 As App URLs Port is made public, the link can be shared with contractor to access.
 ====
 
-=== Add Selective Data to Database
-
-* When initial cloud setup is complete and data is added, a situation may arise, when more number of devices or facilities or new customer needs to be added to the already existing Database.
-* Selective data such as such as facilities, devices, customers can be added to the database with the help of caat-helper.
-
-[NOTE]
-====
-* Updating the existing data is not supported in `caat-helper`.
-* E.g., Initial data is added. Admin 1 is associated to Customer 1. +
-Next time, Admin 2 is added and user would like to assign to Customer 1. +
-This is not supported.
-====
-
-==== Add the data through excel
-
-* Add the data to the respective sheets (facility, customer, device) in the excel file used initially to populate database and execute the following command.
-
-* Before running any `caat-helper` commands, make sure to:
-    ** <<activate-virtual-environment, Activate virtual environment>>
-    ** <<set-environment-variables, Execute set environment variable script>>
-
-[source,shell]
-----
-$ (.venv) caat-helper db populate --excel-path '/path/to/excel'
-----
 
 === Reset Admin Password
 

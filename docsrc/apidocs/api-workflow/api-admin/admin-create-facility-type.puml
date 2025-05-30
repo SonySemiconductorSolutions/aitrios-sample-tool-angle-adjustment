@@ -1,0 +1,29 @@
+@startuml Create Facility Type
+title Create Facility Type
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request body (name);
+if (Invalid data?) then (yes)
+    : Send HTTP status 400, Invalid input;
+    kill
+endif
+: Create new facility type in DB;
+: Send HTTP 201 with created facility type;
+note right
+    Returns:
+        1. Facility type ID
+        2. Facility type name
+        3. (Optional) Other facility type details
+end note
+stop
+@enduml

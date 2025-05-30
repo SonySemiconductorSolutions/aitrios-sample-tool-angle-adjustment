@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import imghdr
 import math
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 
 from src.utils.logger import get_json_logger
 
 logger = get_json_logger()
-# pylint: disable = line-too-long
 
 
 def validate_date(date_str: str, check_expiry=False) -> bool:
@@ -45,7 +44,7 @@ def validate_date(date_str: str, check_expiry=False) -> bool:
         if check_expiry:
             # Get the current time in UTC
             now = datetime.now(expiry_date.tzinfo)
-            
+
             # Check if the expiry date is in the future
             if expiry_date <= now:
                 logger.error(f"Error: Expiry date '{date_str}' is in the past.")
@@ -121,13 +120,15 @@ def validate_loginid(input_str: str) -> bool:
         return False
 
     # Check if the string starts or ends with _, -
-    if re.fullmatch(r'^[_\- ].*|.*[_\- ]$', input_str):
+    if re.fullmatch(r"^[_\- ].*|.*[_\- ]$", input_str):
         logger.error(f"'{input_str}' : should not start/end with Underscore, hyphen, space.")
         return False
 
     # Check if the string contains only valid characters
     if not re.fullmatch(r"^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_\-]+$", input_str):
-        logger.error(f"'{input_str}' : English Alphanumeric characters or Japanese characters except 。 are supported and allowed Special Characters are ('_', '-').")
+        logger.error(
+            f"'{input_str}' : English Alphanumeric characters or Japanese characters except 。 are supported and allowed Special Characters are ('_', '-')."
+        )
         return False
 
     return True
@@ -150,14 +151,16 @@ def validate_name(input_str: str) -> bool:
         return False
 
     # Check if the string starts or ends with _, -, or space
-    if re.fullmatch(r'^[_\-\s].*|.*[_\-\s]$', input_str):
+    if re.fullmatch(r"^[_\-\s].*|.*[_\-\s]$", input_str):
         logger.error(f"'{input_str}' : should not start/end with Underscore, hyphen or space.")
         return False
 
     # Check if the string contains only valid characters
     if not re.fullmatch(r"^[\u4E00-\u9FAF\u3040-\u309F\u30A0-\u30FFa-zA-Z0-9_\- ]+$", input_str):
-        logger.error(f"'{input_str}' : English Alphanumeric characters or Japanese characters except 。 are supported. \n"
-                     f"Allowed Special characters are Space, Hyphen -, Underscore _ without at start/end.\n")
+        logger.error(
+            f"'{input_str}' : English Alphanumeric characters or Japanese characters except 。 are supported. \n"
+            f"Allowed Special characters are Space, Hyphen -, Underscore _ without at start/end.\n"
+        )
         return False
     return True
 
@@ -217,8 +220,14 @@ def validate_password(input_str: str) -> bool:
     return True
 
 
-# Function to check if a value is NaN
 def is_nan(value):
+    """
+    Check if a value is NaN (Not a Number).
+    Args:
+        value: The value to check.
+    Returns:
+        bool: True if the value is NaN, False otherwise.
+    """
     return isinstance(value, float) and math.isnan(value)
 
 
@@ -230,5 +239,5 @@ def confirm_alert(alert_text):
         response = input(alert_text + " (y/n): ").lower()
         if response in ["y", "n"]:
             return response == "y"
-        else:
-            logger.info(f"Please respond with 'y' or 'n'.")
+
+        logger.info(f"Please respond with 'y' or 'n'.")

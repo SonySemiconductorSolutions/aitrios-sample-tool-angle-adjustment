@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------
 */
-import { client } from "./client";
 import throttle from "lodash/throttle";
+import { client } from "./client";
 
 // API call to fetch the application list (latest reviews)
 export const getLatestReviews = async (
@@ -56,7 +56,6 @@ export const getLatestReviewsThrottled = throttle(getLatestReviews, 500, {
   trailing: false,
 });
 
-
 // API call to fetch review details by id
 export const getReviewById = async (id: number) => {
   try {
@@ -70,9 +69,12 @@ export const getReviewById = async (id: number) => {
   }
 };
 
-
 // API call to submit a review
-const submitReview = async (reviewId: number, result: number, comment: string | null = null) => {
+const submitReview = async (
+  reviewId: number,
+  result: number,
+  comment: string | null = null,
+) => {
   try {
     const url = "reviews/" + reviewId.toString();
     const res = await client.put(url, {
@@ -88,13 +90,16 @@ const submitReview = async (reviewId: number, result: number, comment: string | 
 };
 
 export const approveReview = async (reviewId: number, result: number) => {
-  return submitReview(reviewId, result, null)
+  return submitReview(reviewId, result, null);
 };
 
-export const rejectReview = async (reviewId: number, result: number, comment: string) => {
-  return submitReview(reviewId, result, comment)
+export const rejectReview = async (
+  reviewId: number,
+  result: number,
+  comment: string,
+) => {
+  return submitReview(reviewId, result, comment);
 };
-
 
 // API call to fetch the review history of a device
 export const getDeviceReviewsHistory = async (
@@ -109,8 +114,21 @@ export const getDeviceReviewsHistory = async (
       params: {
         page: currentPage,
         page_size: perPage,
-      }
+      },
     });
+    return res.data;
+  } catch (err: any) {
+    const error = err?.response?.data ?? err;
+    console.warn(error.message);
+    throw error;
+  }
+};
+
+// API call to delete all the reviews of a device
+export const deleteDeviceReviews = async (deviceId: number) => {
+  try {
+    const url = "reviews/devices/" + deviceId.toString();
+    const res = await client.delete(url);
     return res.data;
   } catch (err: any) {
     const error = err?.response?.data ?? err;

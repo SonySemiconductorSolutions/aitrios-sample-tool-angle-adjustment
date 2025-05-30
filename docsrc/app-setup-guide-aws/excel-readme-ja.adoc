@@ -19,7 +19,7 @@
 |**必須フィールド** +
 管理者が管理者アプリへのログインに使用する固有ID (この欄には固有値が含まれます) です。
 |**必須フィールド** +
-管理者アプリにログインするための管理者パスワード。 
+管理者アプリにログインするための管理者パスワード。
 
 |**文字の詳細**
 |スペースを含まない英数字と `。` を除く日本語文字がサポートされています。 +
@@ -53,18 +53,21 @@
 
 `facility_type` シートには以下の欄があります。
 
-[%noheader, cols="2"]
+[%noheader, cols="3"]
 |===
-| **列** ^| _name_
+| **列** ^| _name_ ^| _admin_login_id_
 |**説明** | **必須フィールド** +
 施設タイプ名が含まれます。
+| **必須フィールド** +
+`admin` データ内に管理者 _login_id_があることを確認してください。
 
-|**文字の詳細** 
+|**文字の詳細**
 |英数字と `。` を除く日本語文字がサポートされています。 +
 許可される特殊文字は スペース、 ハイフン `-`, アンダースコア `_` です。 +
 長さ: 1～127 文字。
+| `admin` データで述べたように
 
-| **サンプル値** | Parking_Type1
+| **サンプル値** | Parking_Type1 | test-caat-dev
 |===
 
 [注記]
@@ -143,23 +146,27 @@ https://console.aitrios.sony-semicon.com/api/v2
 
 `device_type` シートには以下の欄があります。
 
-[%noheader, cols="3"]
+[%noheader, cols="4"]
 |===
-| **欄** ^| _name_ ^| _sample_image_path_
+| **欄** ^| _name_ ^| _sample_image_path_ ^| _admin_login_id_
 | **説明** | **必須フィールド** +
 デバイスタイプ名を含みます。 | **必須フィールド** +
 サンプル画像へのパス。
+| **必須フィールド** +
+`admin` データ内に管理者 _login_id_があることを確認してください。
 
-|**文字の詳細** 
+|**文字の詳細**
 |英数字と `。` を除く日本語文字がサポートされています。 +
 許可される特殊文字は スペース、 ハイフン `-` , アンダースコア `_` です。 +
 長さ: 1～127 文字。
 |サンプル画像に使用できる拡張子は `.jpeg` `.jpg` または `.png` です。 +
 `caat-helper`  を実行するマシン内に画像があることを確認してください +
 画像への絶対パスを記載してください。
+| `admin` データで述べたように
 
 
-| ** サンプル値**| GarageDevice | /path/to/sample-images/garage.jpeg
+
+| ** サンプル値**| GarageDevice | /path/to/sample-images/garage.jpeg | test-caat-dev
 |===
 
 [注記]
@@ -175,9 +182,9 @@ https://console.aitrios.sony-semicon.com/api/v2
 
 `facility` シートには以下の欄があります。
 
-[%noheader, cols="8"]
+[%noheader, cols="9"]
 |===
-| **欄** | _facility_name_ | _prefecture_ | _municipality_ | _effective_start_jst_ | _effective_end_jst_ | _customer_name_ | _facility_type_
+| **欄** | _facility_name_ | _prefecture_ | _municipality_ | _effective_start_jst_ | _effective_end_jst_ | _customer_name_ | _facility_type_ | _admin_login_id_
 | **説明**   | **必須フィールド** +
 有効な施設名を追加します。 | **必須フィールド** +
 施設が所在する都道府県を追加します。 | **必須フィールド** +
@@ -185,7 +192,9 @@ https://console.aitrios.sony-semicon.com/api/v2
 開始時間を追加し、有効開始時間が **機能**内で有効な日付であることを確認します | **必須フィールド** +
 終了時間を追加し、有効終了時間が有効開始時間以降の有効な日付であることを確認します。 | **必須フィールド** +
 施設にリンクするカスタマー名を追加し、それが `customer` シート内にあることを確認します。 | **必須フィールド** +
-施設タイプを記載し、それが `facility_type` シート内にあることを確認します。
+施設タイプを記載し、それが `facility_type` シート内にあることを確認します。| **必須フィールド** +
+`admin` データ内に管理者 _login_id_があることを確認してください。
+
 
 |**文字の詳細**
 3+| 英数字と `。` を除く日本語文字がサポートされています。 +
@@ -195,24 +204,9 @@ https://console.aitrios.sony-semicon.com/api/v2
 `YYYY-MM-DDTHH:MM:SS+00:00`
 | `customer` データに記載されているように
 | `facility_type` データに記載されているように
+| `admin` データで述べたように
 
-| **サンプル値** | パーキング1 | 神奈川県  | 厚木市 | 2024-06-28T09:00:00+00:00 | 2024-12-14T09:00:00+00:00 | 顧客A |Parking_Type1
-|===
-
-* 都道府県欄には、以下の表の値が含まれます。
-
-[%noheader, cols="5"]
-|===
-^| 北海道 ^| 埼玉県 ^| 岐阜県 ^| 鳥取県 ^| 佐賀県
-^| 青森県 ^| 千葉県 ^| 静岡県 ^| 島根県 ^| 長崎県
-^| 岩手県 ^| 東京都 ^| 愛知県 ^| 岡山県 ^| 熊本県
-^| 宮城県 ^| 神奈川県 ^| 三重県 ^| 広島県 ^| 大分県
-^| 秋田県 ^| 新潟県 ^| 滋賀県 ^| 山口県 ^| 宮崎県
-^| 山形県 ^| 富山県 ^| 京都府 ^| 徳島県 ^| 鹿児島県
-^| 福島県 ^| 石川県 ^| 大阪府 ^| 香川県 ^| 沖縄県
-^| 茨城県 ^| 福井県 ^| 兵庫県 ^| 愛媛県 ^|
-^| 栃木県 ^| 山梨県 ^| 奈良県 ^| 高知県 ^|
-^| 群馬県 ^| 長野県 ^| 和歌山県 ^| 福岡県 ^|
+| **サンプル値** | パーキング1 | 神奈川県  | 厚木市 | 2024-06-28T09:00:00+00:00 | 2024-12-14T09:00:00+00:00 | 顧客A |Parking_Type1 | test-caat-dev
 |===
 
 
@@ -222,24 +216,30 @@ https://console.aitrios.sony-semicon.com/api/v2
 * カスタマーはそれぞれ必要な数の施設が登録されます。
 * 施設表にはどのカメラがどの施設に設置されるかなどの詳細が記載されています。
 * 施設には都道府県、市区町村などロケーション等の属性が登録されています。
-* caat-helperを使用して施設を追加後、 `customer_name` や `facility_type` をcaat-helperで対応していない施設に更新してください。
+* caat-helperを使用して施設を追加後、 `customer_name` をcaat-helperで対応していない施設に更新してください。
 ====
 
 ===== シート6: device
 
 `device` シートには以下の欄があります。
 
-[%noheader, cols="6"]
+[%noheader, cols="9"]
 |===
-| **欄** | _device_name_ | _device_id_ | _customer_name_ | _facility_name_ | _device_type_name_
+| **欄** | _device_name_ | _device_id_ | _customer_name_ | _facility_name_ | _device_type_name_ | _facility_prefecture_ | _facility_municipality_ | _admin_login_id_
+
 | **説明** | **必須フィールド** +
 有効なデバイス名を追加します。 | **必須フィールド** +
 有効なdevice_idを追加します。 | **必須フィールド** +
 デバイスにリンクするカスタマー名を追加し、 `customer` シート内にカスタマー名があることを確認してください。 | **必須フィールド** +
 施設名を追加して施設にリンクした後、 `facility` シート内に施設名があることを確認してください。 | **必須フィールド** +
 デバイスタイプにリンクするデバイスタイプ名を追加し、 `device_type` シート内にデバイスタイプ名があることを確認してください。
+| **必須フィールド** +
+Facility location details - Prefecture | **必須フィールド** +
+Facility location details - Municipality
+|**必須フィールド** +
+`admin` データ内に管理者 _login_id_があることを確認してください。
 
-|**文字の詳細** 
+|**文字の詳細**
 |英数字と `。` を除く日本語文字がサポートされています。 +
 許可される特殊文字は スペース、 ハイフン `-`, アンダースコア `_` です。 +
 長さ: 1～127 文字。
@@ -247,8 +247,11 @@ https://console.aitrios.sony-semicon.com/api/v2
 | `customer` データに記載されているように
 | `facility` データに記載されているように
 | `device_type` データに記載されているように
+| `facility` データに記載されているように
+| `facility` データに記載されているように
+| `admin` データに記載されているように
 
-| **サンプル値** | DEVICE_SZP123S_0001 | Aid-00010004-0000-2000-0000-000000000000 | 顧客A | パーキング1 | GarageDevice
+| **サンプル値** | DEVICE_SZP123S_0001 | Aid-00010004-0000-2000-0000-000000000000 | 顧客A | パーキング1 | GarageDevice | 神奈川県 | 厚木市 | test-caat-dev
 |===
 
 [注記]
@@ -257,7 +260,6 @@ https://console.aitrios.sony-semicon.com/api/v2
 * _device_id_ はAITRIOSコンソールに登録されたIDと同じである必要があります。
 * AATアプリケーションの使用前に (コントラクター/管理者によって)デバイスがAITRIOSに登録されていることが前提となります。
 * デバイスは設置する施設名とリンクしています。
-* caat-helperを使用してデバイスを追加後、 `customer_name` や `facility_name`、`device_type_name` をcaat-helperで対応していないデバイスに更新してください。
 * 対応しているEdge AIデバイスは以下の通りです:
     ** SZP123S-001
     ** AIH-lVRW2

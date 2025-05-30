@@ -20,10 +20,15 @@ end note
 : Query for the customer details by the admin ID;
 : Send HTTP status 200, List of customers;
 note right
-    Returns
+    Returns:
         1. Customer ID
         2. Customer name
-        3. Create-at date
+        3. Created by
+        4. Last updated by
+        5. Created at (UTC)
+        6. Last updated at (UTC)
+        7. Total number of customers
 end note
+:Send HTTP 200 with customer list;
 stop
 @enduml

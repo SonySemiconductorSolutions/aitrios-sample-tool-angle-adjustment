@@ -1,0 +1,28 @@
+@startuml Create Admin
+title Create Admin
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request body (admin details);
+if (Invalid data?) then (yes)
+    : Send HTTP status 400, Invalid input;
+    kill
+endif
+: Create new admin in DB;
+: Send HTTP 201 with created admin;
+note right
+    Returns:
+        1. Success message - "Admin created"
+        2. Admin ID
+end note
+stop
+@enduml

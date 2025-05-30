@@ -1,985 +1,2911 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-        "title": "AAT-Backend-APIs",
-        "version": "v1.7.0"
-    },
-    "components": {
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer"
-            },
-            "noauthAuth": {
-                "type": "http",
-                "scheme": "noauth"
-            }
-        }
-    },
-    "tags": [
-        {
-            "name": "Admin-APIs"
-        },
-        {
-            "name": "Contractor-APIs"
-        }
-    ],
-    "paths": {
-        "/auth/login": {
-            "post": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Admin login",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "example": {
-                                    "login_id": "USER_LOGIN_ID",
-                                    "password": "USER_PASS"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Login failed error, Invalid credentials",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/reviews/latest": {
-            "get": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Get latest reviews",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "customer_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    },
-                    {
-                        "name": "municipality",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "prefecture",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "facility_name",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page_size",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "description": "Comma separated status values",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Customer not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/reviews/devices/{device_id}/history": {
-            "get": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Get review history by device ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "device_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    },
-                    {
-                        "name": "page_size",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Device not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/reviews/{review_id}": {
-            "get": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Get review by review ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "review_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Review not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Update review by ID",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "example": {
-                                    "result": 3,
-                                    "comment": "Rejected review due to improper AOV"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "review_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Review not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/customers": {
-            "get": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Get customers list",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/customers/{customer_id}/console_credentials": {
-            "get": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Get console credentials by customer ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "customer_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error | Invalid console credentials",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Customer not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Update console credentials",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "example": {
-                                    "application_id": "",
-                                    "auth_url": "AUTH_URL",
-                                    "base_url": "BASE_URL",
-                                    "client_id": "USER_CLIENT_ID",
-                                    "client_secret": "USER_SECRET"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "customer_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error | Invalid console credentials",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/devices/status": {
-            "get": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Get device list with connection status",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "customer_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    },
-                    {
-                        "name": "municipality",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "prefecture",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "facility_name",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page_size",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "description": "Comma separated status values",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error | Invalid console credentials",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "500": {
-                        "description": "Invalid console credentials | Unexpected error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/device-types/{device_type_id}/reference-image": {
-            "put": {
-                "tags": [
-                    "Admin-APIs"
-                ],
-                "summary": "Update reference image for a device type",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "example": {
-                                    "data": {
-                                        "message": "Reference image updated successfully"
-                                    },
-                                    "error_code": 0,
-                                    "message": "Updated successfully",
-                                    "status_code": 200
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "device_type_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Device type not found",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/facility": {
-            "post": {
-                "tags": [
-                    "Contractor-APIs"
-                ],
-                "summary": "Confirm facility",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/facility/devices": {
-            "get": {
-                "tags": [
-                    "Contractor-APIs"
-                ],
-                "summary": "Get facility devices",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Facility not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/facility/devices/{device_id}/images": {
-            "get": {
-                "tags": [
-                    "Contractor-APIs"
-                ],
-                "summary": "Get camera / reference image by device ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "image_type",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "Live image from camera",
-                        "example": "1"
-                    },
-                    {
-                        "name": "device_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid console credentials | Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Facility not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to fetch device camera / sample image | Unexpected error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/facility/devices/{device_id}/status": {
-            "get": {
-                "tags": [
-                    "Contractor-APIs"
-                ],
-                "summary": "Get device status",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "device_id",
-                        "in": "path",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Device not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/facility/devices/connection-status": {
-            "get": {
-                "tags": [
-                    "Contractor-APIs"
-                ],
-                "summary": "Get connection status of the devices by contractor",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "403": {
-                        "description": "Permission error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Customer not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/reviews": {
-            "post": {
-                "tags": [
-                    "Contractor-APIs"
-                ],
-                "summary": "Create review",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "example": {
-                                    "device_id": "1",
-                                    "image": "base64 image"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "400": {
-                        "description": "Bad parameters",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized | Invalid token | Expired token",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "404": {
-                        "description": "Device not found error",
-                        "content": {
-                            "application/json": {}
-                        }
-                    },
-                    "500": {
-                        "description": "Unexpected error, Failed to create a new review",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/": {
-            "get": {
-                "tags": [
-                    "default"
-                ],
-                "summary": "Health check",
-                "security": [
-                    {
-                        "noauthAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        }
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AAT-Backend-APIs",
+    "version": "v2.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "noauthAuth": {
+        "type": "http",
+        "scheme": "noauth"
+      }
     }
+  },
+  "tags": [
+    {
+      "name": "Admin-APIs"
+    },
+    {
+      "name": "Contractor-APIs"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Health check",
+        "security": [
+          {
+            "noauthAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Admin login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "login_id": "USER_LOGIN_ID",
+                  "password": "USER_PASS"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "login_id": {
+                          "type": "string"
+                        },
+                        "token": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "error_code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "example": {
+                    "data": {
+                      "id": "1",
+                      "login_id": "test_id",
+                      "token": "token"
+                    },
+                    "error_code": 0,
+                    "message": "Successfully",
+                    "status_code": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Login failed error, Invalid credentials",
+          "content": {
+            "application/json": {}
+          }
+        },
+        "400": {
+          "description": "Bad parameters",
+          "content": {
+            "application/json": {}
+          }
+        }
+      }
+    },
+    "/reviews/latest": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get latest reviews",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "name": "municipality",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefecture",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "facility_name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Comma separated status values",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "late_minutes",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Threshold in minutes to determine if a review is late"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Customer not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/reviews/devices/{device_id}/history": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get review history by device ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": [
+                        "string",
+                        "object",
+                        "null"
+                      ],
+                      "description": "Can be null or object based on your usage"
+                    },
+                    "device": {
+                      "type": "object",
+                      "properties": {
+                        "device_id": {
+                          "type": "string"
+                        },
+                        "device_name": {
+                          "type": "string"
+                        },
+                        "device_type_id": {
+                          "type": "integer"
+                        },
+                        "device_type": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "sample_image_blob": {
+                              "type": "string"
+                            },
+                            "created_at_utc": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "created_by": {
+                              "type": "string"
+                            },
+                            "last_updated_at_utc": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "last_updated_by": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "facility": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "facility_name": {
+                              "type": "string"
+                            },
+                            "facility_type": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "municipality": {
+                              "type": "string"
+                            },
+                            "prefecture": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "integer"
+                            },
+                            "device_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "access_token": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "type": "integer"
+                    },
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "device": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "facility": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "facility_name": {
+                                "type": "string"
+                              },
+                              "facility_type": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "status": {
+                                "type": "integer"
+                              },
+                              "municipality": {
+                                "type": "string"
+                              },
+                              "prefecture": {
+                                "type": "string"
+                              },
+                              "device_id": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "access_token": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          "result": {
+                            "type": "integer"
+                          },
+                          "review_comment": {
+                            "type": "string"
+                          },
+                          "image_blob": {
+                            "type": "string"
+                          },
+                          "image_date_utc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "created_at_utc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "created_by": {
+                            "type": "string"
+                          },
+                          "last_updated_at_utc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "last_updated_by": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "size": {
+                      "type": "integer"
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "example": {
+                    "data": null,
+                    "device": {
+                      "device_id": "test-device-id-13",
+                      "device_name": "Test Device 13",
+                      "device_type": {
+                        "id": 47,
+                        "name": "ParkingDevice",
+                        "sample_image_blob": "base64string",
+                        "created_at_utc": "2024-07-10T11:18:21+00:00",
+                        "created_by": "system",
+                        "last_updated_at_utc": "2024-12-10T04:41:14+00:00",
+                        "last_updated_by": "system"
+                      },
+                      "device_type_id": 47,
+                      "facility": {
+                        "id": 75,
+                        "facility_name": "Generated_facility_for_test",
+                        "facility_type": null,
+                        "municipality": "港区",
+                        "prefecture": "東京都",
+                        "status": 1,
+                        "device_id": null,
+                        "access_token": null
+                      },
+                      "id": 246
+                    },
+                    "message": "Successfully",
+                    "page": 1,
+                    "page_size": 10,
+                    "reviews": [
+                      {
+                        "id": 20,
+                        "device": null,
+                        "facility": {
+                          "id": 75,
+                          "facility_name": "Generated_facility_for_test",
+                          "facility_type": {
+                            "name": "Parking"
+                          },
+                          "status": 1,
+                          "municipality": "港区",
+                          "prefecture": "東京都",
+                          "device_id": null,
+                          "access_token": null
+                        },
+                        "result": 2,
+                        "review_comment": "string",
+                        "image_blob": "base64string",
+                        "image_date_utc": "2024-08-23T06:30:05+00:00",
+                        "created_at_utc": "2024-08-23T06:30:05+00:00",
+                        "created_by": "system",
+                        "last_updated_at_utc": "2024-08-23T06:30:05+00:00",
+                        "last_updated_by": "system"
+                      }
+                    ],
+                    "size": 1,
+                    "status_code": 200,
+                    "total": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad parameters",
+          "content": {
+            "application/json": {}
+          }
+        },
+        "401": {
+          "description": "Unauthorized | Invalid token | Expired token",
+          "content": {
+            "application/json": {}
+          }
+        },
+        "403": {
+          "description": "Permission error",
+          "content": {
+            "application/json": {}
+          }
+        },
+        "404": {
+          "description": "Device not found error",
+          "content": {
+            "application/json": {}
+          }
+        }
+      }
+    },
+    "/reviews/{review_id}": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get review by review ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "image_date_utc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "image_blob": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "integer"
+                    },
+                    "review_comment": {
+                      "type": "string"
+                    },
+                    "facility": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "facility_name": {
+                          "type": "string"
+                        },
+                        "facility_type": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "prefecture": {
+                          "type": "string"
+                        },
+                        "municipality": {
+                          "type": "string"
+                        },
+                        "device_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "status": {
+                          "type": "integer"
+                        },
+                        "access_token": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "device": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "device_id": {
+                          "type": "string"
+                        },
+                        "device_name": {
+                          "type": "string"
+                        },
+                        "device_type_id": {
+                          "type": "integer"
+                        },
+                        "device_type": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "created_by": {
+                              "type": "string"
+                            },
+                            "created_at_utc": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "last_updated_by": {
+                              "type": "string"
+                            },
+                            "last_updated_at_utc": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "sample_image_blob": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "facility": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "description": "If facility is not included, might be null"
+                        }
+                      }
+                    },
+                    "created_by": {
+                      "type": "string"
+                    },
+                    "created_at_utc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "last_updated_by": {
+                      "type": "string"
+                    },
+                    "last_updated_at_utc": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "example": {
+                    "id": 20,
+                    "image_date_utc": "2024-08-23T06:30:05+00:00",
+                    "image_blob": "base64string",
+                    "result": 2,
+                    "review_comment": "string",
+                    "facility": {
+                      "id": 75,
+                      "facility_name": "Generated_facility_for_test",
+                      "facility_type": {
+                        "name": "Parking"
+                      },
+                      "prefecture": "東京都",
+                      "municipality": "港区",
+                      "device_id": null,
+                      "status": 1,
+                      "access_token": null
+                    },
+                    "device": {
+                      "id": 246,
+                      "device_id": "test-device-id-13",
+                      "device_name": "Test Device 13",
+                      "device_type": {
+                        "id": 47,
+                        "name": "ParkingDevice",
+                        "created_by": "system",
+                        "created_at_utc": "2024-07-10T11:18:21+00:00",
+                        "last_updated_by": "system",
+                        "last_updated_at_utc": "2024-12-10T04:41:14+00:00",
+                        "sample_image_blob": "base64string"
+                      },
+                      "device_type_id": 47,
+                      "facility": null
+                    },
+                    "created_by": "system",
+                    "created_at_utc": "2024-08-23T06:30:05+00:00",
+                    "last_updated_by": "system",
+                    "last_updated_at_utc": "2024-08-23T06:30:05+00:00"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Review not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Update review by ID",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "result": 3,
+                  "comment": "Rejected review due to improper AOV"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Review not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/reviews/devices/{device_id}": {
+      "delete": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Delete all reviews for a device",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All reviews for the device deleted successfully",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Review not found error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Failed to update device status after deleting reviews",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/reviews": {
+      "post": {
+        "tags": [
+          "Contractor-APIs"
+        ],
+        "summary": "Create review",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "device_id": "1",
+                  "image": "base64 image"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Device not found error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Unexpected error, Failed to create a new review",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get customers list",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "customer_name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Create a new customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customer_name",
+                  "client_id",
+                  "client_secret",
+                  "auth_url",
+                  "base_url"
+                ],
+                "properties": {
+                  "customer_name": {
+                    "type": "string"
+                  },
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "type": "string"
+                  },
+                  "auth_url": {
+                    "type": "string"
+                  },
+                  "base_url": {
+                    "type": "string"
+                  },
+                  "application_id": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "customer_name": "NewCustomer",
+                  "client_id": "id",
+                  "client_secret": "secret",
+                  "auth_url": "https://auth.url",
+                  "base_url": "https://api.url",
+                  "application_id": "app-id"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer created successfully",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters or missing fields",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "409": {
+            "description": "Customer or project_name already exists",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/console_credentials": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get console credentials by customer ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "customer_name": {
+                      "type": "string"
+                    },
+                    "auth_url": {
+                      "type": "string"
+                    },
+                    "base_url": {
+                      "type": "string"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    },
+                    "client_secret": {
+                      "type": "string"
+                    },
+                    "application_id": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "id": 1,
+                    "customer_name": "string",
+                    "auth_url": "string",
+                    "base_url": "string",
+                    "client_id": "string",
+                    "client_secret": "string",
+                    "application_id": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error | Invalid console credentials",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Customer not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Update console credentials",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "application_id": "APPLICATION_ID",
+                  "auth_url": "AUTH_URL",
+                  "base_url": "BASE_URL",
+                  "client_id": "USER_CLIENT_ID",
+                  "client_secret": "USER_SECRET",
+                  "customer_name": "test_updated_name"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error | Invalid console credentials",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/customers/qr-codes": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Generate QR codes for selected customers",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customers"
+                ],
+                "properties": {
+                  "customers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "customer_id"
+                      ],
+                      "properties": {
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "facility_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "customers": [
+                    {
+                      "customer_id": 2,
+                      "facility_ids": [
+                        1,
+                        3
+                      ]
+                    },
+                    {
+                      "customer_id": 5
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "QR codes returned in a ZIP file",
+            "content": {
+              "application/zip": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "One or more customers not found",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Error generating QR codes",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get combined device list from external and internal DB by customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns merged device list",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Customer not found",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Unexpected error fetching devices",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Save or update devices for a customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customer_id",
+                  "devices"
+                ],
+                "properties": {
+                  "customer_id": {
+                    "type": "integer"
+                  },
+                  "devices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "device_id"
+                      ],
+                      "properties": {
+                        "device_id": {
+                          "type": "string"
+                        },
+                        "device_name": {
+                          "type": "string"
+                        },
+                        "facility_id": {
+                          "type": "integer"
+                        },
+                        "device_type_id": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "customer_id": 5,
+                  "devices": [
+                    {
+                      "device_id": "1",
+                      "device_name": "A",
+                      "facility_id": 2,
+                      "device_type_id": 5
+                    },
+                    {
+                      "device_id": "2",
+                      "device_name": "B",
+                      "facility_id": 2,
+                      "device_type_id": 4
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Devices processed successfully",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad request or invalid payload",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "One or more devices or customer not found",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Unexpected error updating or adding devices",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Delete one or more devices and their reviews",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "devices"
+                ],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "facility_id",
+                        "device_id"
+                      ],
+                      "properties": {
+                        "facility_id": {
+                          "type": "integer"
+                        },
+                        "device_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "devices": [
+                    {
+                      "facility_id": 1,
+                      "device_id": "abc123"
+                    },
+                    {
+                      "facility_id": 2,
+                      "device_id": "def456"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Devices and their reviews deleted successfully. If some failed, returns their IDs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "example": {
+                    "message": "Devices and its respective reviews deleted successfully. Failed to delete devices: ['abc123']",
+                    "status_code": 200
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request or invalid payload",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/devices/status": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get device list with connection status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "name": "municipality",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefecture",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "facility_name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Comma separated status values",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "connection_status": {
+                            "type": "string"
+                          },
+                          "device_id": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "type": "integer"
+                    },
+                    "size": {
+                      "type": "integer"
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "example": {
+                    "data": [
+                      {
+                        "connection_status": "Disconnected",
+                        "device_id": "3456"
+                      }
+                    ],
+                    "message": "Successfully",
+                    "page": 1,
+                    "page_size": 15,
+                    "size": 12,
+                    "status_code": 200,
+                    "total": 62
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error | Invalid console credentials",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Invalid console credentials | Unexpected error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/auth/facility": {
+      "post": {
+        "tags": [
+          "Contractor-APIs"
+        ],
+        "summary": "Confirm facility",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "facility_name": {
+                      "type": "string"
+                    },
+                    "municipality": {
+                      "type": "string"
+                    },
+                    "prefecture": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "facility_name": "スーパー",
+                    "municipality": "港区",
+                    "prefecture": "東京都"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facility/devices": {
+      "get": {
+        "tags": [
+          "Contractor-APIs"
+        ],
+        "summary": "Get facility devices",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "comment": {
+                      "type": "string"
+                    },
+                    "device_id": {
+                      "type": "integer"
+                    },
+                    "device_image": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "retrieved_date": {
+                      "type": "string",
+                      "description": "Date/time string",
+                      "example": "Fri, 17 Jan 2025 05:57:35 GMT"
+                    },
+                    "sample_image": {
+                      "type": "string",
+                      "description": "Base64-encoded image string"
+                    }
+                  },
+                  "example": {
+                    "comment": "reject",
+                    "device_id": 232,
+                    "device_image": null,
+                    "retrieved_date": "Fri, 17 Jan 2025 05:57:35 GMT",
+                    "sample_image": "base64string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Facility not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facility/devices/{device_id}/images": {
+      "get": {
+        "tags": [
+          "Contractor-APIs"
+        ],
+        "summary": "Get camera / reference image by device ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "image_type",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Live image from camera",
+            "example": "1"
+          },
+          {
+            "name": "device_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "comment": {
+                      "type": "string"
+                    },
+                    "device_id": {
+                      "type": "integer"
+                    },
+                    "device_image": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "retrieved_date": {
+                      "type": "string",
+                      "description": "Date/time string",
+                      "example": "Fri, 17 Jan 2025 05:57:35 GMT"
+                    },
+                    "sample_image": {
+                      "type": "string",
+                      "description": "Base64-encoded image string"
+                    }
+                  },
+                  "example": {
+                    "comment": "reject",
+                    "device_id": 232,
+                    "device_image": null,
+                    "retrieved_date": "Fri, 17 Jan 2025 05:57:35 GMT",
+                    "sample_image": "base64string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Invalid console credentials | Permission error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Facility not found error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Failed to fetch device camera / sample image | Unexpected error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facility/devices/{device_id}/status": {
+      "get": {
+        "tags": [
+          "Contractor-APIs"
+        ],
+        "summary": "Get device status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "review_comment": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "status": 1,
+                    "review_comment": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Device not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facility/devices/connection-status": {
+      "get": {
+        "tags": [
+          "Contractor-APIs"
+        ],
+        "summary": "Get connection status of the devices by contractor",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "connection_status": {
+                            "type": "string"
+                          },
+                          "device_id": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "page": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "page_size": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "size": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "example": {
+                    "data": [
+                      {
+                        "connection_status": "Disconnected",
+                        "device_id": 228
+                      },
+                      {
+                        "connection_status": "Disconnected",
+                        "device_id": 229
+                      },
+                      {
+                        "connection_status": "Connected",
+                        "device_id": 232
+                      }
+                    ],
+                    "message": "Successfully",
+                    "page": null,
+                    "page_size": null,
+                    "size": null,
+                    "status_code": 200,
+                    "total": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Permission error",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Customer not found error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/device-types": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Create a new device type",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "reference_image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Device type created",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters or missing fields",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get list of device types",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all device types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "device_types": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/device-types/{device_type_id}": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Fetch a device type by ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "device_type_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device type retrieved successfully",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Device type not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Edit an existing device type",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "device_type_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "reference_image": {
+                    "type": "string",
+                    "description": "Optional base64 or URL for updated reference image"
+                  }
+                },
+                "example": {
+                  "name": "string",
+                  "reference_image": "base64 image"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device type updated successfully",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad request or missing fields",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Device type not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facility-types": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Create a new facility type",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "name": "Warehouse"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Facility type created",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad parameters or missing fields",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token | Expired token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get list of facility types",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all facility types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "facility_types": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facilities/{facility_id}": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get facility by facility ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the facility data",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Facility not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Create or update a facility",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "facility_name",
+                  "prefecture",
+                  "municipality",
+                  "effective_start_utc",
+                  "effective_end_utc",
+                  "facility_type_id",
+                  "customer_id"
+                ],
+                "properties": {
+                  "facility_name": {
+                    "type": "string"
+                  },
+                  "prefecture": {
+                    "type": "string"
+                  },
+                  "municipality": {
+                    "type": "string"
+                  },
+                  "effective_start_utc": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "effective_end_utc": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "facility_type_id": {
+                    "type": "integer"
+                  },
+                  "customer_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Facility created or updated",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad input",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Facility not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facilities?customer_id={customer_id}": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Get facilities by customer ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the list of facilities for the given customer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "facilities": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "facility_name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "facilities": [
+                      {
+                        "id": 1,
+                        "facility_name": "Parking"
+                      },
+                      {
+                        "id": 2,
+                        "facility_name": "Garage"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Customer not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/data-migration/export": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Export database data to JSON",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Downloads JSON export",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Admin not found",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/data-migration/import": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Import database data from JSON file",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "json_file"
+                ],
+                "properties": {
+                  "json_file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data imported successfully",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Invalid file or JSON",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "User logout",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/facilities": {
+      "get": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "List facilities by customer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Facilities list",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad customer_id",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/admins": {
+      "post": {
+        "tags": [
+          "Admin-APIs"
+        ],
+        "summary": "Create a new admin account",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["login_id", "password"],
+                "properties": {
+                  "login_id": { "type": "string" },
+                  "password": { "type": "string", "format": "password" }
+                },
+                "example": {
+                  "login_id": "replace-with-new-admin",
+                  "password": "replace-with-password"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Admin created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status_code": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" }
+                      }
+                    }
+                  },
+                  "example": {
+                    "status_code": 201,
+                    "message": "Admin created",
+                    "data": { "id": 2 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Admin already exists or bad parameters",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized | Invalid token",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    }
+  }
 }

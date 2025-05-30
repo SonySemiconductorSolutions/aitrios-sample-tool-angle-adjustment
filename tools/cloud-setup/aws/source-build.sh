@@ -60,6 +60,13 @@ DATABASE_PASSWORD_ENCODED=$(urlencode $POSTGRES_DATABASE_PASSWORD)
 
 export DATABASE_URL="postgresql://postgresadmin:${DATABASE_PASSWORD_ENCODED}@$DATABASE_DOMAIN:5432/aatdb"
 
+# List distributions and filter by Contractor App S3 bucket
+contractor_cloudfront_id=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='$WEBAPP_NAME.s3.$REGION.amazonaws.com']].{Id:Id,DomainName:Origins.Items[0].DomainName}" --output json --region $REGION | jq -r '.[0].Id')
+
+# Get details of contractor distribution
+CONTRACTOR_APP_URL=$(aws cloudfront get-distribution --id $contractor_cloudfront_id --region $REGION | jq -r '.Distribution.DomainName')
+CONTRACTOR_APP_URL="https://$CONTRACTOR_APP_URL"
+
 container_output=$(aws lightsail create-container-service-deployment \
   --service-name $CONTAINER_SERVICE_NAME \
   --containers "{
@@ -71,6 +78,7 @@ container_output=$(aws lightsail create-container-service-deployment \
             \"environment\": {
                 \"DATABASE_URL\": \"${DATABASE_URL}\",
                 \"APP_SECRET_KEY\": \"${APP_SECRET_KEY}\",
+                \"CONTRACTOR_APP_URL\": \"${CONTRACTOR_APP_URL}\",
                 \"DEFAULT_JWT_EXPIRED_MINUTES\": \"${DEFAULT_JWT_EXPIRED_MINUTES}\",
                 \"DEFAULT_PAGE_SIZE\": \"100\"
             }

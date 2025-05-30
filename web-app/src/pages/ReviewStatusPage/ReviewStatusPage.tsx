@@ -73,6 +73,10 @@ export const ReviewStatusPage = () => {
       })
       .catch((e) => {
         setErrorMessage(e);
+        // If error occurs, set the status to initial state and stop polling
+        setResultStatus(DEVICE_PROGRESS_STATUS.INITIAL_STATE);
+        stopPolling.current = true;
+        clearInterval(intervalId);
       });
   }, [selectedDevice, stopPolling, intervalId]);
 
@@ -153,21 +157,27 @@ export const ReviewStatusPage = () => {
               resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
                 ? "review-status-requesting"
                 : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
-                ? "review-status-rejected"
-                : "review-status-approved"
+                  ? "review-status-rejected"
+                  : resultStatus === DEVICE_PROGRESS_STATUS.APPROVED
+                    ? "review-status-approved"
+                    : "review-status-failed"
             }
           >
             {resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
               ? t("review_status_page.des2_p1")
               : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
                 ? t("review_status_page.reject_des1_p1")
-                : t("review_status_page.approval_des1_p1")}
+                : resultStatus === DEVICE_PROGRESS_STATUS.APPROVED
+                  ? t("review_status_page.approval_des1_p1")
+                  : t("review_status_page.failed_des1_p1")}
             <br />
             {resultStatus === DEVICE_PROGRESS_STATUS.REQUESTING_FOR_REVIEW
               ? t("review_status_page.des2_p2")
               : resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
                 ? t("review_status_page.reject_des1_p2")
-                : t("review_status_page.approval_des1_p2")}
+                : resultStatus === DEVICE_PROGRESS_STATUS.APPROVED
+                  ? t("review_status_page.approval_des1_p2")
+                  : t("review_status_page.failed_des1_p2")}
             <br />
           </p>
           {resultStatus === DEVICE_PROGRESS_STATUS.REJECTED && reviewComment ? (
@@ -178,23 +188,24 @@ export const ReviewStatusPage = () => {
               {reviewComment}
             </div>
           ) : null}
-          <div
-            data-testid="go-back-btn"
-            className={styles.reportSubmit}
-            onClick={() => {
-              if (resultStatus === DEVICE_PROGRESS_STATUS.REJECTED) {
-                goBack("/image-confirmation");
-              } else {
-                goBack("/devices");
-              }
-            }}
-          >
-            <MainButton>
-              {resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
-                ? t("review_status_page.reject_retry")
-                : t("review_status_page.setup_another_cam")}
-            </MainButton>
-          </div>
+          {resultStatus !== DEVICE_PROGRESS_STATUS.INITIAL_STATE &&
+            <div
+              data-testid="go-back-btn"
+              className={styles.reportSubmit}
+              onClick={() => {
+                if (resultStatus === DEVICE_PROGRESS_STATUS.REJECTED) {
+                  goBack("/image-confirmation");
+                } else {
+                  goBack("/devices");
+                }
+              }}
+            >
+              <MainButton>
+                {resultStatus === DEVICE_PROGRESS_STATUS.REJECTED
+                  ? t("review_status_page.reject_retry")
+                  : t("review_status_page.setup_another_cam")}
+              </MainButton>
+            </div>}
           <div
             onClick={() => goBack("/")}
             data-testid="go-to-home-btn"

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# Copyright 2024 Sony Semiconductor Solutions Corp. All rights reserved.
+# Copyright 2024, 2025 Sony Semiconductor Solutions Corp. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@
 File: backend/src/api/customers.py
 """
 
-from datetime import timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint
 from flask_login import current_user, login_required
@@ -28,10 +29,19 @@ from src.config import DB_TRANSACTION_MAX_WAIT_SECONDS, DB_TRANSACTION_TIMEOUT_S
 from src.core import db
 from src.exceptions import APIException, ErrorCodes, InvalidAuthTokenException, InvalidBaseURLException
 from src.libs.auth import check_resource_authorization
-from src.schemas import *
+from src.schemas.customers import (
+    CreateCustomerRequestSchema,
+    CreateCustomerResponseSchema,
+    CustomerGetResponseSchema,
+    CustomerListResponseSchema,
+    CustomerListSchema,
+    CustomerUpdateRequestSchema,
+)
+from src.schemas.response import ResponseHTTPSchema
 from src.services.aitrios_service import verify_customer_credentials
 from src.utils import decrypt_data, encrypt_data
 
+# Admin App API
 api = Blueprint("customers", __name__, url_prefix="/customers")
 
 
@@ -60,6 +70,11 @@ def get_console_credentials(customer_id: int):
     Args:
         customer_id: int
     """
+
+    # Return 404 if customer_id is not valid
+    if customer_id <= 0:
+        raise APIException(ErrorCodes.CUSTOMER_NOT_FOUND)
+
     # Check resource authorization
     check_resource_authorization(customer_id=customer_id)
 
@@ -95,6 +110,7 @@ def update_console_credentials(customer_id: int, body: CustomerUpdateRequestSche
     Args:
         customer_id: int
         body: {
+            "customer_name": "test_updated_name",
             "auth_url": "test_updated_url",
             "base_url": "test_updated_url",
             "client_id": "test_client_id",
@@ -102,11 +118,21 @@ def update_console_credentials(customer_id: int, body: CustomerUpdateRequestSche
             "application_id": "test_uuid"
         }
     """
+
+    # Return 404 if customer_id is not valid
+    if customer_id <= 0:
+        raise APIException(ErrorCodes.CUSTOMER_NOT_FOUND)
+
     check_resource_authorization(customer_id=customer_id)
     customer = db.customer.find_first(where={"id": customer_id, "admin_id": current_user.id})
     # check whether the customer exists
     if not customer:
         raise APIException(ErrorCodes.CUSTOMER_NOT_FOUND)
+
+    # Check if another customer with the same name already exists in same admin
+    existing_customer = db.customer.find_first(where={"customer_name": body.customer_name, "admin_id": current_user.id})
+    if existing_customer and existing_customer.id != customer_id:
+        raise APIException(ErrorCodes.DUPLICATE_CUSTOMER_NAME)
 
     client_secret = body.client_secret
     # Decrypt only if not None
@@ -118,6 +144,7 @@ def update_console_credentials(customer_id: int, body: CustomerUpdateRequestSche
             client_secret = client_secret_decrypted
 
     customer_data = {
+        "customer_name": body.customer_name,
         "auth_url": body.auth_url,
         "base_url": body.base_url,
         "last_updated_by": current_user.login_id,
@@ -158,7 +185,96 @@ def update_console_credentials(customer_id: int, body: CustomerUpdateRequestSche
     ) as transaction:
         transaction.customer.update(
             where={"id": customer_id},
-            data={**customer_data, "last_updated_at_utc": datetime.utcnow()},
+            data={**customer_data, "last_updated_at_utc": datetime.now(timezone.utc)},
         )
     response_data = {"message": "Successfully updated"}
     return ResponseHTTPSchema(**response_data).make_response()
+
+
+@api.post("")
+@login_required
+@validate()
+def create_customer(body: CreateCustomerRequestSchema):
+    """
+    POST /customers
+    Creates a new customer record owned by the current admin user.
+
+    Request Body (JSON):
+    {
+      "customer_name": "string",
+      "client_id": "string",
+      "client_secret": "string",
+      "auth_url": "string",
+      "base_url": "string",
+      "application_id": "string"
+    }
+
+    Response (JSON):
+    {
+      "status_code": 201,
+      "message": "Customer created successfully",
+      "data": {
+        "id": 123,
+        "customer_name": "NewCustomer"
+      }
+    }
+    """
+    # 1. Check if another customer with the same name already exists in same admin
+    existing_customer = db.customer.find_first(where={"customer_name": body.customer_name, "admin_id": current_user.id})
+    if existing_customer:
+        raise APIException(ErrorCodes.DUPLICATE_CUSTOMER_NAME)
+
+    # 2. Verify customer credentials
+    customer_data = {
+        "auth_url": body.auth_url,
+        "base_url": body.base_url,
+        "last_updated_by": current_user.login_id,
+        "client_id": body.client_id,
+        "client_secret": body.client_secret,
+        "application_id": body.application_id,
+    }
+
+    try:
+        if not verify_customer_credentials(customer_data):
+            raise APIException(ErrorCodes.CONSOLE_VERIFICATION_FAILED)
+    except InvalidAuthTokenException as _token_exec:
+        if body.application_id:
+            raise APIException(ErrorCodes.INVALID_AUTH_TOKEN_ENTERPRISE) from _token_exec
+        raise APIException(ErrorCodes.INVALID_AUTH_TOKEN) from _token_exec
+    except InvalidBaseURLException as _base_exec:
+        raise APIException(ErrorCodes.INVALID_BASE_URL) from _base_exec
+    except RequestException as _req_exec:
+        raise APIException(ErrorCodes.INVALID_BASE_URL) from _req_exec
+    except APIException as _api_exec:
+        raise _api_exec
+    except Exception as _exec:
+        raise APIException(ErrorCodes.CONSOLE_VERIFICATION_FAILED) from _exec
+
+    now_utc = datetime.now(timezone.utc)
+    with db.tx(
+        max_wait=timedelta(seconds=DB_TRANSACTION_MAX_WAIT_SECONDS),
+        timeout=timedelta(seconds=DB_TRANSACTION_TIMEOUT_SECONDS),
+    ):
+        new_customer = db.customer.create(
+            data={
+                "customer_uuid": str(uuid.uuid4()),
+                "customer_name": body.customer_name,
+                "client_id": encrypt_data(body.client_id),
+                "client_secret": encrypt_data(body.client_secret),
+                "auth_url": body.auth_url,
+                "base_url": body.base_url,
+                "application_id": encrypt_data(body.application_id),
+                "admin_id": current_user.id,
+                "created_by": current_user.login_id,
+                "last_updated_by": current_user.login_id,
+                "created_at_utc": now_utc,
+                "last_updated_at_utc": now_utc,
+            }
+        )
+
+    # 3. Prepare the response
+    resp_data = CreateCustomerResponseSchema(id=new_customer.id, customer_name=new_customer.customer_name)
+
+    return ResponseHTTPSchema(
+        status_code=201, message="Customer created successfully", data=resp_data.dict()
+    ).make_response()

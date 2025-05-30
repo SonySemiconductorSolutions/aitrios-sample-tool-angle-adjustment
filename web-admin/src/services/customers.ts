@@ -19,6 +19,7 @@ import { client } from "./client";
 
 // Interface for Customer console credentials
 interface ConsoleCredentials {
+  customerName: string;
   authUrl: string;
   baseUrl: string;
   clientId: string;
@@ -38,7 +39,6 @@ export const getCustomers = async () => {
   }
 };
 
-
 // API call to fetch console credentials of a customer
 export const getConsoleCredentials = async (customerId: number) => {
   try {
@@ -53,10 +53,34 @@ export const getConsoleCredentials = async (customerId: number) => {
 };
 
 // API call to update console credentials of a customer
-export const updateConsoleCredentials = async (customerId: number, credentials: ConsoleCredentials) => {
+export const updateConsoleCredentials = async (
+  customerId: number,
+  credentials: ConsoleCredentials,
+) => {
   try {
     const url = "customers/" + customerId.toString() + "/console_credentials";
     const res = await client.put(url, {
+      customer_name: credentials.customerName,
+      auth_url: credentials.authUrl,
+      base_url: credentials.baseUrl,
+      client_id: credentials.clientId,
+      client_secret: credentials.clientSecret,
+      application_id: credentials.applicationId,
+    });
+    return res.data;
+  } catch (err: any) {
+    const error = err?.response?.data ?? err;
+    console.warn(error.message);
+    throw error;
+  }
+};
+
+// API call to add new customer
+export const addNewCustomer = async (credentials: ConsoleCredentials) => {
+  try {
+    const url = "customers";
+    const res = await client.post(url, {
+      customer_name: credentials.customerName,
       auth_url: credentials.authUrl,
       base_url: credentials.baseUrl,
       client_id: credentials.clientId,

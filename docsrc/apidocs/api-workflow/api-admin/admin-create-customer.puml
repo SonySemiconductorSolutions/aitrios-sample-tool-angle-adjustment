@@ -1,0 +1,35 @@
+@startuml Create Customer
+title Create Customer
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request body (customer_name, client_id, client_secret, auth_url, base_url, application_id);
+if (Customer with same name exists for admin?) then (yes)
+    : Send HTTP status 409, Duplicate customer name;
+    kill
+endif
+: Verify customer credentials (auth_url, base_url, client_id, client_secret, application_id);
+if (Verification fails?) then (yes)
+    : Send HTTP status 400/401, Verification failed;
+    kill
+endif
+: Encrypt sensitive fields;
+: Create new customer in DB;
+: Send HTTP 201 with created customer info;
+note right
+    Returns:
+        1. Customer ID
+        2. Customer name
+        3. Success message
+end note
+stop
+@enduml

@@ -37,7 +37,7 @@ rg_status=$(az group show --name $RESOURCE_GROUP | jq -r '.properties.provisioni
 
 echo $rg_status
 
-# Checking status case-insensitively 
+# Checking status case-insensitively
 if [[ "${rg_status,,}" != "succeeded" ]]; then
   echo "Error: Resource group '$RESOURCE_GROUP' could not be created. Aborting Cloud Setup."
   exit 1
@@ -63,7 +63,7 @@ echo "ARM template deployment completed."
 
 arm_deployment_status=$(az deployment group show -g $RESOURCE_GROUP -n $DEPLOYMENT_NAME | jq -r '.properties.provisioningState')
 
-# Checking status case-insensitively 
+# Checking status case-insensitively
 if [[ "${arm_deployment_status,,}" != "succeeded" ]]; then
   echo "Error: ARM Template deployment failed. Aborting Cloud Setup."
   exit 1
@@ -76,6 +76,15 @@ ACR_USERNAME=$(az acr credential show --name cr$APP_NAME --query username -o tsv
 ACR_PASSWORD=$(az acr credential show --name cr$APP_NAME --query passwords[0].value -o tsv)
 
 # ------------------------------------------------------------------------------------
+
+# Get contractor app URL
+CONTRACTOR_APP_URL=$(az webapp show --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --query defaultHostName --output tsv)
+
+# Set contractor app URL as backend app settings
+az webapp config appsettings set \
+  --name $BACKEND_NAME \
+  --resource-group $RESOURCE_GROUP \
+  --settings "CONTRACTOR_APP_URL=https://$CONTRACTOR_APP_URL"
 
 # Set Docker credentials for Backend
 az webapp config container set \

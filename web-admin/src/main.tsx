@@ -23,29 +23,39 @@ import "./i18n"; // Import internationalization configurations
 import { Layout } from "./components/Layout";
 import { NotFound } from "./components/NotFound";
 import { LoginPage } from "./pages/login/LoginPage";
+import { SettingsPage } from "./pages/settings/SettingsPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
-import { EditConfigurationPage } from "./pages/editConfiguration/EditConfigurationPage";
+import { GenerateQrPage } from "./pages/generateQr/GenerateQrPage";
 import { ReviewDetailsPage } from "./pages/reviewDetails/ReviewDetailsPage";
 import { ReviewHistoryPage } from "./pages/reviewHistory/ReviewHistoryPage";
-import { ConsoleConfigurationPage } from "./pages/consoleConfiguration/ConsoleConfigurationPage";
+import { ManageDevicesPage } from "./pages/manageDevices/ManageDevicesPage";
+import { ConsoleCredentialsPage } from "./pages/consoleCredentials/ConsoleCredentialsPage";
+// Import DateTimePicker and its dependencies
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const App = () => {
   return (
     <React.StrictMode>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/reviews/:reviewId" element={<ReviewDetailsPage />} />
-            <Route path="/reviews/devices/:deviceId/history" element={<ReviewHistoryPage />} />
-            <Route path="/console-configuration" element={<ConsoleConfigurationPage />} />
-            <Route path="/console-configuration/customers/:customerId/edit" element={<EditConfigurationPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/reviews/:reviewId" element={<ReviewDetailsPage />} />
+              <Route path="/reviews/devices/:deviceId/history" element={<ReviewHistoryPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/customers/new" element={<ConsoleCredentialsPage />} />
+              <Route path="/settings/customers/generate-qr" element={<GenerateQrPage />} />
+              <Route path="/settings/customers/:customerId/console-credentials/edit" element={<ConsoleCredentialsPage />} />
+              <Route path="/settings/customers/devices" element={<ManageDevicesPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </BrowserRouter>
+      </LocalizationProvider>
     </React.StrictMode>
   );
 };

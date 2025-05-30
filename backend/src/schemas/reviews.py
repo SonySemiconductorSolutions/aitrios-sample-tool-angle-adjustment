@@ -16,9 +16,9 @@
 
 from datetime import datetime
 from enum import Enum, IntEnum
-from typing import List
+from typing import Annotated, List
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, StringConstraints, field_serializer
 from src.utils import serialize_datetime
 
 from .devices import DeviceGetResponseSchema
@@ -27,6 +27,12 @@ from .response import BaseGetResponseSchema, ListResponseHTTPSchema, PaginationR
 
 
 class ReviewSchema(BaseModel):
+    """
+    Review Schema for Review API response
+    Args:
+        BaseModel (BaseModel): Pydantic BaseModel
+    """
+
     id: int
     image_date_utc: datetime | None = None
     image_blob: str | None = None
@@ -41,10 +47,20 @@ class ReviewSchema(BaseModel):
 
     @field_serializer("image_date_utc", "created_at_utc", "last_updated_at_utc")
     def serialize_datetime(self, datetime_field: datetime):
+        """
+        Serializes datetime fields to ISO format
+        Args:
+            datetime_field (datetime): datetime field to serialize
+        """
         return serialize_datetime(datetime_field=datetime_field)
 
     @field_serializer("facility")
     def serialize_facility(self, facility_field: List[FacilityGetResponseSchema]):
+        """
+        Serializes facility field to return a single facility object
+        Args:
+            facility_field (List[FacilityGetResponseSchema]): facility field to serialize
+        """
         if not facility_field:
             return None
 
@@ -55,6 +71,11 @@ class ReviewSchema(BaseModel):
 
     @field_serializer("device")
     def serialize_device(self, device_field: DeviceGetResponseSchema):
+        """
+        Serializes device field to return a single device object
+        Args:
+            device_field (DeviceGetResponseSchema): device field to serialize
+        """
         if not device_field:
             return None
 
@@ -65,21 +86,37 @@ class ReviewSchema(BaseModel):
 
 
 class ReviewGetSchema(ReviewSchema):
+    """
+    Response schema for GET /reviews/{id}
+    """
+
     # Addition field when loading image
     image_blob: str | None = None
 
 
 class ReviewListResponseSchema(ListResponseHTTPSchema):
+    """
+    Response schema for GET /reviews
+    """
+
     data: List[dict] | None = []
     reviewing_info: dict | None = None
     status_count: dict | None = None
 
 
 class ReviewGetResponseSchema(BaseGetResponseSchema, ReviewSchema):
+    """
+    Response schema for GET /reviews/{id}
+    """
+
     pass
 
 
 class ReviewSortEnum(str, Enum):
+    """
+    Enum for sorting reviews
+    """
+
     last_updated_by = "last_updated_by"
     status = "status"
     aitrios_name = "aitrios_name"
@@ -92,6 +129,10 @@ class ReviewSortEnum(str, Enum):
 
 
 class ReviewListSchema(PaginationReviewSchema):
+    """
+    Request schema for GET /reviews
+    """
+
     customer_id: int
     status: str | None = None
     facility_name: str | None = None
@@ -107,6 +148,10 @@ class ReviewListSchema(PaginationReviewSchema):
 
 
 class DeviceReviewAllowedEnums(IntEnum):
+    """
+    Enum for device review allowed status
+    """
+
     # ------------------------Status Updated by-#
     NOT_USED = 0  # --------------SYSTEM
     INITIAL_STATE = 1  # ---------Contractor app
@@ -116,24 +161,56 @@ class DeviceReviewAllowedEnums(IntEnum):
 
 
 class ConfirmReviewRequestSchema(BaseModel):
+    """
+    Request schema for POST /reviews/confirm
+    """
+
     result: DeviceReviewAllowedEnums
-    comment: str | None = None
+    comment: (
+        Annotated[
+            str,
+            StringConstraints(strip_whitespace=True, strict=True, min_length=1, max_length=255),
+        ]
+        | None
+    ) = None
 
 
 class ConfirmReviewResponseDataSchema(BaseModel):
+    """
+    Response schema for POST /reviews/confirm
+    """
+
     result: int
 
 
 class CreateReviewRequestSchema(BaseModel):
-    device_id: int
-    image: str
+    """
+    Request schema for POST /reviews
+    """
+
+    device_id: Annotated[int, Field(gt=0)]
+    image: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, strict=True, min_length=1),
+    ]
 
 
 class UpdateReviewRequestSchema(BaseModel):
-    image: str
+    """
+    Request schema for PUT /reviews/{id}
+    """
+
+    image: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, strict=True, min_length=1),
+    ]
 
 
 class DeviceReviewHistorySchema(ListResponseHTTPSchema):
+    """
+    Response schema for GET /reviews/history
+    """
+
     reviews: List[ReviewGetResponseSchema] | None = []
     device: DeviceGetResponseSchema
     total: int | None = 0

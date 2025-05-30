@@ -20,17 +20,12 @@ File: backend/src/services/aitrios_service.py
 import msal
 import requests
 from src.config import HTTP_TIMEOUT
-
-from src.services.aitrios_strategy import AitriosServiceStrategy
+from src.exceptions import APIException, ErrorCodes, InvalidAuthTokenException
+from src.logger import get_json_logger
+from src.schemas.devices import AitriosDeviceSchema, DeviceStatusSchema
 from src.services.aitrios_service_v1 import AitriosServiceV1
 from src.services.aitrios_service_v2 import AitriosServiceV2
-from src.config import HTTP_TIMEOUT
-from src.exceptions import (
-    APIException,
-    ErrorCodes,
-    InvalidAuthTokenException,
-)
-from src.logger import get_json_logger
+from src.services.aitrios_strategy import AitriosServiceStrategy
 from src.utils import decrypt_data
 
 logger = get_json_logger()
@@ -38,10 +33,19 @@ logger = get_json_logger()
 
 # Factory Method to get the appropriate strategy
 def get_aitrios_service(base_url: str) -> AitriosServiceStrategy:
+    """
+    Method to get the AITRIOS service based on the base URL
+    Args:
+        base_url (str): Base URL of the AITRIOS service
+    Returns:
+        AitriosServiceStrategy: AitriosServiceV1 or AitriosServiceV2
+    """
     if base_url.endswith("/api/v1"):
         return AitriosServiceV1()
-    elif base_url.endswith("/api/v2") or base_url.endswith("/api/v2-preview"):
+
+    if base_url.endswith("/api/v2") or base_url.endswith("/api/v2-preview"):
         return AitriosServiceV2()
+
     raise APIException(ErrorCodes.INVALID_BASE_URL)
 
 
@@ -164,7 +168,7 @@ def verify_customer_credentials(customer_data: dict):
     return bool(devices)
 
 
-def get_device_status(customer: dict, access_token: str, device_ids: str):
+def get_device_status(customer: dict, access_token: str, device_ids: str) -> list[DeviceStatusSchema]:
     """
     Method to get the device status
     Args:
@@ -173,6 +177,22 @@ def get_device_status(customer: dict, access_token: str, device_ids: str):
         device_id (str): Comma separated Device IDs
     Return:
         List of DeviceStatusSchema
+    """
+    service = get_aitrios_service(customer["base_url"])
+    # Call the API to get devices
+    result = service.get_devices(customer["base_url"], access_token, device_ids)
+    return result
+
+
+def get_aitrios_devices(customer: dict, access_token: str, device_ids: str) -> list[AitriosDeviceSchema]:
+    """
+    Method to get the devices
+    Args:
+        customer (dict): Customer details
+        access_token (str): Access token from AITRIOS
+        device_id (str): Comma separated Device IDs
+    Return:
+        List of AitriosDeviceSchema
     """
     service = get_aitrios_service(customer["base_url"])
     # Call the API to get devices

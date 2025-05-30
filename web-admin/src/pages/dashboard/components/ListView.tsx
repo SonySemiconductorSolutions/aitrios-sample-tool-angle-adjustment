@@ -40,6 +40,8 @@ interface TableRow {
     name: string;
     type: string;
   };
+  prefecture: string;
+  municipality: string;
   latestReviewId: number;
   result: number;
   imageBlob: string;
@@ -70,6 +72,8 @@ export const ListView = ({ data, deviceStatus, startIndex }: ListViewProps) => {
     { label: t("dashboardPage.slNo"), width: "40px" },
     { label: t("dashboardPage.facilityName"), width: "90px" },
     { label: t("dashboardPage.facilityType"), width: "80px" },
+    { label: t("dashboardPage.prefecture"), width: "90px" },
+    { label: t("dashboardPage.municipality"), width: "120px" },
     { label: t("dashboardPage.deviceName"), width: "120px" },
     { label: t("dashboardPage.deviceId"), width: "220px" },
     { label: t("dashboardPage.deviceApplicationStatus"), width: "120px" },
@@ -111,12 +115,12 @@ export const ListView = ({ data, deviceStatus, startIndex }: ListViewProps) => {
                 style={{
                   width,
                   padding: "12px 10px",
-                  textAlign: [6, 9].includes(index + 1) ? "center" : "left",
+                  textAlign: [8, 11].includes(index + 1) ? "center" : "left",
                   whiteSpace: "normal",
                   wordWrap: "break-word",
                 }}
               >
-                {index + 1 !== 5
+                {index + 1 !== 7
                   ? label
                   : (<Box display="flex" gap={1} alignItems="center">
                     <Typography>{label}</Typography>
@@ -153,6 +157,8 @@ export const ListView = ({ data, deviceStatus, startIndex }: ListViewProps) => {
               <TableCell>{startIndex + index}</TableCell>
               <TableCell>{row.facility.name}</TableCell>
               <TableCell>{row.facility.type}</TableCell>
+              <TableCell>{row.prefecture}</TableCell>
+              <TableCell>{row.municipality}</TableCell>
               <TableCell>{row.aitriosName}</TableCell>
               <TableCell>
                 <Typography display="flex" alignItems="center" gap={1}>

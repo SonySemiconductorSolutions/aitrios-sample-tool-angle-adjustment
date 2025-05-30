@@ -1,0 +1,25 @@
+@startuml Get Facility Types
+title Get Facility Types
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Retrieve all facility types for current admin;
+: Send HTTP 200 with facility types list;
+note right
+    Returns:
+        1. Facility type ID
+        2. Facility type name
+        3. (Optional) Other facility type details
+        4. Total number of facility types
+end note
+stop
+@enduml

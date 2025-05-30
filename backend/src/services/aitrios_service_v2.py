@@ -18,18 +18,14 @@
 File: backend/src/services/aitrios_service_v2.py
 """
 import json
+
 import requests
 from retry import retry
-from src.schemas.devices import DeviceStatusSchema
-from src.services.aitrios_strategy import AitriosServiceStrategy
 from src.config import HTTP_TIMEOUT, SSL_VERIFICATION
-from src.exceptions import (
-    APIException,
-    ErrorCodes,
-    InvalidBaseURLException,
-    RetryAPIException,
-)
+from src.exceptions import APIException, ErrorCodes, InvalidBaseURLException, RetryAPIException
 from src.logger import get_json_logger
+from src.schemas.devices import AitriosDeviceSchema
+from src.services.aitrios_strategy import AitriosServiceStrategy
 
 logger = get_json_logger()
 
@@ -37,11 +33,13 @@ BACKOFF_SECS = 1
 DELAY_SECS = 2  # initial delay between attempts
 RETRIES = 2
 
+
 # Concrete Strategy for V2
 class AitriosServiceV2(AitriosServiceStrategy):
     """
     Service class that interacts with the AITRIOS V2 API to retrieve device images and device information.
     """
+
     @retry(exceptions=(RetryAPIException,), tries=RETRIES, delay=DELAY_SECS, backoff=BACKOFF_SECS)
     def get_device_image(self, device_id: str, base_url: str, access_token: str):
         """
@@ -53,14 +51,14 @@ class AitriosServiceV2(AitriosServiceStrategy):
         """
         payload = json.dumps(
             {
-                "command_name" : "direct_get_image",
-                "parameters" : {
-                    "sensor_name":"sensor_chip",
-                    "crop_h_offset" : 0,
-                    "crop_v_offset" : 0,
-                    "crop_h_size" : 4056,
-                    "crop_v_size" : 3040
-                }
+                "command_name": "direct_get_image",
+                "parameters": {
+                    "sensor_name": "sensor_chip",
+                    "crop_h_offset": 0,
+                    "crop_v_offset": 0,
+                    "crop_h_size": 4056,
+                    "crop_v_size": 3040,
+                },
             }
         )
 
@@ -95,7 +93,7 @@ class AitriosServiceV2(AitriosServiceStrategy):
             raise RetryAPIException()
         # Aitrios always return jpeg image
         return image
- 
+
     @retry(exceptions=(RetryAPIException,), tries=RETRIES, delay=DELAY_SECS, backoff=BACKOFF_SECS)
     def get_devices(self, base_url: str, access_token: str, device_ids: str):
         """
@@ -131,9 +129,22 @@ class AitriosServiceV2(AitriosServiceStrategy):
             devices = data["devices"]
             # Prepare device ID and status schema
             result = []
-            for device in devices:
-                temp = {"device_id": device["device_id"], "connection_status": device["connection_state"]}
-                result.append(DeviceStatusSchema(**temp))
+            for aitrios_device in devices:
+                device_id = aitrios_device["device_id"]
+                device_name = aitrios_device["device_name"]  # aitrios v2 API
+
+                # Gather group_name from multiple device_groups
+                device_groups = aitrios_device.get("device_groups", [])
+                group_names = [grp["device_group_id"] for grp in device_groups]
+                group_name_str = ", ".join(group_names)
+
+                temp = {
+                    "device_id": device_id,
+                    "device_name": device_name,
+                    "connection_status": aitrios_device["connection_state"],  # aitrios v2 API
+                    "group_name": group_name_str,
+                }
+                result.append(AitriosDeviceSchema(**temp))
             return result
         except requests.exceptions.Timeout:
             raise RetryAPIException()

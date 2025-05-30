@@ -1,0 +1,29 @@
+@startuml Save/Update Devices
+title Save/Update Devices
+
+: Start;
+if (Auth token is provided?) then (yes)
+    if (Auth token is not valid or expired?) then (yes)
+        : Send HTTP status 401, Auth token is invalid or expired;
+        kill
+    endif
+else (no)
+    : Send HTTP status 401, unauthorized;
+    kill
+endif
+->no(valid token);
+: Validate request body (device data);
+if (Invalid data?) then (yes)
+    : Send HTTP status 400, Invalid input;
+    kill
+endif
+: For each device in request:
+    : If device exists, update device;
+    : Else, create new device;
+: Send HTTP 200/201 with saved/updated device(s) info;
+note right
+    Returns:
+        1. Success message - "Device(s) saved/updated successfully"
+end note
+stop
+@enduml
