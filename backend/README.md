@@ -21,6 +21,7 @@ Make a copy of example env as following:
 Populate following mandatory variables:
 * DATABASE_URL
 * APP_SECRET_KEY
+* APP_ENV
 
 > NOTE: There are other optional environment variable, if changes, please be careful to modify at other places.
 
@@ -58,6 +59,11 @@ Postgres Database is used for local development.
 
 > Note: If the secret key is changed, the data already signed/encrypted will be of no use (redo the setup).
 
+#### Set APP_ENV
+
+* 'APP_ENV' variable is used to configure the CORS and choose proper Prisma Schema. 
+* Please set 'APP_ENV=local' for local setup environment. Other valid options are 'azure' & 'aws'.
+* Make sure your APP_SECRET_KEY and DATABASE_URL values are correct as per the APP_ENV value. 
 
 ### Run Backend Server
 

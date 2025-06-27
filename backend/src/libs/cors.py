@@ -14,6 +14,8 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
+import os
+
 from flask import Flask
 from flask_cors import CORS
 
@@ -25,5 +27,24 @@ def init_app(app: Flask):
     Args:
         app (Flask): The Flask application instance to initialize.
     """
-    CORS(app)
+
+    # Add allowed origins from environment variable ADMIN_APP_URL, CONTRACTOR_APP_URL
+    allowed_origins = []
+    admin_app_url = os.environ.get("ADMIN_APP_URL", None)
+    contractor_app_url = os.environ.get("CONTRACTOR_APP_URL", None)
+
+    if os.environ.get("APP_ENV", None) == "local":
+        # In local environment, allow all origins
+        allowed_origins.append("*")
+    else:
+        if admin_app_url:
+            allowed_origins.append(admin_app_url)
+
+        if contractor_app_url:
+            allowed_origins.append(contractor_app_url)
+
+    CORS(app, origins=allowed_origins, supports_credentials=True, max_age=3600)
+
+    # Initialize CORS with the allowed origins
+    app.config["CORS_ORIGINS"] = allowed_origins
     app.config["CORS_HEADERS"] = "Content-Type"
