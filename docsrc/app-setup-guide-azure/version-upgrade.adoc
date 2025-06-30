@@ -14,7 +14,56 @@
 
 ^|2.0.0 ^|Updated ^|Updated ^|Updated
 
+^|2.1.0 ^|Updated ^|No Change ^|Updated
+
 |===
+
+=== Upgrade v2.0.0 to v2.1.0
+
+* Confirm <<prerequisites,Prerequisites>> are met before proceeding
+* Get `v2.1.0` tagged Source Code
+
+==== Cloud Changes
+
+**Step 1:** Make sure the `tools/cloud-setup/azure/.env` file has the same values as used during AAT Azure Cloud Setup and Azure account is logged in.
+
+**Step 2:** Execute the below steps to patch the v2.1.0 changes to Azure Cloud environment.
+
+[source,shell]
+----
+$ cd tools/cloud-setup/azure
+
+# Create a virtual environment
+$ python3.10 -m venv .venv
+
+# Activate the virtual environment
+$ source .venv/bin/activate
+
+# Set environment variables
+(.venv) $ source set-env-var.sh
+
+(.venv) $ bash update-backend-settings.sh
+
+----
+
+==== DB Design Changes
+None
+
+==== Source Code Changes
+* There are changes in source code which includes new features and bug fixes. Following are the steps to apply these changes:
+
+**Step 1:** Make sure the `tools/cloud-setup/azure/.env` file has the same values as used during AAT Azure Cloud Setup and Azure account is logged in.
+
+**Step 2:** Build the source code and deploy to Azure Cloud.
+
+[source,shell]
+----
+$ cd tools/cloud-setup/azure
+$ bash source-build.sh
+----
+
+**Step 3:** Confirm the deployment by checking the version in Admin and Contractor application is changed to `v2.1.0`.
+
 
 
 === Upgrade v1.7.0 to v2.0.0
