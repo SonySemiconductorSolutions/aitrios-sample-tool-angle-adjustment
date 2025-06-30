@@ -86,6 +86,14 @@ az webapp config appsettings set \
   --resource-group $RESOURCE_GROUP \
   --settings "CONTRACTOR_APP_URL=https://$CONTRACTOR_APP_URL"
 
+ADMIN_APP_URL=$(az webapp show --name $WEBADMIN_NAME --resource-group $RESOURCE_GROUP --query defaultHostName --output tsv)
+
+# Set admin app URL as backend app settings
+az webapp config appsettings set \
+  --name $BACKEND_NAME \
+  --resource-group $RESOURCE_GROUP \
+  --settings "ADMIN_APP_URL=https://$ADMIN_APP_URL"
+
 # Set Docker credentials for Backend
 az webapp config container set \
   --name $BACKEND_NAME \

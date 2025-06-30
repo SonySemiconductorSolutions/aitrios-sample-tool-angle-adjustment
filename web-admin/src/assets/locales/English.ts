@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
     language: "English",
-    version: "v2.0.0",
+    version: "v2.1.0",
     appTitle: "Angle Adjustment Tool (Admin)",
     appTitleShort: "AAT (Admin)",
 

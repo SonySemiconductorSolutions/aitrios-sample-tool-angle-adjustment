@@ -1,7 +1,7 @@
 {
   "name": "caat-web-admin",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -50,7 +50,7 @@
     "@vitejs/plugin-react-swc": "3.5.0",
     "allure-commandline": "^2.13.8",
     "allure-jest": "^3.2.0",
-    "axios-mock-adapter": "2.0.0",
+    "axios-mock-adapter": "2.1.0",
     "eslint": "8.56.0",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.7",

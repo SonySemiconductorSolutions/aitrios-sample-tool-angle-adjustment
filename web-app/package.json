@@ -1,6 +1,6 @@
 {
   "name": "caat-web-app",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "engines": {
     "node": "20.x"
@@ -40,7 +40,7 @@
     "react-loading-icons": "1.1.0",
     "react-router-dom": "6.19.0",
     "react-slide-routes": "3.0.3",
-    "react-zxing": "2.0.0",
+    "react-zxing": "2.1.0",
     "typescript": "4.9.5",
     "use-context-selector": "1.4.1",
     "use-immer": "0.9.0",
