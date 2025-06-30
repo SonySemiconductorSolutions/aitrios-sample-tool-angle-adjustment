@@ -42,7 +42,7 @@ $ source .venv/bin/activate
 # 環境変数を設定
 (.venv) $ source set-env-var.sh
 
-(.venv) $ bash update-backend-settings.sh
+(.venv) $ bash scripts/update-backend-settings.sh
 
 ----
 

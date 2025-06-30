@@ -42,7 +42,7 @@ $ source .venv/bin/activate
 # Set environment variables
 (.venv) $ source set-env-var.sh
 
-(.venv) $ bash update-backend-settings.sh
+(.venv) $ bash scripts/update-backend-settings.sh
 
 ----
 
