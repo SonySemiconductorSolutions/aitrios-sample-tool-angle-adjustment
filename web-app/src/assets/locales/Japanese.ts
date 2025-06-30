@@ -17,7 +17,7 @@ limitations under the License.
 */
 const translations = {
   language: "Japanese",
-  version: "2.0.0",
+  version: "2.1.0",
   app_title: "画角調整ツール",
   camera: "カメラ",
 

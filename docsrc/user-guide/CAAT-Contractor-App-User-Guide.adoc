@@ -3,8 +3,8 @@
 :doctype: book
 :data-uri:
 :title: Angle Adjustment Tool (AAT) - Contractor App User Guide
-:revdate: 2025 - 05 - 19
-:revnumber: 2.0.0
+:revdate: 2025 - 06 - 16
+:revnumber: 2.1.0
 :toc: left
 :toclevels: 3
 :toc-title: Table of Contents

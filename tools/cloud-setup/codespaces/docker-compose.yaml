@@ -36,6 +36,7 @@ services:
       APP_SECRET_KEY: ${APP_SECRET_KEY}
       DATABASE_URL: ${DATABASE_URL}
       CONTRACTOR_APP_URL: ${CONTRACTOR_APP_URL}
+      ADMIN_APP_URL: ${ADMIN_APP_URL}
 
   contractor-app:
     build:
